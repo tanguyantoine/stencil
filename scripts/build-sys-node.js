@@ -10,6 +10,7 @@ const DEST_FILE = path.join(__dirname, '../dist/sys/node/index.js');
 
 
 bundle('clean-css.js');
+bundle('dev-server.js');
 bundle('node-fetch.js');
 bundle('sys-util.js');
 

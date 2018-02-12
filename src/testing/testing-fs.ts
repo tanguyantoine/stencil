@@ -113,7 +113,7 @@ export class TestingFs implements FileSystem {
   }
 
   stat(itemPath: string) {
-    return new Promise<{ isFile: () => boolean; isDirectory: () => boolean; }>((resolve, reject) => {
+    return new Promise<{ isFile: () => boolean; isDirectory: () => boolean; size: number; }>((resolve, reject) => {
       setTimeout(() => {
         try {
           resolve(this.statSync(itemPath));
@@ -132,7 +132,8 @@ export class TestingFs implements FileSystem {
       const isFile = this.data[itemPath].isFile;
       return  {
         isDirectory: () => isDirectory,
-        isFile: () => isFile
+        isFile: () => isFile,
+        size: this.data[itemPath].content ? this.data[itemPath].content.length : 0
       };
     }
     throw new Error(`stat, path doesn't exist: ${itemPath}`);

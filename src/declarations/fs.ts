@@ -7,7 +7,7 @@ export interface FileSystem {
   readFile(filePath: string, encoding?: string): Promise<string>;
   readFileSync(filePath: string, encoding?: string): string;
   rmdir(dirPath: string): Promise<void>;
-  stat(path: string): Promise<{ isFile: () => boolean; isDirectory: () => boolean; }>;
+  stat(path: string): Promise<{ isFile: () => boolean; isDirectory: () => boolean; size: number; }>;
   statSync(path: string): { isFile: () => boolean; isDirectory: () => boolean; };
   unlink(filePath: string): Promise<void>;
   writeFile(filePath: string, content: string, opts?: FsWriteOptions): Promise<void>;
@@ -27,6 +27,7 @@ export interface FsReaddirOptions {
 export interface FsReaddirItem {
   absPath: string;
   relPath: string;
+  itemPath: string;
   isDirectory: boolean;
   isFile: boolean;
 }
@@ -55,6 +56,7 @@ export interface FsItem {
   fileSrc?: string;
   isFile?: boolean;
   isDirectory?: boolean;
+  size?: number;
   mtimeMs?: number;
   exists?: boolean;
   queueWriteToDisk?: boolean;

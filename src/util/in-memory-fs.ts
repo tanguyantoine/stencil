@@ -179,6 +179,7 @@ export class InMemoryFileSystem {
       collectedPaths.push({
         absPath: absPath,
         relPath: relPath,
+        itemPath: dirItem,
         isDirectory: stats.isDirectory,
         isFile: stats.isFile
       });
@@ -277,11 +278,14 @@ export class InMemoryFileSystem {
       item.exists = true;
       item.isDirectory = s.isDirectory();
       item.isFile = s.isFile();
+      item.size = s.size;
     }
 
     return {
-      isFile: item.isFile,
-      isDirectory: item.isDirectory
+      exists: !!item.exists,
+      isFile: !!item.isFile,
+      isDirectory: !!item.isDirectory,
+      size: typeof item.size === 'number' ? item.size : 0
     };
   }
 
