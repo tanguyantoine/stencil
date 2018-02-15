@@ -9,6 +9,7 @@ const ENTRY_FILE = path.join(TRANSPILED_DIR, 'dev-server/index.js');
 const DEST_DIR = path.join(__dirname, '../dist/dev-server');
 const DEST_FILE = path.join(DEST_DIR, 'index.js');
 
+fs.ensureDirSync(DEST_DIR);
 
 function bundleDevServer() {
   rollup.rollup({
