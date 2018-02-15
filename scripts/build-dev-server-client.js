@@ -6,9 +6,9 @@ const rollup = require('rollup');
 const ROOT_DIR = path.join(__dirname, '../');
 const DST_DIR = path.join(ROOT_DIR, 'dist');
 const TRANSPILED_DIR = path.join(DST_DIR, 'transpiled-dev-server-client');
-const DEV_CLIENT_INPUT_DIR = path.join(TRANSPILED_DIR, 'sys/node/dev-server/dev-client');
-const DEV_CLIENT_SRC_STATIC_DIR = path.join(ROOT_DIR, 'src/sys/node/dev-server/static');
-const DEV_CLIENT_OUTPUT_DIR = path.join(DST_DIR, 'sys/node/dev-server/static');
+const DEV_CLIENT_INPUT_DIR = path.join(TRANSPILED_DIR, 'dev-server/dev-client');
+const DEV_CLIENT_SRC_STATIC_DIR = path.join(ROOT_DIR, 'src/dev-server/static');
+const DEV_CLIENT_OUTPUT_DIR = path.join(DST_DIR, 'dev-server/static');
 
 const inputFile = path.join(DEV_CLIENT_INPUT_DIR, 'index.js');
 const outputFile = path.join(DEV_CLIENT_OUTPUT_DIR, 'dev-server.js');

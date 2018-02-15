@@ -1,6 +1,6 @@
-import { CompilerCtx } from '../../../declarations';
+import { CompilerCtx } from '../declarations';
 import { DevServerOptions } from './options';
-import { getFileFromPath, getRequestedPath } from './utils';
+import { getFilePathFromUrl, getRequestedPath } from './utils';
 import { serveFile } from './serve-file';
 import { isStaticDevClient, serveStaticDevClient } from './serve-static-dev-client';
 import { serve404 } from './serve-error';
@@ -19,17 +19,17 @@ export function createHttpRequestHandler(opts: DevServerOptions, compilerCtx: Co
       return res.end();
     }
 
-    if (isStaticDevClient(url)) {
-      return serveStaticDevClient(compilerCtx, url, res);
+    if (isStaticDevClient(reqPath)) {
+      return serveStaticDevClient(opts, compilerCtx, reqPath, res);
     }
 
-    let filePath = getFileFromPath(opts.root, url);
+    let filePath = getFilePathFromUrl(opts, url);
 
     try {
       const stat = await compilerCtx.fs.stat(filePath);
 
       if (stat.isFile) {
-        return serveFile(compilerCtx, filePath, res);
+        return serveFile(opts, compilerCtx, reqPath, filePath, res);
       }
 
       if (stat.isDirectory) {
@@ -43,9 +43,9 @@ export function createHttpRequestHandler(opts: DevServerOptions, compilerCtx: Co
       }
 
       if (opts.html5mode) {
-        if (req.headers && req.headers.accept && req.headers.accept.includes('text/html')) {
+        if (req.headers && typeof req.headers.accept === 'string' && req.headers.accept.includes('text/html')) {
           filePath += '.html';
-          return serveFile(compilerCtx, filePath, res);
+          return serveFile(opts, compilerCtx, reqPath, filePath, res);
         }
       }
     }

@@ -1,4 +1,4 @@
-import { Config } from '../../../declarations';
+import { Config } from '../declarations';
 import * as path from 'path';
 
 
@@ -13,10 +13,6 @@ export function getOptions(config: Config) {
     opts.root = config.wwwDir;
   }
 
-  if (!path.isAbsolute(opts.devAssetsDir)) {
-    opts.devAssetsDir = path.join(__dirname, opts.devAssetsDir);
-  }
-
   opts.protocol = opts.ssl ? 'https' : 'http';
 
   return opts;
@@ -26,7 +22,6 @@ export function getOptions(config: Config) {
 export const DEFAULT_OPTIONS: DevServerOptions = {
   address: '0.0.0.0',
   broadcast: false,
-  devAssetsDir: 'assets',
   httpPort: 3333,
   html5mode: true,
   liveReload: true,
@@ -40,7 +35,7 @@ export const DEFAULT_OPTIONS: DevServerOptions = {
 export interface DevServerOptions {
   address: string;
   broadcast: boolean;
-  devAssetsDir: string;
+  contentType?: { [ext: string]: string };
   html5mode: boolean;
   httpPort: number;
   liveReload: boolean;
@@ -49,5 +44,7 @@ export interface DevServerOptions {
   protocol?: 'http' | 'https';
   root?: string;
   ssl: boolean;
+  staticDir?: string;
+  templateDir?: string;
   unregisterServiceWorkers: boolean;
 }

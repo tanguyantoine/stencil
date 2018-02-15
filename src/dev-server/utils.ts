@@ -1,3 +1,4 @@
+import { DevServerOptions } from './options';
 import * as path from 'path';
 import * as url from 'url';
 
@@ -6,18 +7,16 @@ export function getRequestedPath(requestUrl: string) {
   const parsed = url.parse(requestUrl);
 
   decodeURIComponent(requestUrl);
+
   return decodePathname(parsed.pathname || '');
 }
 
 
-export function getFileFromPath(wwwRoot: string, requestUrl: string) {
+export function getFilePathFromUrl(opts: DevServerOptions, requestUrl: string) {
   const pathname = getRequestedPath(requestUrl);
   return path.normalize(
-    path.join(wwwRoot,
-      path.relative(
-        '/',
-        pathname
-      )
+    path.join(opts.root,
+      path.relative('/', pathname)
     )
   );
 }

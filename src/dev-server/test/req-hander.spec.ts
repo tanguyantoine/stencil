@@ -1,5 +1,5 @@
-import { mockCompilerCtx, mockConfig } from '../../../../testing/mocks';
-import { CompilerCtx, Config } from '../../../../declarations';
+import { mockCompilerCtx, mockConfig } from '../../testing/mocks';
+import { CompilerCtx, Config } from '../../declarations';
 import { createHttpRequestHandler } from '../request-handler';
 import { DevServerOptions, getOptions } from '../options';
 import * as fs from 'fs';

@@ -1,4 +1,4 @@
-import { CompilerCtx } from '../../../declarations';
+import { CompilerCtx } from '../declarations';
 import { DevServerOptions } from './options';
 import * as http  from 'http';
 import * as path  from 'path';
@@ -35,7 +35,8 @@ export async function serve404(opts: DevServerOptions, compilerCtx: CompilerCtx,
     content = `/** ${content} **/`;
 
   } else  {
-    content = await compilerCtx.fs.readFile(path.join(opts.devAssetsDir, 'tmpl-404.html'));
+    const tmpl404 = await compilerCtx.fs.readFile(path.join(opts.templateDir, '404.html'));
+    content = tmpl404.replace('{content}', content);
   }
 
   res.writeHead(404, headers);

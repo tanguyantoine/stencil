@@ -1,4 +1,4 @@
-import { CompilerCtx } from '../../../declarations';
+import { CompilerCtx } from '../declarations';
 import { DevServerOptions } from './options';
 import { serveDirContents } from './serve-dir-contents';
 import { serveFile } from './serve-file';
@@ -13,7 +13,7 @@ export async function serveIndex(opts: DevServerOptions, compilerCtx: CompilerCt
       const stat = await compilerCtx.fs.stat(htmlFilePath);
 
       if (stat.isFile) {
-        return serveFile(compilerCtx, htmlFilePath, res);
+        return serveFile(opts, compilerCtx, reqPath, htmlFilePath, res);
       }
     } catch (e) {}
 
@@ -22,7 +22,7 @@ export async function serveIndex(opts: DevServerOptions, compilerCtx: CompilerCt
       const stat = await compilerCtx.fs.stat(indexFilePath);
 
       if (stat.isFile) {
-        return serveFile(compilerCtx, indexFilePath, res);
+        return serveFile(opts, compilerCtx, reqPath, indexFilePath, res);
       }
 
     } catch (e) {}

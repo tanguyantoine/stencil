@@ -1,4 +1,4 @@
-import { CompilerCtx, Config } from '../../../declarations';
+import { CompilerCtx, Config } from '../declarations';
 import { createHttpRequestHandler } from './request-handler';
 import { findClosestOpenPort } from './find-closest-port';
 import { getAddressForBrowser } from './utils';

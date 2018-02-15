@@ -1,4 +1,4 @@
-import { CompilerCtx } from '../../../declarations';
+import { CompilerCtx } from '../declarations';
 import { DevServerOptions } from './options';
 import { serve500 } from './serve-error';
 import * as http from 'http';
@@ -10,7 +10,7 @@ export async function serveDirContents(opts: DevServerOptions, compilerCtx: Comp
   try {
     let items = await compilerCtx.fs.readdir(dirPath, { recursive: false });
 
-    const dirTemplatePath = path.join(opts.devAssetsDir, 'tmpl-dir.html');
+    const dirTemplatePath = path.join(opts.templateDir, 'directory-listing.html');
     const dirTemplate = await compilerCtx.fs.readFile(dirTemplatePath);
 
     items = items.filter(f => !f.itemPath.startsWith('.'));

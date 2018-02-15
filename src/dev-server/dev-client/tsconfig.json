@@ -17,9 +17,9 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "../../../../../dist/transpiled-dev-server-client",
+    "outDir": "../../../dist/transpiled-dev-server-client",
     "pretty": true,
-    "rootDir": "../../../../",
+    "rootDir": "../../",
     "target": "es5"
   },
   "files": [
