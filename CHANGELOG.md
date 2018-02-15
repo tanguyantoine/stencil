@@ -1,3 +1,59 @@
+<a name="0.5.2"></a>
+## [0.5.2](https://github.com/ionic-team/stencil/compare/v0.5.1...v0.5.2) (2018-02-15)
+
+
+### Bug Fixes
+
+* **bundle:** fix directory index resolution ([605aa54](https://github.com/ionic-team/stencil/commit/605aa54)), closes [#537](https://github.com/ionic-team/stencil/issues/537)
+
+
+### Performance Improvements
+
+* **bundle:** use in-memory fs cache for local resolution ([d78bcc4](https://github.com/ionic-team/stencil/commit/d78bcc4))
+
+
+
+<a name="0.5.1"></a>
+## [0.5.1](https://github.com/ionic-team/stencil/compare/v0.5.0...v0.5.1) (2018-02-14)
+
+
+### Bug Fixes
+
+* **bundling:** add json resolution plugin for rollup to stencil. ([39dcfc6](https://github.com/ionic-team/stencil/commit/39dcfc6))
+* **entries:** limit component references to call expressions and html ([7991017](https://github.com/ionic-team/stencil/commit/7991017)), closes [#532](https://github.com/ionic-team/stencil/issues/532)
+* **node-dom:** fix errors when dom.window already closed ([065ed4e](https://github.com/ionic-team/stencil/commit/065ed4e))
+
+
+
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/ionic-team/stencil/compare/v0.4.3...v0.5.0) (2018-02-13)
+
+
+### Bug Fixes
+
+* **entries:** ensure dependency data from collections remains ([f9fb09a](https://github.com/ionic-team/stencil/commit/f9fb09a))
+* **entries:** use all strings for component reference graph ([6629aa1](https://github.com/ionic-team/stencil/commit/6629aa1))
+* **publicPath:** allow for custom public path ([19095e7](https://github.com/ionic-team/stencil/commit/19095e7)), closes [#464](https://github.com/ionic-team/stencil/issues/464)
+* **transpile:** remove unneded remove-imports transform because it is causing issues with wildcard imports. fixes [#526](https://github.com/ionic-team/stencil/issues/526) ([256e70a](https://github.com/ionic-team/stencil/commit/256e70a))
+
+
+### Features
+
+* **plugins:** add rollup plugins through config ([b8abbce](https://github.com/ionic-team/stencil/commit/b8abbce)), closes [#472](https://github.com/ionic-team/stencil/issues/472)
+
+
+
+<a name="0.4.3"></a>
+## [0.4.3](https://github.com/ionic-team/stencil/compare/v0.4.2...v0.4.3) (2018-02-12)
+
+
+### Bug Fixes
+
+* **entries:** handle circular imports ([3f306ac](https://github.com/ionic-team/stencil/commit/3f306ac)), closes [#513](https://github.com/ionic-team/stencil/issues/513)
+* **minify:** revert uglify to v3.3.9 ([0391259](https://github.com/ionic-team/stencil/commit/0391259))
+
+
+
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/ionic-team/stencil/compare/v0.4.1...v0.4.2) (2018-02-12)
 
@@ -1752,6 +1808,3 @@
 
 * **demos:** add height attributes to header ([b70f25a](https://github.com/ionic-team/stencil/commit/b70f25a))
 * reduce css parser code ([12ee8aa](https://github.com/ionic-team/stencil/commit/12ee8aa))
-
-
-

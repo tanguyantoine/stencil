@@ -28,8 +28,14 @@ export interface EntryComponent {
   dependencyOf?: string[];
 }
 
-export interface ComponentReference {
+export interface ComponentRef {
   tag: string;
+  filePath: string;
+}
+
+export interface PotentialComponentRef {
+  tag?: string;
+  html?: string;
   filePath: string;
 }
 

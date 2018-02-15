@@ -1,16 +1,16 @@
 import { BuildResults, CompilerCtx, CompilerEventName, Config, Diagnostic } from '../declarations';
 import { build } from './build/build';
-import { catchError, getCompilerCtx } from './util';
+import { catchError } from './util';
 import { docs } from './docs/docs';
+import { getCompilerCtx } from './build/compiler-ctx';
 import { InMemoryFileSystem } from '../util/in-memory-fs';
-import { initPlugins } from './plugin/plugin';
 import { validateBuildConfig } from '../compiler/config/validate-config';
 import { validatePrerenderConfig } from './prerender/validate-prerender-config';
 import { validateServiceWorkerConfig } from './service-worker/validate-sw-config';
 
 
 export class Compiler {
-  private ctx: CompilerCtx;
+  protected ctx: CompilerCtx;
   isValid: boolean;
 
   constructor(public config: Config) {
@@ -18,7 +18,6 @@ export class Compiler {
 
     if (this.isValid) {
       this.ctx = getCompilerCtx(config);
-      initPlugins(config);
 
       let startupMsg = `${config.sys.compiler.name} v${config.sys.compiler.version} `;
       if (config.sys.platform !== 'win32') {
