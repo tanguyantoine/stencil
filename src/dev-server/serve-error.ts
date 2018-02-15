@@ -1,5 +1,4 @@
-import { CompilerCtx } from '../declarations';
-import { DevServerOptions } from './options';
+import { CompilerCtx, Config } from '../declarations';
 import * as http  from 'http';
 import * as path  from 'path';
 
@@ -15,7 +14,7 @@ export function serve500(res: http.ServerResponse, errorMessage: string) {
 }
 
 
-export async function serve404(opts: DevServerOptions, compilerCtx: CompilerCtx, reqPath: string, res: http.ServerResponse) {
+export async function serve404(config: Config, compilerCtx: CompilerCtx, reqPath: string, res: http.ServerResponse) {
   const headers = {
     'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
     'Expires': '0',
@@ -35,7 +34,7 @@ export async function serve404(opts: DevServerOptions, compilerCtx: CompilerCtx,
     content = `/** ${content} **/`;
 
   } else  {
-    const tmpl404 = await compilerCtx.fs.readFile(path.join(opts.templateDir, '404.html'));
+    const tmpl404 = await compilerCtx.fs.readFile(path.join(config.devServer.templateDir, '404.html'));
     content = tmpl404.replace('{content}', content);
   }
 

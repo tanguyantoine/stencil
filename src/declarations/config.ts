@@ -14,6 +14,7 @@ export interface Config {
   copy?: CopyTasks;
   discoverPublicPath?: boolean;
   devMode?: boolean;
+  devServer?: d.DevServerConfig;
   distDir?: string;
   emptyDist?: boolean;
   emptyWWW?: boolean;

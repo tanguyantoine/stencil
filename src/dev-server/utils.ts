@@ -1,4 +1,4 @@
-import { DevServerOptions } from './options';
+import { Config } from '../declarations';
 import * as path from 'path';
 import * as url from 'url';
 
@@ -12,10 +12,10 @@ export function getRequestedPath(requestUrl: string) {
 }
 
 
-export function getFilePathFromUrl(opts: DevServerOptions, requestUrl: string) {
+export function getFilePathFromUrl(config: Config, requestUrl: string) {
   const pathname = getRequestedPath(requestUrl);
   return path.normalize(
-    path.join(opts.root,
+    path.join(config.wwwDir,
       path.relative('/', pathname)
     )
   );

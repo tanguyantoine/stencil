@@ -2,25 +2,28 @@ import { CompilerCtx, Config } from '../declarations';
 import { createHttpRequestHandler } from './request-handler';
 import { findClosestOpenPort } from './find-closest-port';
 import { getAddressForBrowser } from './utils';
-import { getOptions } from './options';
 import { getSSL } from './ssl';
+import { validateDevServerConfig } from './validate-dev-server-config';
 
 import * as http from 'http';
 import * as https from 'https';
 
 
 export async function startDevServer(config: Config, compilerCtx: CompilerCtx) {
-  const opts = getOptions(config);
+  validateDevServerConfig(config);
 
-  opts.httpPort = await findClosestOpenPort(opts.address, opts.httpPort);
+  config.devServer.httpPort = await findClosestOpenPort(
+    config.devServer.address,
+    config.devServer.httpPort
+  );
 
-  const requestHandler = createHttpRequestHandler(opts, compilerCtx);
+  const requestHandler = createHttpRequestHandler(config, compilerCtx);
 
-  const httpServer  = opts.ssl ? https.createServer(await getSSL(), requestHandler).listen(opts.httpPort)
-                               : http.createServer(requestHandler).listen(opts.httpPort);
+  const httpServer = config.devServer.ssl ? https.createServer(await getSSL(), requestHandler).listen(config.devServer.httpPort)
+                                          : http.createServer(requestHandler).listen(config.devServer.httpPort);
 
-  const browserUrl = getAddressForBrowser(opts.address);
-  const devUrl = `${opts.protocol}://${browserUrl}:${opts.httpPort}`;
+  const browserUrl = getAddressForBrowser(config.devServer.address);
+  const devUrl = `${config.devServer.protocol}://${browserUrl}:${config.devServer.httpPort}`;
 
   config.logger.info(`dev server: ${devUrl}`);
 

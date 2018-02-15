@@ -1,19 +1,18 @@
-import { CompilerCtx } from '../declarations';
-import { DevServerOptions } from './options';
+import { CompilerCtx, Config } from '../declarations';
 import { serveDirContents } from './serve-dir-contents';
 import { serveFile } from './serve-file';
 import * as http from 'http';
 import * as path from 'path';
 
 
-export async function serveIndex(opts: DevServerOptions, compilerCtx: CompilerCtx, dirPath: string, reqPath: string, res: http.ServerResponse) {
-  if (opts.html5mode) {
+export async function serveIndex(config: Config, compilerCtx: CompilerCtx, dirPath: string, reqPath: string, res: http.ServerResponse) {
+  if (config.devServer.html5mode) {
     const htmlFilePath = dirPath + '.html';
     try {
       const stat = await compilerCtx.fs.stat(htmlFilePath);
 
       if (stat.isFile) {
-        return serveFile(opts, compilerCtx, reqPath, htmlFilePath, res);
+        return serveFile(config, compilerCtx, reqPath, htmlFilePath, res);
       }
     } catch (e) {}
 
@@ -22,7 +21,7 @@ export async function serveIndex(opts: DevServerOptions, compilerCtx: CompilerCt
       const stat = await compilerCtx.fs.stat(indexFilePath);
 
       if (stat.isFile) {
-        return serveFile(opts, compilerCtx, reqPath, indexFilePath, res);
+        return serveFile(config, compilerCtx, reqPath, indexFilePath, res);
       }
 
     } catch (e) {}
@@ -36,5 +35,5 @@ export async function serveIndex(opts: DevServerOptions, compilerCtx: CompilerCt
     return res.end();
   }
 
-  return serveDirContents(opts, compilerCtx, reqPath, dirPath, res);
+  return serveDirContents(config, compilerCtx, reqPath, dirPath, res);
 }

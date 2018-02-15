@@ -1,5 +1,4 @@
-import { CompilerCtx } from '../declarations';
-import { DevServerOptions } from './options';
+import { CompilerCtx, Config } from '../declarations';
 import { getFilePathFromUrl, getRequestedPath } from './utils';
 import { serveFile } from './serve-file';
 import { isStaticDevClient, serveStaticDevClient } from './serve-static-dev-client';
@@ -8,7 +7,7 @@ import { serveIndex } from './serve-index';
 import * as http from 'http';
 
 
-export function createHttpRequestHandler(opts: DevServerOptions, compilerCtx: CompilerCtx) {
+export function createHttpRequestHandler(config: Config, compilerCtx: CompilerCtx) {
 
   return async function(req: http.IncomingMessage, res: http.ServerResponse) {
     const url = (req.url || '').trim();
@@ -20,36 +19,36 @@ export function createHttpRequestHandler(opts: DevServerOptions, compilerCtx: Co
     }
 
     if (isStaticDevClient(reqPath)) {
-      return serveStaticDevClient(opts, compilerCtx, reqPath, res);
+      return serveStaticDevClient(config, compilerCtx, reqPath, res);
     }
 
-    let filePath = getFilePathFromUrl(opts, url);
+    let filePath = getFilePathFromUrl(config, url);
 
     try {
       const stat = await compilerCtx.fs.stat(filePath);
 
       if (stat.isFile) {
-        return serveFile(opts, compilerCtx, reqPath, filePath, res);
+        return serveFile(config, compilerCtx, reqPath, filePath, res);
       }
 
       if (stat.isDirectory) {
-        return serveIndex(opts, compilerCtx, filePath, reqPath, res);
+        return serveIndex(config, compilerCtx, filePath, reqPath, res);
       }
 
     } catch (e) {
 
       if (reqPath === '/') {
-        return serveIndex(opts, compilerCtx, reqPath, filePath, res);
+        return serveIndex(config, compilerCtx, reqPath, filePath, res);
       }
 
-      if (opts.html5mode) {
+      if (config.devServer.html5mode) {
         if (req.headers && typeof req.headers.accept === 'string' && req.headers.accept.includes('text/html')) {
           filePath += '.html';
-          return serveFile(opts, compilerCtx, reqPath, filePath, res);
+          return serveFile(config, compilerCtx, reqPath, filePath, res);
         }
       }
     }
 
-    return serve404(opts, compilerCtx, reqPath, res);
+    return serve404(config, compilerCtx, reqPath, res);
   };
 }

@@ -1,16 +1,15 @@
-import { CompilerCtx } from '../declarations';
-import { DevServerOptions } from './options';
+import { CompilerCtx, Config } from '../declarations';
 import { serve500 } from './serve-error';
 import * as http from 'http';
 import * as path from 'path';
 import * as url from 'url';
 
 
-export async function serveDirContents(opts: DevServerOptions, compilerCtx: CompilerCtx, reqPath: string, dirPath: string, res: http.ServerResponse) {
+export async function serveDirContents(config: Config, compilerCtx: CompilerCtx, reqPath: string, dirPath: string, res: http.ServerResponse) {
   try {
     let items = await compilerCtx.fs.readdir(dirPath, { recursive: false });
 
-    const dirTemplatePath = path.join(opts.templateDir, 'directory-listing.html');
+    const dirTemplatePath = path.join(config.devServer.templateDir, 'directory-listing.html');
     const dirTemplate = await compilerCtx.fs.readFile(dirTemplatePath);
 
     items = items.filter(f => !f.itemPath.startsWith('.'));

@@ -1,7 +1,7 @@
 import { mockCompilerCtx, mockConfig } from '../../testing/mocks';
 import { CompilerCtx, Config } from '../../declarations';
 import { createHttpRequestHandler } from '../request-handler';
-import { DevServerOptions, getOptions } from '../options';
+import { validateDevServerConfig } from '../validate-dev-server-config';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
@@ -11,24 +11,33 @@ describe('request-handler', () => {
 
   let c: CompilerCtx;
   let config: Config;
-  let opts: DevServerOptions;
   let req: http.ServerRequest;
   let res: TestServerResponse;
-  const tmplDirPath = path.join(__dirname, '../assets/tmpl-dir.html');
-  const tmpl404Path = path.join(__dirname, '../assets/tmpl-404.html');
-  const tmpl500Path = path.join(__dirname, '../assets/tmpl-500.html');
+  const tmplDirPath = path.join(__dirname, '../templates/directory-listing.html');
+  const tmpl404Path = path.join(__dirname, '../templates/404.html');
   const tmplDir = fs.readFileSync(tmplDirPath, 'utf8');
   const tmpl404 = fs.readFileSync(tmpl404Path, 'utf8');
-  const tmpl500 = fs.readFileSync(tmpl404Path, 'utf8');
+  const contentTypes = {
+    'html': 'text/html',
+    'css': 'text/css',
+    'js': 'application/javascript',
+    'svg': 'image/svg+xml'
+  };
 
   beforeEach(async () => {
     c = mockCompilerCtx();
     await c.fs.writeFile(tmplDirPath, tmplDir);
     await c.fs.writeFile(tmpl404Path, tmpl404);
-    await c.fs.writeFile(tmpl500Path, tmpl500);
     await c.fs.commit();
     config = mockConfig();
-    opts = getOptions(config);
+
+    config.devServer = {
+      contentTypes: contentTypes,
+      staticDir: path.join(__dirname, '../static'),
+      templateDir: path.join(__dirname, '../templates')
+    };
+
+    validateDevServerConfig(config);
     req = {} as any;
     res = {} as any;
 
@@ -55,8 +64,8 @@ describe('request-handler', () => {
         '/www/about-us.html': `aboutus`
       });
       await c.fs.commit();
-      opts.html5mode = false;
-      const handler = createHttpRequestHandler(opts, c);
+      config.devServer.html5mode = false;
+      const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
@@ -73,7 +82,7 @@ describe('request-handler', () => {
         '/www/about-us.html': `aboutus`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
         accept: '*/*'
@@ -90,8 +99,8 @@ describe('request-handler', () => {
         '/www/about-us/index.html': `about-us-index`
       });
       await c.fs.commit();
-      opts.html5mode = false;
-      const handler = createHttpRequestHandler(opts, c);
+      config.devServer.html5mode = false;
+      const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
@@ -110,8 +119,8 @@ describe('request-handler', () => {
         '/www/about-us/index.html': `about-us-index`
       });
       await c.fs.commit();
-      opts.html5mode = false;
-      const handler = createHttpRequestHandler(opts, c);
+      config.devServer.html5mode = false;
+      const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
@@ -129,7 +138,7 @@ describe('request-handler', () => {
         '/www/about-us/index.html': `about-us-index`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
@@ -147,7 +156,7 @@ describe('request-handler', () => {
         '/www/about-us.html': `aboutus`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
@@ -165,7 +174,7 @@ describe('request-handler', () => {
         '/www/about-us/index.html': `aboutus`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/about-us';
 
@@ -184,7 +193,7 @@ describe('request-handler', () => {
         '/www/scripts/file1.js': `alert("hi");`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/scripts/file2.js';
 
@@ -204,7 +213,7 @@ describe('request-handler', () => {
         '/www/assets/scripts.js': `// hi`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/assets';
 
@@ -224,7 +233,7 @@ describe('request-handler', () => {
         '/www/.gitignore': `// gitignore`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/';
 
@@ -239,7 +248,7 @@ describe('request-handler', () => {
         '/www/index.html': `hello`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/';
 
@@ -254,7 +263,7 @@ describe('request-handler', () => {
         '/www/index.html': `hello`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/?qs=123';
 
@@ -269,23 +278,9 @@ describe('request-handler', () => {
         '/www/index.html': `hello`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '';
-
-      await handler(req, res);
-      expect(res.$statusCode).toBe(302);
-      expect(res.$headers.location).toBe('/');
-    });
-
-    it('302 redirect to / when path is /index.html at all', async () => {
-      await c.fs.writeFiles({
-        '/www/index.html': `hello`
-      });
-      await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
-
-      req.url = '/index.html';
 
       await handler(req, res);
       expect(res.$statusCode).toBe(302);
@@ -301,7 +296,7 @@ describe('request-handler', () => {
         '/www/scripts/file1.js': `alert("hi");`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/scripts/file1.js';
 
@@ -316,11 +311,11 @@ describe('request-handler', () => {
         '/www/scripts/file1.css': `body{color:red}`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/scripts/file1.css';
 
-      const content = await handler(req, res);
+      await handler(req, res);
       expect(res.$content).toBe('body{color:red}');
       expect(res.$contentType).toBe('text/css');
       expect(res.$statusCode).toBe(200);
@@ -331,11 +326,11 @@ describe('request-handler', () => {
         '/www/scripts/file1.svg': `<svg></svg>`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/scripts/file1.svg';
 
-      const content = await handler(req, res);
+      await handler(req, res);
       expect(res.$content).toBe('<svg></svg>');
       expect(res.$contentType).toBe('image/svg+xml');
       expect(res.$statusCode).toBe(200);
@@ -346,11 +341,11 @@ describe('request-handler', () => {
         '/www/scripts/file1.html': `<html></html>`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/scripts/file1.html';
 
-      const content = await handler(req, res);
+      await handler(req, res);
       expect(res.$content).toContain('<html></html>');
       expect(res.$contentType).toBe('text/html');
       expect(res.$statusCode).toBe(200);
@@ -361,11 +356,11 @@ describe('request-handler', () => {
         '/www/scripts/file1.html': `<html></html>`
       });
       await c.fs.commit();
-      const handler = createHttpRequestHandler(opts, c);
+      const handler = createHttpRequestHandler(config, c);
 
       req.url = '/scripts/file1.html?qs=1234';
 
-      const content = await handler(req, res);
+      await handler(req, res);
       expect(res.$content).toContain('<html></html>');
       expect(res.$contentType).toBe('text/html');
       expect(res.$statusCode).toBe(200);

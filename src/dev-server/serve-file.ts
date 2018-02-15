@@ -1,5 +1,4 @@
-import { CompilerCtx } from '../declarations';
-import { DevServerOptions } from './options';
+import { CompilerCtx, Config } from '../declarations';
 import { getContentType } from './content-type';
 import { injectDevClientHtml } from './inject-dev-client';
 import { serve404, serve500 } from './serve-error';
@@ -7,7 +6,7 @@ import * as fs  from 'fs';
 import * as http  from 'http';
 
 
-export async function serveFile(opts: DevServerOptions, compilerCtx: CompilerCtx, reqPath: string, filePath: string, res: http.ServerResponse) {
+export async function serveFile(config: Config, compilerCtx: CompilerCtx, reqPath: string, filePath: string, res: http.ServerResponse) {
   try {
     const stat = await compilerCtx.fs.stat(filePath);
 
@@ -15,7 +14,7 @@ export async function serveFile(opts: DevServerOptions, compilerCtx: CompilerCtx
       res.writeHead(200, {
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Expires': '0',
-        'Content-Type': getContentType(opts, filePath),
+        'Content-Type': getContentType(config, filePath),
         'Content-Length': stat.size
       });
 
@@ -40,7 +39,7 @@ export async function serveFile(opts: DevServerOptions, compilerCtx: CompilerCtx
     }
 
   } catch (e) {
-    serve404(opts, compilerCtx, reqPath, res);
+    serve404(config, compilerCtx, reqPath, res);
   }
 }
 

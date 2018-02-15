@@ -4,6 +4,7 @@ export * from './compiler';
 export * from './component';
 export * from './config';
 export * from './decorators';
+export * from './dev-server';
 export * from './diagnostics';
 export * from './dom';
 export * from './entry';
