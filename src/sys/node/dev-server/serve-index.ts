@@ -13,7 +13,7 @@ export async function serveIndex(opts: DevServerOptions, compilerCtx: CompilerCt
       const stat = await compilerCtx.fs.stat(htmlFilePath);
 
       if (stat.isFile) {
-        return serveFile(opts, compilerCtx, htmlFilePath, res);
+        return serveFile(compilerCtx, htmlFilePath, res);
       }
     } catch (e) {}
 
@@ -22,7 +22,7 @@ export async function serveIndex(opts: DevServerOptions, compilerCtx: CompilerCt
       const stat = await compilerCtx.fs.stat(indexFilePath);
 
       if (stat.isFile) {
-        return serveFile(opts, compilerCtx, indexFilePath, res);
+        return serveFile(compilerCtx, indexFilePath, res);
       }
 
     } catch (e) {}

@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html data-template="tmpl-500">
+<html data-template="tmpl-dir">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>500: Server Error</title>
-    <link href="/__dev-server__/dev-server.css" rel="stylesheet">
-    <link rel="shortcut icon" href="/__dev-server__/favicon.ico" type="image/x-icon">
+    <title>Directory {directory}</title>
+    <link href="/__dev-server/dev-server.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/__dev-server/favicon.ico" type="image/x-icon">
   </head>
   <body class="directory">
-    <div id="wrapper">
+    <main>
       <h1><a href="/">~</a>{linked-path}</h1>
-    </div>
+      {files}
+    </main>
   </body>
 </html>

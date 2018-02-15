@@ -1,6 +1,5 @@
 import * as path from 'path';
 import * as url from 'url';
-import * as fs from 'fs';
 
 
 export function getRequestedPath(requestUrl: string) {

@@ -1,12 +1,11 @@
 import { CompilerCtx } from '../../../declarations';
-import { DEV_SERVER_INITIAL_URL, DevServerOptions } from './options';
 import { injectDevClientHtml } from './inject-dev-client';
 import * as fs  from 'fs';
 import * as http  from 'http';
 import * as mimeTypes from 'mime-types';
 
 
-export async function serveFile(opts: DevServerOptions, compilerCtx: CompilerCtx, filePath: string, res: http.ServerResponse) {
+export async function serveFile(compilerCtx: CompilerCtx, filePath: string, res: http.ServerResponse) {
   const stat = await compilerCtx.fs.stat(filePath);
 
   let contentType = 'application/octet-stream';
@@ -29,7 +28,7 @@ export async function serveFile(opts: DevServerOptions, compilerCtx: CompilerCtx
     let content = await compilerCtx.fs.readFile(filePath);
 
     if (isHtmlFile(filePath)) {
-      content = injectDevClientHtml(opts, content);
+      content = injectDevClientHtml(content);
     }
 
     res.write(content);
@@ -39,16 +38,6 @@ export async function serveFile(opts: DevServerOptions, compilerCtx: CompilerCtx
     // non-well-known text file, probably best we use a stream
     fs.createReadStream(filePath).pipe(res);
   }
-}
-
-
-export async function serveDevServerAsset(url: string, res: http.ServerResponse) {
-
-}
-
-
-function isDevServerInitialLoad(url: string) {
-  return url === DEV_SERVER_INITIAL_URL;
 }
 
 

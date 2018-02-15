@@ -1,20 +1,7 @@
-import { DevServerOptions } from './options';
 
 
-export function injectDevClientHtml(opts: DevServerOptions, htmlContent: string) {
-  const appendString = opts.additionalJsScripts.map(sl => {
-    return `<script src="${sl}"></script>`;
-  }).join('\n');
-
-  if (htmlContent.includes('</body>')) {
-    return htmlContent.replace(
-        `</body>`,
-        `${appendString}\n</body>`
-      );
-
-  } else {
-    htmlContent += `\n${appendString}`;
-  }
-
-  return htmlContent;
+export function injectDevClientHtml(htmlContent: string) {
+  return htmlContent + '\n' + DEV_SERVER_SCRIPT;
 }
+
+const DEV_SERVER_SCRIPT = `<script src="/__dev-server__/dev-server.js" data-dev-server-script></script>`;
