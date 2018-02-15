@@ -36,6 +36,7 @@ export interface StencilSystem {
   };
   minimatch?(path: string, pattern: string, opts?: any): boolean;
   resolveModule?(fromDir: string, moduleId: string): string;
+  open?: (p: string) => Promise<void>;
   path?: Path;
   platform?: string;
   rollup?: {

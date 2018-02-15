@@ -1,4 +1,4 @@
-import { Config, CompilerCtx } from '../../../util/interfaces';
+import { CompilerCtx, Config } from '../../../declarations';
 import { generatePreamble } from '../../util';
 import { mockLogger, mockStencilSystem } from '../../../testing/mocks';
 

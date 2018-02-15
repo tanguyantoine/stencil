@@ -18,12 +18,21 @@ export function overrideConfigFromArgv(config: Config, argv: CliArgv) {
     config.writeLog = true;
   }
 
-  if (argv.noCache) {
+  if (!argv.cache) {
     config.enableCache = false;
   }
 
   if (argv.watch) {
     config.watch = true;
+  }
+
+  if (argv.serve) {
+    config.devServer = config.devServer || {};
+    config.devServer.startDevServer = true;
+
+    if (argv.open) {
+      config.devServer.openBrowser = true;
+    }
   }
 
   if (argv.debug) {
@@ -96,7 +105,6 @@ export function parseArgv(process: NodeJS.Process) {
 
   argv.logLevel = (argv as any)['log-level'];
   argv.serviceWorker = (argv as any)['service-worker'];
-  argv.noCache = cmdArgs.includes('--no-cache');
 
   return argv as CliArgv;
 }
@@ -104,15 +112,17 @@ export function parseArgv(process: NodeJS.Process) {
 
 const ARG_OPTS: any = {
   boolean: [
+    'cache',
     'debug',
     'dev',
     'docs',
     'es5',
     'help',
     'log',
-    'no-cache',
+    'open',
     'prod',
     'prerender',
+    'serve',
     'service-worker',
     'skip-node-check',
     'stats',
@@ -127,11 +137,16 @@ const ARG_OPTS: any = {
     'c': 'config',
     'h': 'help',
     'v': 'version'
+  },
+  default: {
+    cache: true,
+    open: true
   }
 };
 
 
 export interface CliArgv {
+  cache?: boolean;
   config?: string;
   debug?: boolean;
   dev?: boolean;
@@ -140,9 +155,10 @@ export interface CliArgv {
   help?: boolean;
   log?: boolean;
   logLevel?: string;
-  noCache?: boolean;
+  open?: boolean;
   prerender?: boolean;
   prod?: boolean;
+  serve?: boolean;
   serviceWorker?: boolean;
   stats?: boolean;
   version?: boolean;

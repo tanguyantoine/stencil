@@ -2,6 +2,7 @@ import { Config } from '../../declarations';
 import { setArrayConfig, setBooleanConfig, setNumberConfig, setStringConfig } from './config-utils';
 import { validateCopy } from './validate-copy';
 import { validateDependentCollection } from './validate-collection';
+import { validateDevServer } from './validate-dev-server';
 import { validateNamespace } from './validate-namespace';
 import { validatePaths } from './validate-paths';
 import { validatePlugins } from './validate-plugins';
@@ -46,6 +47,9 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
 
   // figure out the client-side public path
   validatePublicPath(config);
+
+  /// figure out if we need to start up a dev server or not
+  validateDevServer(config);
 
   // default devMode false
   config.devMode = !!config.devMode;

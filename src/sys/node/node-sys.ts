@@ -216,6 +216,10 @@ export class NodeSystem implements StencilSystem {
     return this.sysUtil.minimatch(filePath, pattern, opts);
   }
 
+  open(p: string) {
+    return this.sysUtil.opn(p);
+  }
+
   get platform() {
     return os.platform();
   }

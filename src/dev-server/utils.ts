@@ -35,8 +35,3 @@ function decodePathname(pathname: string) {
     return piece;
   }).join('/');
 }
-
-
-export function getAddressForBrowser(ipAddress: string) {
-  return (ipAddress === '0.0.0.0') ? 'localhost' : ipAddress;
-}

@@ -1,7 +1,7 @@
 import { mockCompilerCtx, mockConfig } from '../../testing/mocks';
 import { CompilerCtx, Config } from '../../declarations';
 import { createHttpRequestHandler } from '../request-handler';
-import { validateDevServerConfig } from '../validate-dev-server-config';
+import { validateDevServer } from '../../compiler/config/validate-dev-server';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
@@ -37,7 +37,7 @@ describe('request-handler', () => {
       templateDir: path.join(__dirname, '../templates')
     };
 
-    validateDevServerConfig(config);
+    validateDevServer(config);
     req = {} as any;
     res = {} as any;
 

@@ -25,9 +25,9 @@ export function isStaticDevClient(url: string) {
 
 
 function isDevServerInitialLoad(url: string) {
-  return url === DEV_SERVER_INITIAL_URL;
+  return url === UNREGISTER_SW_URL;
 }
 
 export const DEV_SERVER_URL = '/__dev-server';
 
-const DEV_SERVER_INITIAL_URL = `${DEV_SERVER_URL}-init`;
+export const UNREGISTER_SW_URL = `${DEV_SERVER_URL}-init`;

@@ -61,6 +61,22 @@ describe('cli', () => {
 
   describe('overrideConfigFromArgv', () => {
 
+    it('should override open', () => {
+      config.devServer = { openBrowser: false, contentTypes: {} };
+      const argv: CliArgv = { open: true, serve: true };
+      overrideConfigFromArgv(config, argv);
+      validateBuildConfig(config);
+      expect(config.devServer.openBrowser).toBe(true);
+    });
+
+    it('should override serve', () => {
+      config.devServer = { startDevServer: false, contentTypes: {} };
+      const argv: CliArgv = { serve: true };
+      overrideConfigFromArgv(config, argv);
+      validateBuildConfig(config);
+      expect(config.devServer.startDevServer).toBe(true);
+    });
+
     it('should override dev mode', () => {
       config.devMode = true;
       const argv: CliArgv = { prod: true };
@@ -92,7 +108,7 @@ describe('cli', () => {
     });
 
     it('should set no-cache', () => {
-      const argv: CliArgv = { noCache: true };
+      const argv: CliArgv = { cache: false };
       overrideConfigFromArgv(config, argv);
       validateBuildConfig(config);
       expect(config.enableCache).toBe(false);
@@ -202,9 +218,25 @@ describe('cli', () => {
       argv = parseArgv(process);
       expect(argv.watch).toBe(true);
 
+      process.argv[2] = '--serve';
+      argv = parseArgv(process);
+      expect(argv.serve).toBe(true);
+
+      process.argv[2] = '--open';
+      argv = parseArgv(process);
+      expect(argv.open).toBe(true);
+
+      process.argv[2] = '--no-open';
+      argv = parseArgv(process);
+      expect(argv.open).toBe(false);
+
       process.argv[2] = '--no-cache';
       argv = parseArgv(process);
-      expect(argv.noCache).toBe(true);
+      expect(argv.cache).toBe(false);
+
+      process.argv[2] = '--cache';
+      argv = parseArgv(process);
+      expect(argv.cache).toBe(true);
 
       process.argv[2] = '--debug';
       argv = parseArgv(process);

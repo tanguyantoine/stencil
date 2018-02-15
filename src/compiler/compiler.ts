@@ -26,7 +26,16 @@ export class Compiler {
 
       config.logger.info(config.logger.cyan(startupMsg));
       config.logger.debug(`compiler runtime: ${config.sys.compiler.runtime}`);
+
+      if (config.devServer.startDevServer) {
+        this.startDevServer(config);
+      }
     }
+  }
+
+  async startDevServer(config: Config) {
+    const { startDevServer } = require(config.sys.path.join(__dirname, '../dev-server/index.js'));
+    await startDevServer(config, this.ctx);
   }
 
   build() {
