@@ -30,6 +30,14 @@ export function overrideConfigFromArgv(config: Config, argv: CliArgv) {
     config.devServer = config.devServer || {};
     config.devServer.startDevServer = true;
 
+    if (argv.port) {
+      config.devServer.httpPort = argv.port;
+    }
+
+    if (argv.address) {
+      config.devServer.address = argv.address;
+    }
+
     if (argv.open) {
       config.devServer.openBrowser = true;
     }
@@ -129,7 +137,11 @@ const ARG_OPTS: any = {
     'version',
     'watch'
   ],
+  number: [
+    'port'
+  ],
   string: [
+    'address',
     'config',
     'log-level'
   ],
@@ -146,6 +158,7 @@ const ARG_OPTS: any = {
 
 
 export interface CliArgv {
+  address?: string;
   cache?: boolean;
   config?: string;
   debug?: boolean;
@@ -156,6 +169,7 @@ export interface CliArgv {
   log?: boolean;
   logLevel?: string;
   open?: boolean;
+  port?: number;
   prerender?: boolean;
   prod?: boolean;
   serve?: boolean;

@@ -222,6 +222,14 @@ describe('cli', () => {
       argv = parseArgv(process);
       expect(argv.serve).toBe(true);
 
+      process.argv[2] = '--port=8675309';
+      argv = parseArgv(process);
+      expect(argv.port).toBe(8675309);
+
+      process.argv[2] = '--address=123.123.123.123';
+      argv = parseArgv(process);
+      expect(argv.address).toBe('123.123.123.123');
+
       process.argv[2] = '--open';
       argv = parseArgv(process);
       expect(argv.open).toBe(true);
