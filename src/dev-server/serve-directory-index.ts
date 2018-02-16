@@ -30,7 +30,7 @@ export async function serveDirectoryIndex(config: Config, compilerCtx: CompilerC
     let items = await compilerCtx.fs.readdir(req.filePath, { recursive: false });
 
     try {
-      const dirTemplatePath = path.join(config.devServer.templateDir, 'directory-index.html');
+      const dirTemplatePath = path.join(config.devServer.devServerDir, 'templates/directory-index.html');
       const dirTemplate = await compilerCtx.fs.readFile(dirTemplatePath);
 
       items = items.filter(f => !f.itemPath.startsWith('.'));

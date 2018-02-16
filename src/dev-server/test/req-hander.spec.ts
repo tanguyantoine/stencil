@@ -34,8 +34,7 @@ describe('request-handler', () => {
     config.devServer = {
       startDevServer: true,
       contentTypes: contentTypes,
-      staticDir: path.join(__dirname, '../static'),
-      templateDir: path.join(__dirname, '../templates')
+      devServerDir: path.join(__dirname, '..')
     };
 
     validateDevServer(config);

@@ -34,7 +34,7 @@ export async function serve404(config: Config, compilerCtx: CompilerCtx, req: Ht
     content = `/** ${content} **/`;
 
   } else  {
-    const tmpl404 = await compilerCtx.fs.readFile(path.join(config.devServer.templateDir, '404.html'));
+    const tmpl404 = await compilerCtx.fs.readFile(path.join(config.devServer.devServerDir, 'templates/404.html'));
     content = tmpl404.replace('{content}', content);
   }
 

@@ -46,11 +46,11 @@ export async function serveFile(config: Config, compilerCtx: CompilerCtx, req: H
 
 export async function serveStaticDevClient(config: Config, compilerCtx: CompilerCtx, req: HttpRequest, res: http.ServerResponse) {
   if (isDevServerInitialLoad(req)) {
-    req.filePath = path.join(config.devServer.templateDir, 'initial-load.html');
+    req.filePath = path.join(config.devServer.devServerDir, 'templates/initial-load.html');
 
   } else {
     const staticFile = req.pathname.replace(DEV_SERVER_URL + '/', '');
-    req.filePath = path.join(config.devServer.staticDir, staticFile);
+    req.filePath = path.join(config.devServer.devServerDir, 'static', staticFile);
   }
 
   return serveFile(config, compilerCtx, req, res);

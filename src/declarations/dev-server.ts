@@ -1,10 +1,10 @@
 
-
 export interface DevServerConfig {
   address?: string;
   broadcast?: boolean;
   compress?: boolean;
   contentTypes?: { [ext: string]: string };
+  devServerDir?: string;
   historyApiFallback?: HistoryApiFallback;
   httpPort?: number;
   liveReload?: boolean;
@@ -13,8 +13,6 @@ export interface DevServerConfig {
   protocol?: 'http' | 'https';
   ssl?: boolean;
   startDevServer?: boolean;
-  staticDir?: string;
-  templateDir?: string;
   unregisterServiceWorker?: boolean;
 }
 

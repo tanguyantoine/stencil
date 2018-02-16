@@ -28,14 +28,15 @@ export class Compiler {
       config.logger.debug(`compiler runtime: ${config.sys.compiler.runtime}`);
 
       if (config.devServer.startDevServer) {
-        this.startDevServer(config);
+        this.startDevServer();
       }
     }
   }
 
-  async startDevServer(config: Config) {
-    const { startDevServer } = require(config.sys.path.join(__dirname, '../dev-server/index.js'));
-    await startDevServer(config, this.ctx);
+  async startDevServer() {
+    this.config.devServer.devServerDir = this.config.sys.path.join(__dirname, '../dev-server');
+    const { startDevServer } = require(this.config.sys.path.join(this.config.devServer.devServerDir, 'index.js'));
+    await startDevServer(this.config, this.ctx);
   }
 
   build() {

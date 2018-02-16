@@ -4,10 +4,14 @@ const rollup = require('rollup');
 const glob = require('glob');
 
 
-const TRANSPILED_DIR = path.join(__dirname, '../dist/transpiled-dev-server');
+const ROOT_DIR = path.join(__dirname, '../');
+const DST_DIR = path.join(ROOT_DIR, 'dist');
+const TRANSPILED_DIR = path.join(DST_DIR, 'transpiled-dev-server');
 const ENTRY_FILE = path.join(TRANSPILED_DIR, 'dev-server/index.js');
-const DEST_DIR = path.join(__dirname, '../dist/dev-server');
+const DEST_DIR = path.join(DST_DIR, 'dev-server');
 const DEST_FILE = path.join(DEST_DIR, 'index.js');
+const DEV_TEMPLATE_SRC_DIR = path.join(ROOT_DIR, 'src/dev-server/templates');
+const DEV_TEMPLATE_DEST_DIR = path.join(DST_DIR, 'dev-server/templates');
 
 fs.ensureDirSync(DEST_DIR);
 
@@ -68,9 +72,13 @@ function createContentTypeData() {
   fs.writeJsonSync(contentTypeDestPath, exts);
 }
 
+function copyTemplates() {
+  fs.copySync(DEV_TEMPLATE_SRC_DIR, DEV_TEMPLATE_DEST_DIR);
+}
 
 bundleDevServer();
 createContentTypeData();
+copyTemplates();
 
 process.on('exit', (code) => {
   fs.removeSync(TRANSPILED_DIR);
