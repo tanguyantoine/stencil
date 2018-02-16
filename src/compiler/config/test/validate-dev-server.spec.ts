@@ -15,36 +15,122 @@ describe('validateDevServer', () => {
       sys: sys,
       logger: logger,
       rootDir: '/User/some/path/',
-      suppressTypeScriptErrors: true
+      devServer: {
+        startDevServer: true,
+        contentTypes: {}
+      }
     };
   });
 
 
-  it('should set publicPath from custom buildDir', () => {
-    config.wwwDir = 'some-www';
-    config.buildDir = 'some-build';
+  it('should default address', () => {
     validateBuildConfig(config);
-    expect(config.publicPath).toBe('/some-build/');
-    expect(path.isAbsolute(config.publicPath)).toBe(true);
+    expect(config.devServer.address).toBe('0.0.0.0');
   });
 
-  it('should set publicPath and not force absolute path, but suffix with /', () => {
-    config.publicPath = 'my-crazy-public-path';
+  it('should set address', () => {
+    config.devServer.address = '123.123.123.123';
     validateBuildConfig(config);
-    expect(config.publicPath).toBe('my-crazy-public-path/');
+    expect(config.devServer.address).toBe('123.123.123.123');
   });
 
-  it('should set discoverPublicPath to false if custom publicPath', () => {
-    config.publicPath = '/my-crazy-public-path/app/';
+  it('should default broadcast', () => {
     validateBuildConfig(config);
-    expect(config.publicPath).toBe('/my-crazy-public-path/app/');
-    expect(config.discoverPublicPath).toBe(false);
+    expect(config.devServer.broadcast).toBe(false);
   });
 
-  it('should set default publicPath, set discoverPublicPath true, and convert to absolute path', () => {
+  it('should set broadcast', () => {
+    config.devServer.broadcast = true;
     validateBuildConfig(config);
-    expect(config.publicPath).toBe('/build/');
-    expect(config.discoverPublicPath).toBe(true);
+    expect(config.devServer.broadcast).toBe(true);
+  });
+
+  it('should default httpPort', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.httpPort).toBe(3333);
+  });
+
+  it('should set httpPort', () => {
+    config.devServer.httpPort = 4444;
+    validateBuildConfig(config);
+    expect(config.devServer.httpPort).toBe(4444);
+  });
+
+  it('should default html5mode', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.html5mode).toBe(true);
+  });
+
+  it('should set html5mode', () => {
+    config.devServer.html5mode = false;
+    validateBuildConfig(config);
+    expect(config.devServer.html5mode).toBe(false);
+  });
+
+  it('should default liveReload', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.liveReload).toBe(true);
+  });
+
+  it('should set liveReload', () => {
+    config.devServer.liveReload = false;
+    validateBuildConfig(config);
+    expect(config.devServer.liveReload).toBe(false);
+  });
+
+  it('should default liveReloadPort', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.liveReloadPort).toBe(35729);
+  });
+
+  it('should set liveReloadPort', () => {
+    config.devServer.liveReloadPort = 3210;
+    validateBuildConfig(config);
+    expect(config.devServer.liveReloadPort).toBe(3210);
+  });
+
+  it('should default openBrowser', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.openBrowser).toBe(true);
+  });
+
+  it('should set openBrowser', () => {
+    config.devServer.openBrowser = false;
+    validateBuildConfig(config);
+    expect(config.devServer.openBrowser).toBe(false);
+  });
+
+  it('should default ssl', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.ssl).toBe(false);
+  });
+
+  it('should set ssl', () => {
+    config.devServer.ssl = true;
+    validateBuildConfig(config);
+    expect(config.devServer.ssl).toBe(true);
+  });
+
+  it('should default unregisterServiceWorker', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.unregisterServiceWorker).toBe(true);
+  });
+
+  it('should set unregisterServiceWorker', () => {
+    config.devServer.unregisterServiceWorker = false;
+    validateBuildConfig(config);
+    expect(config.devServer.unregisterServiceWorker).toBe(false);
+  });
+
+  it('should default protocol http', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.protocol).toBe('http');
+  });
+
+  it('should set protocol https', () => {
+    config.devServer.ssl = true;
+    validateBuildConfig(config);
+    expect(config.devServer.protocol).toBe('https');
   });
 
 });

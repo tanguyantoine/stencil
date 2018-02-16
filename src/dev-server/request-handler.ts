@@ -25,6 +25,10 @@ export function createHttpRequestHandler(config: Config, compilerCtx: CompilerCt
     let filePath = getFilePathFromUrl(config, url);
 
     try {
+      if (reqPath === '/') {
+        return serveIndex(config, compilerCtx, filePath, reqPath, res);
+      }
+
       const stat = await compilerCtx.fs.stat(filePath);
 
       if (stat.isFile) {
@@ -36,10 +40,6 @@ export function createHttpRequestHandler(config: Config, compilerCtx: CompilerCt
       }
 
     } catch (e) {
-
-      if (reqPath === '/') {
-        return serveIndex(config, compilerCtx, reqPath, filePath, res);
-      }
 
       if (config.devServer.html5mode) {
         if (req.headers && typeof req.headers.accept === 'string' && req.headers.accept.includes('text/html')) {

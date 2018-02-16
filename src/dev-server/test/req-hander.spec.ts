@@ -32,6 +32,7 @@ describe('request-handler', () => {
     config = mockConfig();
 
     config.devServer = {
+      startDevServer: true,
       contentTypes: contentTypes,
       staticDir: path.join(__dirname, '../static'),
       templateDir: path.join(__dirname, '../templates')
@@ -169,7 +170,22 @@ describe('request-handler', () => {
       expect(res.$statusCode).toBe(200);
     });
 
-    it('get directory index.html', async () => {
+    it('get directory index.html with trailing slash', async () => {
+      await c.fs.writeFiles({
+        '/www/about-us/index.html': `aboutus`
+      });
+      await c.fs.commit();
+      const handler = createHttpRequestHandler(config, c);
+
+      req.url = '/about-us/';
+
+      await handler(req, res);
+      expect(res.$content).toContain('aboutus');
+      expect(res.$contentType).toBe('text/html');
+      expect(res.$statusCode).toBe(200);
+    });
+
+    it('get directory index.html with no trailing slash', async () => {
       await c.fs.writeFiles({
         '/www/about-us/index.html': `aboutus`
       });

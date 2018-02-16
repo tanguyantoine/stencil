@@ -1,9 +1,9 @@
-import { Config, DevServerConfig } from '../../declarations';
+import { Config } from '../../declarations';
 import { setBooleanConfig, setNumberConfig, setStringConfig } from './config-utils';
 
 
 export function validateDevServer(config: Config) {
-  config.devServer = Object.assign({}, DEFAULT_DEV_SERVER_CONFIG, config.devServer || {});
+  config.devServer = config.devServer || {};
 
   setBooleanConfig(config, 'startDevServer', false);
 
@@ -11,15 +11,15 @@ export function validateDevServer(config: Config) {
     return;
   }
 
-  setStringConfig(config, 'address', '0.0.0.0');
-  setBooleanConfig(config, 'broadcast', false);
-  setNumberConfig(config, 'httpPort', 3333);
-  setBooleanConfig(config, 'html5mode', true);
-  setBooleanConfig(config, 'liveReload', true);
-  setNumberConfig(config, 'liveReloadPort', 35729);
-  setBooleanConfig(config, 'openBrowser', true);
-  setBooleanConfig(config, 'ssl', false);
-  setBooleanConfig(config, 'unregisterServiceWorker', true);
+  setStringConfig(config.devServer, 'address', '0.0.0.0');
+  setBooleanConfig(config.devServer, 'broadcast', false);
+  setNumberConfig(config.devServer, 'httpPort', 3333);
+  setBooleanConfig(config.devServer, 'html5mode', true);
+  setBooleanConfig(config.devServer, 'liveReload', true);
+  setNumberConfig(config.devServer, 'liveReloadPort', 35729);
+  setBooleanConfig(config.devServer, 'openBrowser', true);
+  setBooleanConfig(config.devServer, 'ssl', false);
+  setBooleanConfig(config.devServer, 'unregisterServiceWorker', true);
 
   config.devServer.protocol = config.devServer.ssl ? 'https' : 'http';
 
@@ -30,17 +30,3 @@ export function validateDevServer(config: Config) {
     config.devServer.contentTypes = require(contentTypePath);
   }
 }
-
-
-export const DEFAULT_DEV_SERVER_CONFIG: DevServerConfig = {
-  address: '0.0.0.0',
-  broadcast: false,
-  httpPort: 3333,
-  html5mode: true,
-  liveReload: true,
-  liveReloadPort: 35729,
-  openBrowser: true,
-  ssl: false,
-  startDevServer: false,
-  unregisterServiceWorker: true
-};

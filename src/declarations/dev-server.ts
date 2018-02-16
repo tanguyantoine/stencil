@@ -14,5 +14,7 @@ export interface DevServerConfig {
   startDevServer?: boolean;
   staticDir?: string;
   templateDir?: string;
+  template404?: string;
+  template500?: string;
   unregisterServiceWorker?: boolean;
 }

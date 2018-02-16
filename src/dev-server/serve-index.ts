@@ -7,14 +7,17 @@ import * as path from 'path';
 
 export async function serveIndex(config: Config, compilerCtx: CompilerCtx, dirPath: string, reqPath: string, res: http.ServerResponse) {
   if (config.devServer.html5mode) {
-    const htmlFilePath = dirPath + '.html';
-    try {
-      const stat = await compilerCtx.fs.stat(htmlFilePath);
 
-      if (stat.isFile) {
-        return serveFile(config, compilerCtx, reqPath, htmlFilePath, res);
-      }
-    } catch (e) {}
+    if (!reqPath.endsWith('/')) {
+      const htmlFilePath = dirPath + '.html';
+      try {
+        const stat = await compilerCtx.fs.stat(htmlFilePath);
+
+        if (stat.isFile) {
+          return serveFile(config, compilerCtx, reqPath, htmlFilePath, res);
+        }
+      } catch (e) {}
+    }
 
     const indexFilePath = path.join(dirPath, 'index.html');
     try {
