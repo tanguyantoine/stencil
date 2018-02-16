@@ -13,7 +13,7 @@ describe('request-handler', () => {
   let config: Config;
   let req: http.ServerRequest;
   let res: TestServerResponse;
-  const tmplDirPath = path.join(__dirname, '../templates/directory-listing.html');
+  const tmplDirPath = path.join(__dirname, '../templates/directory-index.html');
   const tmpl404Path = path.join(__dirname, '../templates/404.html');
   const tmplDir = fs.readFileSync(tmplDirPath, 'utf8');
   const tmpl404 = fs.readFileSync(tmpl404Path, 'utf8');
@@ -58,14 +58,97 @@ describe('request-handler', () => {
     };
   });
 
-  describe('html5mode', () => {
+  describe('historyApiFallback', () => {
 
-    it('should not assume .html suffix when not html5mode', async () => {
+    it('should load historyApiFallback index.html when dot in the url disableDotRule true', async () => {
       await c.fs.writeFiles({
-        '/www/about-us.html': `aboutus`
+        '/www/index.html': `root-index`
       });
       await c.fs.commit();
-      config.devServer.html5mode = false;
+      config.devServer.historyApiFallback = {
+        index: 'index.html',
+        disableDotRule: true
+      };
+      const handler = createHttpRequestHandler(config, c);
+
+      req.headers = {
+        accept: '*/*'
+      };
+      req.url = '/about.us';
+      req.method = 'GET';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(404);
+    });
+
+    it('should not load historyApiFallback index.html when dot in the url', async () => {
+      await c.fs.writeFiles({
+        '/www/index.html': `root-index`
+      });
+      await c.fs.commit();
+      config.devServer.historyApiFallback = {
+        index: 'index.html'
+      };
+      const handler = createHttpRequestHandler(config, c);
+
+      req.headers = {
+        accept: '*/*'
+      };
+      req.url = '/about.us';
+      req.method = 'GET';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(404);
+    });
+
+    it('should not load historyApiFallback index.html when no text/html accept header', async () => {
+      await c.fs.writeFiles({
+        '/www/index.html': `root-index`
+      });
+      await c.fs.commit();
+      config.devServer.historyApiFallback = {
+        index: 'index.html'
+      };
+      const handler = createHttpRequestHandler(config, c);
+
+      req.headers = {
+        accept: '*/*'
+      };
+      req.url = '/about-us';
+      req.method = 'GET';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(404);
+    });
+
+    it('should not load historyApiFallback index.html when not GET request', async () => {
+      await c.fs.writeFiles({
+        '/www/index.html': `root-index`
+      });
+      await c.fs.commit();
+      config.devServer.historyApiFallback = {
+        index: 'index.html'
+      };
+      const handler = createHttpRequestHandler(config, c);
+
+      req.headers = {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
+      };
+      req.url = '/about-us';
+      req.method = 'POST';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(404);
+    });
+
+    it('should load historyApiFallback index.html when no trailing slash', async () => {
+      await c.fs.writeFiles({
+        '/www/index.html': `root-index`
+      });
+      await c.fs.commit();
+      config.devServer.historyApiFallback = {
+        index: 'index.html'
+      };
       const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
@@ -74,33 +157,39 @@ describe('request-handler', () => {
       req.url = '/about-us';
 
       await handler(req, res);
-      expect(res.$statusCode).toBe(404);
-      expect(res.$content).toContain('tmpl-404');
+      expect(res.$statusCode).toBe(200);
+      expect(res.$content).toContain('root-index');
+      expect(res.$contentType).toBe('text/html');
     });
 
-    it('should not assume .html suffix when no text/html in request header accept', async () => {
+    it('should load historyApiFallback index.html when trailing slash', async () => {
       await c.fs.writeFiles({
-        '/www/about-us.html': `aboutus`
+        '/www/index.html': `root-index`
       });
       await c.fs.commit();
+      config.devServer.historyApiFallback = {
+        index: 'index.html'
+      };
       const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
-        accept: '*/*'
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
       };
-      req.url = '/about-us';
+      req.url = '/about-us/';
 
       await handler(req, res);
-      expect(res.$statusCode).toBe(404);
+      expect(res.$statusCode).toBe(200);
+      expect(res.$content).toContain('root-index');
+      expect(res.$contentType).toBe('text/html');
     });
 
-    it('should list directory when ended in slash and not in html5mode', async () => {
+    it('should list directory when ended in slash and not using historyApiFallback', async () => {
       await c.fs.writeFiles({
-        '/www/about-us.html': `aboutus`,
-        '/www/about-us/index.html': `about-us-index`
+        '/www/about-us/somefile1.html': `somefile1`,
+        '/www/about-us/somefile2.html': `somefile2`
       });
       await c.fs.commit();
-      config.devServer.html5mode = false;
+      config.devServer.historyApiFallback = null;
       const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
@@ -114,13 +203,37 @@ describe('request-handler', () => {
       expect(res.$contentType).toBe('text/html');
     });
 
-    it('should redirect directory w/ slash when not in html5mode', async () => {
+  });
+
+  describe('serve directory index', () => {
+
+    it('should load index.html in directory', async () => {
       await c.fs.writeFiles({
-        '/www/about-us.html': `aboutus`,
-        '/www/about-us/index.html': `about-us-index`
+        '/www/about-us.html': `about-us.html page`,
+        '/www/about-us/index.html': `about-us-index-directory`
       });
       await c.fs.commit();
-      config.devServer.html5mode = false;
+      config.devServer.historyApiFallback = null;
+      const handler = createHttpRequestHandler(config, c);
+
+      req.headers = {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
+      };
+      req.url = '/about-us/';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(200);
+      expect(res.$content).toContain('about-us-index-directory');
+      expect(res.$contentType).toBe('text/html');
+    });
+
+    it('should redirect directory w/ slash', async () => {
+      await c.fs.writeFiles({
+        '/www/about-us/somefile1.html': `somefile1`,
+        '/www/about-us/somefile2.html': `somefile2`
+      });
+      await c.fs.commit();
+      config.devServer.historyApiFallback = {};
       const handler = createHttpRequestHandler(config, c);
 
       req.headers = {
@@ -133,41 +246,19 @@ describe('request-handler', () => {
       expect(res.$headers.location).toBe('/about-us/');
     });
 
-    it('should prefer actual .html over directory/index.html file', async () => {
+    it('get directory index.html with no trailing slash', async () => {
       await c.fs.writeFiles({
-        '/www/about-us.html': `aboutus`,
-        '/www/about-us/index.html': `about-us-index`
+        '/www/about-us/index.html': `aboutus`
       });
       await c.fs.commit();
       const handler = createHttpRequestHandler(config, c);
 
-      req.headers = {
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
-      };
       req.url = '/about-us';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toContain('aboutus');
       expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
-    });
-
-    it('should assume .html suffix with text/html in request header accept', async () => {
-      await c.fs.writeFiles({
-        '/www/about-us.html': `aboutus`
-      });
-      await c.fs.commit();
-      const handler = createHttpRequestHandler(config, c);
-
-      req.headers = {
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
-      };
-      req.url = '/about-us';
-
-      await handler(req, res);
-      expect(res.$content).toContain('aboutus');
-      expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
     });
 
     it('get directory index.html with trailing slash', async () => {
@@ -180,24 +271,9 @@ describe('request-handler', () => {
       req.url = '/about-us/';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toContain('aboutus');
       expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
-    });
-
-    it('get directory index.html with no trailing slash', async () => {
-      await c.fs.writeFiles({
-        '/www/about-us/index.html': `aboutus`
-      });
-      await c.fs.commit();
-      const handler = createHttpRequestHandler(config, c);
-
-      req.url = '/about-us';
-
-      await handler(req, res);
-      expect(res.$content).toContain('aboutus');
-      expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
     });
 
   });
@@ -214,28 +290,9 @@ describe('request-handler', () => {
       req.url = '/scripts/file2.js';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(404);
       expect(res.$content).toBe('// File not found: /scripts/file2.js');
       expect(res.$contentType).toBe('application/javascript');
-      expect(res.$statusCode).toBe(404);
-    });
-
-  });
-
-  describe('302 redirect', () => {
-
-    it('302 when a directory path, but url doesnt end in /', async () => {
-      await c.fs.writeFiles({
-        '/www/assets/styles.css': `/* hi */`,
-        '/www/assets/scripts.js': `// hi`
-      });
-      await c.fs.commit();
-      const handler = createHttpRequestHandler(config, c);
-
-      req.url = '/assets';
-
-      await handler(req, res);
-      expect(res.$statusCode).toBe(302);
-      expect(res.$headers.location).toBe('/assets/');
     });
 
   });
@@ -254,9 +311,9 @@ describe('request-handler', () => {
       req.url = '/';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toContain('tmpl-dir');
       expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
     });
 
     it('serve root index.html', async () => {
@@ -269,9 +326,9 @@ describe('request-handler', () => {
       req.url = '/';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toContain('hello');
       expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
     });
 
     it('serve root index.html w/ querystring', async () => {
@@ -284,9 +341,9 @@ describe('request-handler', () => {
       req.url = '/?qs=123';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toContain('hello');
       expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
     });
 
     it('302 redirect to / when no path at all', async () => {
@@ -307,6 +364,21 @@ describe('request-handler', () => {
 
   describe('serve static text files', () => {
 
+    it('should load file w/ querystring', async () => {
+      await c.fs.writeFiles({
+        '/www/scripts/file1.html': `<html></html>`
+      });
+      await c.fs.commit();
+      const handler = createHttpRequestHandler(config, c);
+
+      req.url = '/scripts/file1.html?qs=1234';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(200);
+      expect(res.$content).toContain('<html></html>');
+      expect(res.$contentType).toBe('text/html');
+    });
+
     it('should load js file', async () => {
       await c.fs.writeFiles({
         '/www/scripts/file1.js': `alert("hi");`
@@ -317,9 +389,9 @@ describe('request-handler', () => {
       req.url = '/scripts/file1.js';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toContain('alert("hi");');
       expect(res.$contentType).toBe('application/javascript');
-      expect(res.$statusCode).toBe(200);
     });
 
     it('should load css file', async () => {
@@ -332,9 +404,9 @@ describe('request-handler', () => {
       req.url = '/scripts/file1.css';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toBe('body{color:red}');
       expect(res.$contentType).toBe('text/css');
-      expect(res.$statusCode).toBe(200);
     });
 
     it('should load svg file', async () => {
@@ -347,9 +419,9 @@ describe('request-handler', () => {
       req.url = '/scripts/file1.svg';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toBe('<svg></svg>');
       expect(res.$contentType).toBe('image/svg+xml');
-      expect(res.$statusCode).toBe(200);
     });
 
     it('should load html file', async () => {
@@ -362,24 +434,9 @@ describe('request-handler', () => {
       req.url = '/scripts/file1.html';
 
       await handler(req, res);
+      expect(res.$statusCode).toBe(200);
       expect(res.$content).toContain('<html></html>');
       expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
-    });
-
-    it('should load file w/ querystring', async () => {
-      await c.fs.writeFiles({
-        '/www/scripts/file1.html': `<html></html>`
-      });
-      await c.fs.commit();
-      const handler = createHttpRequestHandler(config, c);
-
-      req.url = '/scripts/file1.html?qs=1234';
-
-      await handler(req, res);
-      expect(res.$content).toContain('<html></html>');
-      expect(res.$contentType).toBe('text/html');
-      expect(res.$statusCode).toBe(200);
     });
 
   });

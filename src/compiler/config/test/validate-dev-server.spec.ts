@@ -45,6 +45,17 @@ describe('validateDevServer', () => {
     expect(config.devServer.broadcast).toBe(true);
   });
 
+  it('should default compress', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.compress).toBe(true);
+  });
+
+  it('should set compress', () => {
+    config.devServer.compress = false;
+    validateBuildConfig(config);
+    expect(config.devServer.compress).toBe(false);
+  });
+
   it('should default httpPort', () => {
     validateBuildConfig(config);
     expect(config.devServer.httpPort).toBe(3333);
@@ -56,15 +67,23 @@ describe('validateDevServer', () => {
     expect(config.devServer.httpPort).toBe(4444);
   });
 
-  it('should default html5mode', () => {
+  it('should default historyApiFallback', () => {
     validateBuildConfig(config);
-    expect(config.devServer.html5mode).toBe(true);
+    expect(config.devServer.historyApiFallback).toBeDefined();
+    expect(config.devServer.historyApiFallback.index).toBe('index.html');
   });
 
-  it('should set html5mode', () => {
-    config.devServer.html5mode = false;
+  it('should set historyApiFallback', () => {
+    config.devServer.historyApiFallback = {};
     validateBuildConfig(config);
-    expect(config.devServer.html5mode).toBe(false);
+    expect(config.devServer.historyApiFallback).toBeDefined();
+    expect(config.devServer.historyApiFallback.index).toBe('index.html');
+  });
+
+  it('should disable historyApiFallback', () => {
+    config.devServer.historyApiFallback = null;
+    validateBuildConfig(config);
+    expect(config.devServer.historyApiFallback).toBe(null);
   });
 
   it('should default liveReload', () => {

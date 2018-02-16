@@ -234,6 +234,14 @@ describe('cli', () => {
       argv = parseArgv(process);
       expect(argv.open).toBe(true);
 
+      process.argv[2] = '--compress';
+      argv = parseArgv(process);
+      expect(argv.compress).toBe(true);
+
+      process.argv[2] = '--no-compress';
+      argv = parseArgv(process);
+      expect(argv.compress).toBe(false);
+
       process.argv[2] = '--no-open';
       argv = parseArgv(process);
       expect(argv.open).toBe(false);

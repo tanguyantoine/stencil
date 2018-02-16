@@ -1,8 +1,8 @@
 import { CompilerCtx, Config } from '../declarations';
 import { createHttpRequestHandler } from './request-handler';
-import { UNREGISTER_SW_URL } from './serve-static-dev-client';
 import { findClosestOpenPort } from './find-closest-port';
 import { getSSL } from './ssl';
+import { UNREGISTER_SW_URL } from './serve-file';
 import * as http from 'http';
 import * as https from 'https';
 

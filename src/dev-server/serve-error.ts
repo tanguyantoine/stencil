@@ -1,4 +1,4 @@
-import { CompilerCtx, Config } from '../declarations';
+import { CompilerCtx, Config, HttpRequest } from '../declarations';
 import * as http  from 'http';
 import * as path  from 'path';
 
@@ -14,22 +14,22 @@ export function serve500(res: http.ServerResponse, errorMessage: string) {
 }
 
 
-export async function serve404(config: Config, compilerCtx: CompilerCtx, reqPath: string, res: http.ServerResponse) {
+export async function serve404(config: Config, compilerCtx: CompilerCtx, req: HttpRequest, res: http.ServerResponse) {
   const headers = {
     'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
     'Expires': '0',
     'Content-Type': 'text/html'
   };
 
-  let content = `File not found: ${reqPath}`;
+  let content = `File not found: ${req.pathname}`;
 
-  reqPath = reqPath.toLowerCase();
+  const pathName = req.pathname.toLowerCase();
 
-  if (reqPath.endsWith('.js')) {
+  if (pathName.endsWith('.js')) {
     headers['Content-Type'] = 'application/javascript';
     content = `// ${content}`;
 
-  } else if (reqPath.endsWith('.css')) {
+  } else if (pathName.endsWith('.css')) {
     headers['Content-Type'] = 'text/css';
     content = `/** ${content} **/`;
 

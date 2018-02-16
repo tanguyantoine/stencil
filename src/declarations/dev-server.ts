@@ -3,8 +3,9 @@
 export interface DevServerConfig {
   address?: string;
   broadcast?: boolean;
+  compress?: boolean;
   contentTypes?: { [ext: string]: string };
-  html5mode?: boolean;
+  historyApiFallback?: HistoryApiFallback;
   httpPort?: number;
   liveReload?: boolean;
   liveReloadPort?: number;
@@ -14,7 +15,20 @@ export interface DevServerConfig {
   startDevServer?: boolean;
   staticDir?: string;
   templateDir?: string;
-  template404?: string;
-  template500?: string;
   unregisterServiceWorker?: boolean;
+}
+
+
+export interface HistoryApiFallback {
+  index?: string;
+  disableDotRule?: boolean;
+}
+
+
+export interface HttpRequest {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'OPTIONS';
+  acceptHeader: string;
+  url: string;
+  pathname?: string;
+  filePath?: string;
 }
