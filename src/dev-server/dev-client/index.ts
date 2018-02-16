@@ -12,10 +12,11 @@ function init(devServer: d.DevClient) {
 
   if (devServer.initDevServer) {
     initDevServer(document);
-
   } else {
     initDocument(document);
   }
 }
 
-init((window as any).$devServer = (window as any).$devServer || {});
+setTimeout(() => {
+  init((window as any).$devServer = (window as any).$devServer || {});
+});

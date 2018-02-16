@@ -1,16 +1,37 @@
 import { CompilerCtx, Config, HttpRequest } from '../declarations';
 import { getContentType } from './content-type';
-import { serve404, serve500 } from './serve-error';
+import { serve404 } from './serve-error';
 import * as fs  from 'fs';
 import * as http  from 'http';
 import * as path from 'path';
+import { Buffer } from 'buffer';
 
 
 export async function serveFile(config: Config, compilerCtx: CompilerCtx, req: HttpRequest, res: http.ServerResponse) {
   try {
-    const stat = await compilerCtx.fs.stat(req.filePath);
+    if (isTextFile(req.filePath)) {
+      // easy text file, use the internal cache
+      let content = await compilerCtx.fs.readFile(req.filePath);
 
-    try {
+      if (isHtmlFile(req.filePath)) {
+        // auto inject our dev server script
+        content += `\n${DEV_SERVER_SCRIPT}`;
+      }
+
+      res.writeHead(200, {
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Expires': '0',
+        'Content-Type': getContentType(config, req.filePath),
+        'Content-Length': Buffer.byteLength(content, 'utf8')
+      });
+
+      res.write(content);
+      res.end();
+
+    } else {
+      // non-well-known text file or other file, probably best we use a stream
+      const stat = await compilerCtx.fs.stat(req.filePath);
+
       res.writeHead(200, {
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Expires': '0',
@@ -18,25 +39,7 @@ export async function serveFile(config: Config, compilerCtx: CompilerCtx, req: H
         'Content-Length': stat.size
       });
 
-      if (isTextFile(req.filePath)) {
-        // easy text file, use the internal cache
-        let content = await compilerCtx.fs.readFile(req.filePath);
-
-        if (isHtmlFile(req.filePath)) {
-          // auto inject our dev server script
-          content += '\n' + DEV_SERVER_SCRIPT;
-        }
-
-        res.write(content);
-        res.end();
-
-      } else {
-        // non-well-known text file or other file, probably best we use a stream
-        fs.createReadStream(req.filePath).pipe(res);
-      }
-
-    } catch (e) {
-      serve500(res, e);
+      fs.createReadStream(req.filePath).pipe(res);
     }
 
   } catch (e) {

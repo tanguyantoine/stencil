@@ -1,8 +1,8 @@
 import { initDocument } from './init-document';
 
 
-export async function initDevServer(document: HTMLDocument) {
-  await unregisterServiceWorker();
+export function initDevServer(document: HTMLDocument) {
+  unregisterServiceWorker();
 
   history.replaceState({}, 'App', '/');
 
@@ -11,10 +11,6 @@ export async function initDevServer(document: HTMLDocument) {
 
 
 async function unregisterServiceWorker() {
-  if (location.protocol === 'file:') {
-    return;
-  }
-
   if ('serviceWorker' in navigator) {
     const registration = await navigator.serviceWorker.ready;
     const hasUnregistered = await registration.unregister();

@@ -20,7 +20,7 @@
     "outDir": "../../../dist/transpiled-dev-server-client",
     "pretty": true,
     "rootDir": "../../",
-    "target": "es5"
+    "target": "es2015"
   },
   "files": [
     "./index.ts"
