@@ -1,6 +1,5 @@
-<a name="0.6.0-0"></a>
-# 0.6.0 Prerelease [0.6.0-0](https://github.com/ionic-team/stencil/compare/v0.5.2...v0.6.0-0) (2018-02-15)
-
+<a name="0.6.0"></a>
+# [0.6.0](https://github.com/ionic-team/stencil/compare/v0.5.2...v0.6.0) (2018-02-16)
 
 ### Features
 
@@ -40,18 +39,23 @@ exports.config = {
 (Also note that adding Stylus and Less plugins are on our roadmap.)
 
 
-<a name="0.5.2"></a>
-## [0.5.2](https://github.com/ionic-team/stencil/compare/v0.5.1...v0.5.2) (2018-02-15)
-
-
 ### Bug Fixes
 
-* **bundle:** fix directory index resolution ([605aa54](https://github.com/ionic-team/stencil/commit/605aa54)), closes [#537](https://github.com/ionic-team/stencil/issues/537)
+* **config:** fix rebuilds from config updates ([1f46a92](https://github.com/ionic-team/stencil/commit/1f46a92))
+
+
+<a name="0.5.2"></a>
+## [0.5.2](https://github.com/ionic-team/stencil/compare/v0.5.1...v0.5.2) (2018-02-15)
 
 
 ### Performance Improvements
 
 * **bundle:** use in-memory fs cache for local resolution ([d78bcc4](https://github.com/ionic-team/stencil/commit/d78bcc4))
+
+
+### Bug Fixes
+
+* **bundle:** fix directory index resolution ([605aa54](https://github.com/ionic-team/stencil/commit/605aa54)), closes [#537](https://github.com/ionic-team/stencil/issues/537)
 
 
 
@@ -71,17 +75,17 @@ exports.config = {
 # [0.5.0](https://github.com/ionic-team/stencil/compare/v0.4.3...v0.5.0) (2018-02-13)
 
 
+### Features
+
+* **plugins:** add rollup plugins through config ([b8abbce](https://github.com/ionic-team/stencil/commit/b8abbce)), closes [#472](https://github.com/ionic-team/stencil/issues/472)
+
+
 ### Bug Fixes
 
 * **entries:** ensure dependency data from collections remains ([f9fb09a](https://github.com/ionic-team/stencil/commit/f9fb09a))
 * **entries:** use all strings for component reference graph ([6629aa1](https://github.com/ionic-team/stencil/commit/6629aa1))
 * **publicPath:** allow for custom public path ([19095e7](https://github.com/ionic-team/stencil/commit/19095e7)), closes [#464](https://github.com/ionic-team/stencil/issues/464)
 * **transpile:** remove unneded remove-imports transform because it is causing issues with wildcard imports. fixes [#526](https://github.com/ionic-team/stencil/issues/526) ([256e70a](https://github.com/ionic-team/stencil/commit/256e70a))
-
-
-### Features
-
-* **plugins:** add rollup plugins through config ([b8abbce](https://github.com/ionic-team/stencil/commit/b8abbce)), closes [#472](https://github.com/ionic-team/stencil/issues/472)
 
 
 
@@ -99,6 +103,10 @@ exports.config = {
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/ionic-team/stencil/compare/v0.4.1...v0.4.2) (2018-02-12)
 
+### Features
+
+* **config:** do not require config file ([c8cc144](https://github.com/ionic-team/stencil/commit/c8cc144))
+
 
 ### Bug Fixes
 
@@ -106,11 +114,6 @@ exports.config = {
 * **events:** ensure old events are removed ([ae68f98](https://github.com/ionic-team/stencil/commit/ae68f98)), closes [#500](https://github.com/ionic-team/stencil/issues/500)
 * **minify:** minify chunks ([897f29b](https://github.com/ionic-team/stencil/commit/897f29b)), closes [#518](https://github.com/ionic-team/stencil/issues/518)
 * **platform-client:** observedAttributes ([38c9201]
-
-### Features
-
-* **config:** do not require config file ([c8cc144](https://github.com/ionic-team/stencil/commit/c8cc144))
-
 
 
 <a name="0.4.1"></a>
@@ -171,6 +174,12 @@ exports.config = {
 # [0.3.0](https://github.com/ionic-team/stencil/compare/v0.2.3...v0.3.0) (2018-02-05)
 
 
+### Features
+
+* **ES Modules:** load modules through native ES Modules ([#162](https://github.com/ionic-team/stencil/issues/162)) ([c3524a94](https://github.com/ionic-team/stencil/commit/c3524a94c2402ce47fdfdda7012854f3b0081817))
+* **watch:** add pcss to recognized web dev extensions ([#477](https://github.com/ionic-team/stencil/issues/477)) ([f783273](https://github.com/ionic-team/stencil/commit/f783273))
+
+
 ### Bug Fixes
 
 * **config:** fixes absolutizing of wwwIndexHtml ([#470](https://github.com/ionic-team/stencil/issues/470)) ([81dde18](https://github.com/ionic-team/stencil/commit/81dde18))
@@ -178,15 +187,14 @@ exports.config = {
 * **sw:** build service worker after built fs commit ([9ea7235](https://github.com/ionic-team/stencil/commit/9ea7235))
 
 
-### Features
-
-* **ES Modules:** load modules through native ES Modules ([#162](https://github.com/ionic-team/stencil/issues/162)) ([c3524a94](https://github.com/ionic-team/stencil/commit/c3524a94c2402ce47fdfdda7012854f3b0081817))
-* **watch:** add pcss to recognized web dev extensions ([#477](https://github.com/ionic-team/stencil/issues/477)) ([f783273](https://github.com/ionic-team/stencil/commit/f783273))
-
-
 
 <a name="0.2.3"></a>
 ## [0.2.3](https://github.com/ionic-team/stencil/compare/v0.2.2...v0.2.3) (2018-01-24)
+
+
+### Features
+
+* **test:** add test transpile fn interface ([d68fffb](https://github.com/ionic-team/stencil/commit/d68fffb))
 
 
 ### Bug Fixes
@@ -197,11 +205,6 @@ exports.config = {
 * **test:** fix unit test hydration ([122b1cd](https://github.com/ionic-team/stencil/commit/122b1cd)), closes [#441](https://github.com/ionic-team/stencil/issues/441)
 * **watcher:** ensure duplicate builds are not started ([b3d6cf2](https://github.com/ionic-team/stencil/commit/b3d6cf2))
 * **watcher:** ensure duplicate paths are not added to queue ([767b879](https://github.com/ionic-team/stencil/commit/767b879))
-
-
-### Features
-
-* **test:** add test transpile fn interface ([d68fffb](https://github.com/ionic-team/stencil/commit/d68fffb))
 
 
 
@@ -232,6 +235,13 @@ exports.config = {
 # [0.2.0](https://github.com/ionic-team/stencil/compare/v0.1.6...v0.2.0) (2018-01-22)
 
 
+### Features
+
+* **fs:** in-memory filesystem and caching updates ([7ad25bd](https://github.com/ionic-team/stencil/commit/7ad25bd)
+* **plugins:** init plugins ([55827cc](https://github.com/ionic-team/stencil/commit/55827cc))
+* **watch:** add member name as 3rd arg ([5bc261c](https://github.com/ionic-team/stencil/commit/5bc261c))
+
+
 ### Bug Fixes
 
 * **async:** fix async writes ([614bb97](https://github.com/ionic-team/stencil/commit/614bb97))
@@ -243,13 +253,6 @@ exports.config = {
 * **watch:** correct globalStyle path on rebuild ([4843801](https://github.com/ionic-team/stencil/commit/4843801)), closes [#430](https://github.com/ionic-team/stencil/issues/430)
 * **watcher:** always initWatcher ([70c27fd](https://github.com/ionic-team/stencil/commit/70c27fd))
 * **ssr:** polyfill "Element.prototype.closest" on jsdom ([58d48ad](https://github.com/ionic-team/stencil/commit/58d48ad)), closes [#437](https://github.com/ionic-team/stencil/issues/437)
-
-
-### Features
-
-* **fs:** in-memory filesystem and caching updates ([7ad25bd](https://github.com/ionic-team/stencil/commit/7ad25bd)
-* **plugins:** init plugins ([55827cc](https://github.com/ionic-team/stencil/commit/55827cc))
-* **watch:** add member name as 3rd arg ([5bc261c](https://github.com/ionic-team/stencil/commit/5bc261c))
 
 
 
@@ -271,12 +274,6 @@ exports.config = {
 ## [0.1.5](https://github.com/ionic-team/stencil/compare/v0.1.4...v0.1.5) (2018-01-16)
 
 
-### Bug Fixes
-
-* **events:** Event() options ([e1662a5](https://github.com/ionic-team/stencil/commit/e1662a5)), closes [#406](https://github.com/ionic-team/stencil/issues/406)
-* **listeners:** addListenerEvent() options check ([1275327](https://github.com/ionic-team/stencil/commit/1275327))
-
-
 ### Features
 
 * **listeners:** enableListener accepts passive option ([1275327](https://github.com/ionic-team/stencil/commit/1275327))
@@ -285,6 +282,12 @@ exports.config = {
 ### Performance Improvements
 
 * **sw:** serviceWorker script is minified ([76bcc52](https://github.com/ionic-team/stencil/commit/76bcc52))
+
+
+### Bug Fixes
+
+* **events:** Event() options ([e1662a5](https://github.com/ionic-team/stencil/commit/e1662a5)), closes [#406](https://github.com/ionic-team/stencil/issues/406)
+* **listeners:** addListenerEvent() options check ([1275327](https://github.com/ionic-team/stencil/commit/1275327))
 
 
 
