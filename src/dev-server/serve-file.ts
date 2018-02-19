@@ -52,6 +52,8 @@ export async function serveStaticDevClient(config: DevServerConfig, fs: FileSyst
     req.filePath = path.join(config.devServerDir, 'static', staticFile);
   }
 
+  req.stats = await fs.stat(req.filePath);
+
   return serveFile(config, fs, req, res);
 }
 

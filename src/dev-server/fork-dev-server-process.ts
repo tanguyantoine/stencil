@@ -22,6 +22,14 @@ export function forkDevServerProcess(config: Config) {
 
   const child = fork(program, parameters, options);
 
+  child.stdout.on('data', (data: any) => {
+    config.logger.debug(`dev server: ${data}`);
+  });
+
+  child.stderr.on('data', (data: any) => {
+    config.logger.error(`dev server: ${data}`);
+  });
+
   child.on('message', (msg: DevServerMessage) => {
     receiveMsgFromChild(config, msg);
   });
@@ -35,7 +43,6 @@ export function forkDevServerProcess(config: Config) {
 
 
 function receiveMsgFromChild(config: Config, msg: DevServerMessage) {
-  console.log('receiveMsgFromChild', msg);
   if (msg.startServerResponse) {
     config.devServer.protocol = msg.startServerResponse.protocol;
     config.devServer.address = msg.startServerResponse.address;
@@ -43,7 +50,7 @@ function receiveMsgFromChild(config: Config, msg: DevServerMessage) {
     config.devServer.browserUrl = msg.startServerResponse.browserUrl;
 
     if (config.devServer.openBrowser) {
-      // config.sys.open(msg.startServerResponse.openUrl);
+      config.sys.open(msg.startServerResponse.openUrl);
     }
   }
 }

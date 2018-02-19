@@ -234,13 +234,13 @@ describe('cli', () => {
       argv = parseArgv(process);
       expect(argv.open).toBe(true);
 
-      process.argv[2] = '--compress';
+      process.argv[2] = '--gzip';
       argv = parseArgv(process);
-      expect(argv.compress).toBe(true);
+      expect(argv.gzip).toBe(true);
 
-      process.argv[2] = '--no-compress';
+      process.argv[2] = '--no-gzip';
       argv = parseArgv(process);
-      expect(argv.compress).toBe(false);
+      expect(argv.gzip).toBe(false);
 
       process.argv[2] = '--no-open';
       argv = parseArgv(process);

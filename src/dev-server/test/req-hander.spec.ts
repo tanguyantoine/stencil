@@ -275,17 +275,37 @@ describe('request-handler', async () => {
 
     it('not find js file', async () => {
       await fs.mkdir('/www/scripts');
-      await fs.writeFiles({
-        '/www/scripts/file1.js': `alert("hi");`
-      });
       const handler = createRequestHandler(config, fs);
 
       req.url = '/scripts/file2.js';
 
       await handler(req, res);
       expect(res.$statusCode).toBe(404);
-      expect(res.$content).toBe('// File not found: /scripts/file2.js');
-      expect(res.$contentType).toBe('application/javascript');
+      expect(res.$content).toContain('/scripts/file2.js');
+      expect(res.$contentType).toBe('text/plain');
+    });
+
+    it('not find css file', async () => {
+      await fs.mkdir('/www/scripts');
+      const handler = createRequestHandler(config, fs);
+
+      req.url = '/styles/file2.css';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(404);
+      expect(res.$content).toContain('/styles/file2.css');
+      expect(res.$contentType).toBe('text/plain');
+    });
+
+    it('not find html file', async () => {
+      const handler = createRequestHandler(config, fs);
+
+      req.url = '/www/index.html';
+
+      await handler(req, res);
+      expect(res.$statusCode).toBe(404);
+      expect(res.$content).toContain('/index.html');
+      expect(res.$contentType).toBe('text/html');
     });
 
   });

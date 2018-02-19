@@ -11,21 +11,24 @@ export async function serve404(config: DevServerConfig, fs: FileSystem, req: Htt
       'Content-Type': 'text/html'
     };
 
-    let content = `File not found: ${req.pathname}`;
+    let content: string;
 
     const pathName = req.pathname.toLowerCase();
 
-    if (pathName.endsWith('.js')) {
-      headers['Content-Type'] = 'application/javascript';
-      content = `// ${content}`;
-
-    } else if (pathName.endsWith('.css')) {
-      headers['Content-Type'] = 'text/css';
-      content = `/** ${content} **/`;
+    if (pathName.endsWith('.js') || pathName.endsWith('.css')) {
+      headers['Content-Type'] = 'text/plain';
+      content = [
+        '404 File Not Found',
+        'Url: ' + req.pathname,
+        'File: ' + req.filePath
+      ].join('\n');
 
     } else  {
       const tmpl404 = await fs.readFile(path.join(config.devServerDir, 'templates/404.html'));
-      content = tmpl404.replace('{content}', content);
+      content = tmpl404.replace(
+        '{content}',
+        `File not found: ${req.pathname}`
+      );
     }
 
     res.writeHead(404, headers);

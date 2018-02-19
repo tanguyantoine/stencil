@@ -1,6 +1,6 @@
 import { DevServerConfig, FileSystem, HttpRequest } from '../declarations';
 import { isStaticDevClient, serveFile, serveStaticDevClient } from './serve-file';
-import { serve404 } from './serve-error';
+import { serve404, serve500 } from './serve-error';
 import { serveDirectoryIndex } from './serve-directory-index';
 import * as http from 'http';
 import * as path from 'path';
@@ -10,44 +10,49 @@ import * as url from 'url';
 export function createRequestHandler(config: DevServerConfig, fs: FileSystem) {
 
   return async function(incomingReq: http.IncomingMessage, res: http.ServerResponse) {
-    const req = normalizeHttpRequest(config, incomingReq);
-
-    if (req.pathname === '') {
-      res.writeHead(302, { 'location': '/' });
-      return res.end();
-    }
-
-    if (isStaticDevClient(req)) {
-      return serveStaticDevClient(config, fs, req, res);
-    }
-
     try {
-      req.stats = await fs.stat(req.filePath);
+      const req = normalizeHttpRequest(config, incomingReq);
 
-      if (req.stats.isFile()) {
-        return serveFile(config, fs, req, res);
+      if (req.pathname === '') {
+        res.writeHead(302, { 'location': '/' });
+        return res.end();
       }
 
-      if (req.stats.isDirectory()) {
-        return serveDirectoryIndex(config, fs, req, res);
+      if (isStaticDevClient(req)) {
+        return serveStaticDevClient(config, fs, req, res);
       }
 
-    } catch (e) {}
-
-    if (isValidHistoryApi(config, req)) {
       try {
-        const indexFilePath = path.join(config.root, config.historyApiFallback.index);
+        req.stats = await fs.stat(req.filePath);
 
-        req.stats = await fs.stat(indexFilePath);
         if (req.stats.isFile()) {
-          req.filePath = indexFilePath;
           return serveFile(config, fs, req, res);
         }
 
-      } catch (e) {}
-    }
+        if (req.stats.isDirectory()) {
+          return serveDirectoryIndex(config, fs, req, res);
+        }
 
-    return serve404(config, fs, req, res);
+      } catch (e) {}
+
+      if (isValidHistoryApi(config, req)) {
+        try {
+          const indexFilePath = path.join(config.root, config.historyApiFallback.index);
+
+          req.stats = await fs.stat(indexFilePath);
+          if (req.stats.isFile()) {
+            req.filePath = indexFilePath;
+            return serveFile(config, fs, req, res);
+          }
+
+        } catch (e) {}
+      }
+
+      return serve404(config, fs, req, res);
+
+    } catch (e) {
+      return serve500(res, e);
+    }
   };
 }
 

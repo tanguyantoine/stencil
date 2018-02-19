@@ -45,15 +45,32 @@ describe('validateDevServer', () => {
     expect(config.devServer.broadcast).toBe(true);
   });
 
-  it('should default compress', () => {
+  it('should default root', () => {
     validateBuildConfig(config);
-    expect(config.devServer.compress).toBe(true);
+    expect(config.devServer.root).toBe('/User/some/path/www');
   });
 
-  it('should set compress', () => {
-    config.devServer.compress = false;
+  it('should set relative root', () => {
+    config.devServer.root = 'my-rel-root';
     validateBuildConfig(config);
-    expect(config.devServer.compress).toBe(false);
+    expect(config.devServer.root).toBe('/User/some/path/my-rel-root');
+  });
+
+  it('should set absolute root', () => {
+    config.devServer.root = '/User/some/path/my-abs-root';
+    validateBuildConfig(config);
+    expect(config.devServer.root).toBe('/User/some/path/my-abs-root');
+  });
+
+  it('should default gzip', () => {
+    validateBuildConfig(config);
+    expect(config.devServer.gzip).toBe(true);
+  });
+
+  it('should set gzip', () => {
+    config.devServer.gzip = false;
+    validateBuildConfig(config);
+    expect(config.devServer.gzip).toBe(false);
   });
 
   it('should default httpPort', () => {
