@@ -42,8 +42,8 @@ export function overrideConfigFromArgv(config: Config, argv: CliArgv) {
       config.devServer.openBrowser = true;
     }
 
-    if (argv.compress) {
-      config.devServer.compress = true;
+    if (argv.gzip) {
+      config.devServer.gzip = true;
     }
   }
 
@@ -125,11 +125,11 @@ export function parseArgv(process: NodeJS.Process) {
 const ARG_OPTS: any = {
   boolean: [
     'cache',
-    'compress',
     'debug',
     'dev',
     'docs',
     'es5',
+    'gzip',
     'help',
     'log',
     'open',
@@ -166,7 +166,7 @@ const ARG_OPTS: any = {
 export interface CliArgv {
   address?: string;
   cache?: boolean;
-  compress?: boolean;
+  gzip?: boolean;
   config?: string;
   debug?: boolean;
   dev?: boolean;

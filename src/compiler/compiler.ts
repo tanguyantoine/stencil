@@ -2,6 +2,7 @@ import { BuildResults, CompilerCtx, CompilerEventName, Config, Diagnostic } from
 import { build } from './build/build';
 import { catchError } from './util';
 import { docs } from './docs/docs';
+import { forkDevServerProcess } from '../dev-server/fork-dev-server-process';
 import { getCompilerCtx } from './build/compiler-ctx';
 import { InMemoryFileSystem } from '../util/in-memory-fs';
 import { validateBuildConfig } from '../compiler/config/validate-config';
@@ -34,9 +35,9 @@ export class Compiler {
   }
 
   async startDevServer() {
-    this.config.devServer.devServerDir = this.config.sys.path.join(__dirname, '../dev-server');
-    const { startDevServer } = require(this.config.sys.path.join(this.config.devServer.devServerDir, 'index.js'));
-    await startDevServer(this.config, this.ctx);
+    if (this.config.sys.name === 'node') {
+      forkDevServerProcess(this.config);
+    }
   }
 
   build() {

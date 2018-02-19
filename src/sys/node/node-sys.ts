@@ -4,7 +4,6 @@ import { createContext, runInContext } from './node-context';
 import { createDom } from './node-dom';
 import { NodeFs } from './node-fs';
 import { normalizePath } from '../../compiler/util';
-
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -22,6 +21,7 @@ export class NodeSystem implements StencilSystem {
 
   fs: FileSystem;
   path: Path;
+  name = 'node';
 
 
   constructor(fs?: FileSystem) {

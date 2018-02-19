@@ -1,14 +1,14 @@
-import { Config } from '../../declarations';
+import { Config, DevServerConfig } from '../../declarations';
 import { setBooleanConfig, setNumberConfig, setStringConfig } from './config-utils';
 
 
-export function validateDevServer(config: Config) {
+export function validateDevServer(config: Config): DevServerConfig {
   config.devServer = config.devServer || {};
 
   setBooleanConfig(config, 'startDevServer', false);
 
   if (!config.devServer.startDevServer) {
-    return;
+    return config.devServer;
   }
 
   setStringConfig(config.devServer, 'address', '0.0.0.0');
@@ -23,7 +23,11 @@ export function validateDevServer(config: Config) {
 
   if (config.devServer.historyApiFallback !== null && config.devServer.historyApiFallback !== false) {
     config.devServer.historyApiFallback = config.devServer.historyApiFallback || {};
-    config.devServer.historyApiFallback.index = 'index.html';
+
+    if (typeof config.devServer.historyApiFallback.index !== 'string') {
+      config.devServer.historyApiFallback.index = 'index.html';
+    }
+
     if (typeof config.devServer.historyApiFallback.disableDotRule !== 'boolean') {
       config.devServer.historyApiFallback.disableDotRule = false;
     }
@@ -31,10 +35,5 @@ export function validateDevServer(config: Config) {
 
   config.devServer.protocol = config.devServer.ssl ? 'https' : 'http';
 
-  if (!config.devServer.contentTypes) {
-    const contentTypePath = config.sys.path.join(
-      __dirname, '../dev-server/content-type-db.json'
-    );
-    config.devServer.contentTypes = require(contentTypePath);
-  }
+  return config.devServer;
 }

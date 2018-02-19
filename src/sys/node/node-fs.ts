@@ -1,4 +1,4 @@
-import { FileSystem } from '../../util/interfaces';
+import { FileSystem, FsStats } from '../../declarations';
 import * as fs from 'fs';
 
 
@@ -15,6 +15,10 @@ export class NodeFs implements FileSystem {
 
       rd.pipe(wr);
     });
+  }
+
+  createReadStream(path: string) {
+    return fs.createReadStream(path);
   }
 
   mkdir(filePath: string) {
@@ -70,8 +74,8 @@ export class NodeFs implements FileSystem {
   }
 
   stat(itemPath: string) {
-    return new Promise<any>((resolve, reject) => {
-      fs.stat(itemPath, (err: any, stats: any) => {
+    return new Promise<FsStats>((resolve, reject) => {
+      fs.stat(itemPath, (err, stats) => {
         if (err) {
           reject(err);
         } else {
@@ -81,7 +85,7 @@ export class NodeFs implements FileSystem {
     });
   }
 
-  statSync(itemPath: string) {
+  statSync(itemPath: string): FsStats {
     return fs.statSync(itemPath);
   }
 

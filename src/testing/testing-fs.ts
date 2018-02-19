@@ -1,4 +1,4 @@
-import { FileSystem } from '../declarations';
+import { FileSystem, FsStats } from '../declarations';
 import { normalizePath } from '../compiler/util';
 import * as path from 'path';
 
@@ -23,6 +23,10 @@ export class TestingFs implements FileSystem {
         }
       }, this.resolveTime);
     });
+  }
+
+  createReadStream(_filePath: string) {
+    return {};
   }
 
   mkdir(dirPath: string) {
@@ -113,7 +117,7 @@ export class TestingFs implements FileSystem {
   }
 
   stat(itemPath: string) {
-    return new Promise<{ isFile: () => boolean; isDirectory: () => boolean; size: number; }>((resolve, reject) => {
+    return new Promise<FsStats>((resolve, reject) => {
       setTimeout(() => {
         try {
           resolve(this.statSync(itemPath));
@@ -134,7 +138,7 @@ export class TestingFs implements FileSystem {
         isDirectory: () => isDirectory,
         isFile: () => isFile,
         size: this.data[itemPath].content ? this.data[itemPath].content.length : 0
-      };
+      } as FsStats;
     }
     throw new Error(`stat, path doesn't exist: ${itemPath}`);
   }
@@ -168,6 +172,12 @@ export class TestingFs implements FileSystem {
         resolve();
       }, this.resolveTime);
     });
+  }
+
+  writeFiles(files: { [filePath: string]: string }) {
+    return Promise.all(Object.keys(files).map(filePath => {
+      return this.writeFile(filePath, files[filePath]);
+    }));
   }
 
   get resolveTime() {

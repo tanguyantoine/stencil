@@ -1,22 +1,19 @@
-import { CompilerCtx, Config, HttpRequest } from '../declarations';
+import { DevServerConfig, FileSystem, HttpRequest } from '../declarations';
 import { getContentType } from './content-type';
 import { serve404 } from './serve-error';
-import * as fs  from 'fs';
 import * as http  from 'http';
 import * as path from 'path';
 import { Buffer } from 'buffer';
 
 
-export async function serveFile(config: Config, compilerCtx: CompilerCtx, req: HttpRequest, res: http.ServerResponse) {
+export async function serveFile(config: DevServerConfig, fs: FileSystem, req: HttpRequest, res: http.ServerResponse) {
   try {
-    if (isTextFile(req.filePath)) {
+    if (isHtmlFile(req.filePath)) {
       // easy text file, use the internal cache
-      let content = await compilerCtx.fs.readFile(req.filePath);
+      let content = await fs.readFile(req.filePath);
 
-      if (isHtmlFile(req.filePath)) {
-        // auto inject our dev server script
-        content += `\n${DEV_SERVER_SCRIPT}`;
-      }
+      // auto inject our dev server script
+      content += `\n${DEV_SERVER_SCRIPT}`;
 
       res.writeHead(200, {
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
@@ -30,33 +27,32 @@ export async function serveFile(config: Config, compilerCtx: CompilerCtx, req: H
 
     } else {
       // non-well-known text file or other file, probably best we use a stream
-      const stat = await compilerCtx.fs.stat(req.filePath);
-
       res.writeHead(200, {
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Expires': '0',
         'Content-Type': getContentType(config, req.filePath),
-        'Content-Length': stat.size
+        'Content-Length': req.stats.size
       });
 
       fs.createReadStream(req.filePath).pipe(res);
     }
 
   } catch (e) {
-    serve404(config, compilerCtx, req, res);
+    serve404(config, fs, req, res);
   }
 }
 
-export async function serveStaticDevClient(config: Config, compilerCtx: CompilerCtx, req: HttpRequest, res: http.ServerResponse) {
+
+export async function serveStaticDevClient(config: DevServerConfig, fs: FileSystem, req: HttpRequest, res: http.ServerResponse) {
   if (isDevServerInitialLoad(req)) {
-    req.filePath = path.join(config.devServer.devServerDir, 'templates/initial-load.html');
+    req.filePath = path.join(config.devServerDir, 'templates/initial-load.html');
 
   } else {
     const staticFile = req.pathname.replace(DEV_SERVER_URL + '/', '');
-    req.filePath = path.join(config.devServer.devServerDir, 'static', staticFile);
+    req.filePath = path.join(config.devServerDir, 'static', staticFile);
   }
 
-  return serveFile(config, compilerCtx, req, res);
+  return serveFile(config, fs, req, res);
 }
 
 
@@ -64,14 +60,6 @@ function isHtmlFile(filePath: string) {
   filePath = filePath.toLowerCase().trim();
   return (filePath.endsWith('.html') || filePath.endsWith('.htm'));
 }
-
-
-function isTextFile(filePath: string) {
-  filePath = filePath.toLowerCase().trim();
-  return TEXT_EXT.some(ext => filePath.endsWith(ext));
-}
-
-const TEXT_EXT = ['.js', '.css', '.html', '.htm', '.svg', '.txt'];
 
 
 export function isStaticDevClient(req: HttpRequest) {

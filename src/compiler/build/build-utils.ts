@@ -101,6 +101,10 @@ async function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: B
     compilerCtx.lastBuildHadError = false;
   }
 
+  if (!compilerCtx.isRebuild && config.devServer.startDevServer) {
+    config.logger.info(`dev server: ${config.devServer.browserUrl}`);
+  }
+
   // print out the time it took to build
   // and add the duration to the build results
   buildCtx.timeSpan.finish(`${buildText} ${buildStatus}${watchText}`, statusColor, bold, true);

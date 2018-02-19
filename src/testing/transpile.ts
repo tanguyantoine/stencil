@@ -7,7 +7,8 @@ const TEST_CONFIG: Config = {
   sys: {
     path: require('path'),
     url: require('url'),
-    vm: require('vm')
+    vm: require('vm'),
+    name: 'test'
   },
   rootDir: '/'
 };

@@ -1,12 +1,12 @@
-import { Config } from '../declarations';
+import { DevServerConfig } from '../declarations';
 
 
-export function getContentType(config: Config, filePath: string) {
+export function getContentType(devServer: DevServerConfig, filePath: string) {
   const last = filePath.replace(/^.*[/\\]/, '').toLowerCase();
   const ext = last.replace(/^.*\./, '').toLowerCase();
 
   const hasPath = last.length < filePath.length;
   const hasDot = ext.length < last.length - 1;
 
-  return ((hasDot || !hasPath) && config.devServer.contentTypes[ext]) || 'application/octet-stream';
+  return ((hasDot || !hasPath) && devServer.contentTypes[ext]) || 'application/octet-stream';
 }
