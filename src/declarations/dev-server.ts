@@ -1,4 +1,4 @@
-import { FsStats } from './index';
+import * as d from './index';
 
 
 export interface DevServerConfig {
@@ -33,7 +33,7 @@ export interface HttpRequest {
   url: string;
   pathname?: string;
   filePath?: string;
-  stats?: FsStats;
+  stats?: d.FsStats;
 }
 
 
@@ -45,5 +45,8 @@ export interface DevServerMessage {
     httpPort: number,
     browserUrl: string,
     openUrl: string
+  };
+  buildFinish?: {
+    results: d.BuildResults
   };
 }

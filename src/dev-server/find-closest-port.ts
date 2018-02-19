@@ -1,4 +1,16 @@
+import { DevServerConfig } from '../declarations';
 import * as net from 'net';
+
+
+export async function findOpenPorts(config: DevServerConfig) {
+  const ports = await Promise.all([
+    findClosestOpenPort(config.address, config.httpPort),
+    findClosestOpenPort(config.address, config.liveReloadPort)
+  ]);
+
+  config.httpPort = ports[0];
+  config.liveReloadPort = ports[1];
+}
 
 
 export async function findClosestOpenPort(host: string, port: number): Promise<number> {
@@ -17,14 +29,11 @@ export async function findClosestOpenPort(host: string, port: number): Promise<n
 export function isPortTaken(host: string, port: number): Promise<boolean> {
   return new Promise((resolve, reject) => {
     const tester = net.createServer()
-    .once('error', function(err: any) {
-      if (err.code !== 'EADDRINUSE') {
-        return resolve(true);
-      }
+    .once('error', () => {
       resolve(true);
     })
-    .once('listening', function() {
-      tester.once('close', function() {
+    .once('listening', () => {
+      tester.once('close', () => {
         resolve(false);
       })
       .close();

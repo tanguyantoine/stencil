@@ -1,4 +1,4 @@
-import { Config, DevServerMessage } from '../declarations';
+import { CompilerCtx, Config, DevServerMessage } from '../declarations';
 
 /**
  * NODE ONLY!
@@ -6,7 +6,7 @@ import { Config, DevServerMessage } from '../declarations';
  * it is not apart of the dev-server/index.js bundle
  */
 
-export function forkDevServerProcess(config: Config) {
+export function forkDevServerProcess(config: Config, compilerCtx: CompilerCtx) {
   const path = require('path');
   const fork = require('child_process').fork;
 
@@ -34,10 +34,20 @@ export function forkDevServerProcess(config: Config) {
     receiveMsgFromChild(config, msg);
   });
 
+  // listen for build finish
+  compilerCtx.events.subscribe('build', (buildResults) => {
+    const msg: DevServerMessage = {
+      buildFinish: {
+        results: buildResults
+      }
+    };
+    child.send(msg);
+  });
+
+  // start the server
   const msg: DevServerMessage = {
     startServerRequest: config.devServer
   };
-
   child.send(msg);
 }
 

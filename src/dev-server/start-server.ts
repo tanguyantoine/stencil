@@ -1,43 +1,18 @@
+import { createHttpServer } from './server-http';
+import { createWebSocketServer } from './server-web-socket';
 import { DevServerConfig, DevServerMessage, FileSystem } from '../declarations';
-import { createRequestHandler } from './request-handler';
-import { findClosestOpenPort } from './find-closest-port';
-import { getSSL } from './ssl';
+import { findOpenPorts } from './find-closest-port';
 import { UNREGISTER_SW_URL } from './serve-file';
-import * as http from 'http';
-import * as https from 'https';
 
 
 export async function startDevServer(config: DevServerConfig, fs: FileSystem) {
-  config.httpPort = await findClosestOpenPort(config.address, config.httpPort);
+  await findOpenPorts(config);
 
-  const reqHandler = createRequestHandler(config, fs);
+  await createHttpServer(config, fs);
 
-  const server = config.ssl ? https.createServer(await getSSL(), reqHandler).listen(config.httpPort)
-                            : http.createServer(reqHandler).listen(config.httpPort);
-
-  createCloseListener(server as http.Server);
+  await createWebSocketServer(config);
 
   notifyStartup(config);
-}
-
-
-function createCloseListener(server: http.Server) {
-  async function close() {
-    await new Promise((resolve, reject) => {
-      server.close((err: any) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
-
-  process.once('SIGINT', async () => {
-    await close();
-    process.exit(0);
-  });
 }
 
 
