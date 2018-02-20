@@ -39,14 +39,17 @@ export interface HttpRequest {
 
 export interface DevServerMessage {
   startServerRequest?: DevServerConfig;
-  startServerResponse?: {
-    protocol: 'http' | 'https',
-    address: string,
-    httpPort: number,
-    browserUrl: string,
-    openUrl: string
-  };
+  startServerResponse?: DevServerInfo;
   buildFinish?: {
     results: d.BuildResults
   };
+}
+
+
+export interface DevServerInfo {
+  protocol: 'http' | 'https';
+  address: string;
+  httpPort: number;
+  browserUrl: string;
+  openUrl: string;
 }

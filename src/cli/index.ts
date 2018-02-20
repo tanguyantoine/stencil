@@ -3,6 +3,7 @@ import { Config, Logger, StencilSystem } from '../declarations';
 import { getConfigFilePath, hasError, overrideConfigFromArgv, parseArgv } from './cli-utils';
 import { help } from './task-help';
 import { initApp } from './task-init';
+import { startDevServer } from './serve';
 
 
 export async function run(process: NodeJS.Process, sys: StencilSystem, logger: Logger) {
@@ -72,7 +73,7 @@ export async function run(process: NodeJS.Process, sys: StencilSystem, logger: L
           process.exit(1);
         }
 
-        if (config.watch) {
+        if (config.watch || (config.devServer && config.devServer.startDevServer)) {
           process.once('SIGINT', () => {
             process.exit(0);
           });
@@ -81,6 +82,10 @@ export async function run(process: NodeJS.Process, sys: StencilSystem, logger: L
 
       case 'docs':
         await compiler.docs();
+        break;
+
+      case 'serve':
+        startDevServer(config, compiler);
         break;
 
       default:

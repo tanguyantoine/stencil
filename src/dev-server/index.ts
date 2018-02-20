@@ -15,9 +15,14 @@ process.on('message', async (msg: DevServerMessage) => {
 
 
 async function startServerRequest(config: DevServerConfig) {
-  const fs = new NodeFs();
-  config.contentTypes = await loadContentTypes(fs);
-  startDevServer(config, fs);
+  try {
+    const fs = new NodeFs();
+    config.contentTypes = await loadContentTypes(fs);
+    startDevServer(config, fs);
+
+  } catch (e) {
+    console.error('dev server error', e);
+  }
 }
 
 

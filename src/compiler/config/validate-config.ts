@@ -1,7 +1,6 @@
 import { Config } from '../../declarations';
 import { setArrayConfig, setBooleanConfig, setNumberConfig, setStringConfig } from './config-utils';
 import { validateCopy } from './validate-copy';
-import { validateDevServer } from './validate-dev-server';
 import { validateNamespace } from './validate-namespace';
 import { validatePaths } from './validate-paths';
 import { validatePlugins } from './validate-plugins';
@@ -49,7 +48,8 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
   validatePublicPath(config);
 
   /// figure out if we need to start up a dev server or not
-  validateDevServer(config);
+  config.devServer = config.devServer || {};
+  setBooleanConfig(config.devServer, 'startDevServer', false);
 
   // default devMode false
   config.devMode = !!config.devMode;

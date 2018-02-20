@@ -6,13 +6,15 @@ import { UNREGISTER_SW_URL } from './serve-file';
 
 
 export async function startDevServer(config: DevServerConfig, fs: FileSystem) {
-  await findOpenPorts(config);
+  try {
+    await findOpenPorts(config);
+    await createHttpServer(config, fs);
+    await createWebSocketServer(config);
+    notifyStartup(config);
 
-  await createHttpServer(config, fs);
-
-  await createWebSocketServer(config);
-
-  notifyStartup(config);
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 

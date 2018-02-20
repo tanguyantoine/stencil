@@ -4,12 +4,7 @@ import { setBooleanConfig, setNumberConfig, setStringConfig } from './config-uti
 
 export function validateDevServer(config: Config): DevServerConfig {
   config.devServer = config.devServer || {};
-
-  setBooleanConfig(config, 'startDevServer', false);
-
-  if (!config.devServer.startDevServer) {
-    return config.devServer;
-  }
+  setBooleanConfig(config.devServer, 'startDevServer', false);
 
   setStringConfig(config.devServer, 'address', '0.0.0.0');
   setBooleanConfig(config.devServer, 'broadcast', false);

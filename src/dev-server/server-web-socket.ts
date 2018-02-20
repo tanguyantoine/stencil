@@ -22,5 +22,5 @@ export function createWebSocketServer(config: DevServerConfig) {
     }
   });
 
-  server.listen(config.liveReload);
+  server.listen(config.liveReloadPort);
 }
