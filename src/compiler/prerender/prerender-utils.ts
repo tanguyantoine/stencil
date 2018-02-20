@@ -1,5 +1,5 @@
 import { Config, HydrateResults, PrerenderConfig, PrerenderLocation } from '../../declarations';
-import { DEFAULT_PRERENDER_HOST } from './validate-prerender-config';
+import { DEFAULT_PRERENDER_HOST } from '../config/validate-prerender-config';
 
 
 export function normalizePrerenderLocation(config: Config, windowLocationHref: string, href: string) {
@@ -10,6 +10,9 @@ export function normalizePrerenderLocation(config: Config, windowLocationHref: s
     if (typeof href !== 'string') {
       return null;
     }
+
+    // remove any quotes that somehow got in the href
+    href = href.replace(/\'|\"/g, '');
 
     // parse the <a href> passed in
     const hrefParseUrl = config.sys.url.parse(href);

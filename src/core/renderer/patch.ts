@@ -7,10 +7,9 @@
  * Modified for Stencil's renderer and slot projection
  */
 import { Build } from '../../util/build-conditionals';
-import { DomApi, Encapsulation, HostContentNodes, HostElement, Key, PlatformApi, RendererApi, VNode } from '../../util/interfaces';
+import { DefaultSlot, DomApi, Encapsulation, HostElement, Key, NamedSlots, PlatformApi, RendererApi, VNode } from '../../declarations';
 import { isDef, isUndef } from '../../util/helpers';
-import { NODE_TYPE } from '../../util/constants';
-import { SSR_CHILD_ID, SSR_VNODE_ID } from '../../util/constants';
+import { NODE_TYPE, SSR_CHILD_ID, SSR_VNODE_ID } from '../../util/constants';
 import { updateElement } from './update-dom-node';
 
 let isSvgMode = false;
@@ -21,9 +20,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
   // the patch() function which createRenderer() returned is the function
   // which gets called numerous times by each component
 
-  function createElm(vnode: VNode, parentElm: Node, childIndex: number) {
-    let i = 0;
-
+  function createElm(vnode: VNode, parentElm: Node, childIndex: number, i?: number, elm?: any, childNode?: Node, namedSlot?: string, slotNodes?: Node[], hasLightDom?: boolean) {
     if (typeof vnode.vtag === 'function') {
       vnode = vnode.vtag({
         ...vnode.vattrs,
@@ -32,24 +29,22 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
     }
 
     if (!useNativeShadowDom && vnode.vtag === 'slot') {
-
-      if (hostContentNodes) {
+      if (defaultSlot || namedSlots) {
         if (scopeId) {
           domApi.$setAttribute(parentElm, scopeId + '-slot', '');
         }
 
         // special case for manually relocating host content nodes
         // to their new home in either a named slot or the default slot
-        const namedSlot = (vnode.vattrs && vnode.vattrs.name);
-        let slotNodes: Node[];
+        namedSlot = (vnode.vattrs && vnode.vattrs.name);
 
         if (isDef(namedSlot)) {
           // this vnode is a named slot
-          slotNodes = hostContentNodes.namedSlots && hostContentNodes.namedSlots[namedSlot];
+          slotNodes = namedSlots && namedSlots[namedSlot];
 
         } else {
           // this vnode is the default slot
-          slotNodes = hostContentNodes.defaultSlot;
+          slotNodes = defaultSlot;
         }
 
         if (isDef(slotNodes)) {
@@ -60,14 +55,25 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
           // the disconnectCallback from working
           plt.tmpDisconnected = true;
 
-          for (; i < slotNodes.length; i++) {
+          for (i = 0; i < slotNodes.length; i++) {
+            childNode = slotNodes[i];
             // remove the host content node from it's original parent node
             // then relocate the host content node to its new slotted home
-            domApi.$remove(slotNodes[i]);
+            domApi.$remove(childNode);
             domApi.$appendChild(
               parentElm,
-              slotNodes[i]
+              childNode
             );
+
+            if (childNode.nodeType !== NODE_TYPE.CommentNode) {
+              hasLightDom = true;
+            }
+          }
+
+          if (!hasLightDom && vnode.vchildren) {
+            // the user did not provide light-dom content
+            // and this vnode does come with it's own default content
+            updateChildren(parentElm, [], vnode.vchildren);
           }
 
           // done moving nodes around
@@ -87,7 +93,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
 
     } else {
       // create element
-      const elm = vnode.elm = ((Build.svg && (isSvgMode || vnode.vtag === 'svg')) ? domApi.$createElementNS('http://www.w3.org/2000/svg', vnode.vtag) : domApi.$createElement(vnode.vtag));
+      elm = vnode.elm = ((Build.svg && (isSvgMode || vnode.vtag === 'svg')) ? domApi.$createElementNS('http://www.w3.org/2000/svg', vnode.vtag) : domApi.$createElement(vnode.vtag));
 
       if (Build.svg) {
         isSvgMode = vnode.vtag === 'svg' ? true : (vnode.vtag === 'foreignObject' ? false : isSvgMode);
@@ -117,8 +123,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
       }
 
       if (children) {
-        let childNode: Node;
-        for (; i < children.length; ++i) {
+        for (i = 0; i < children.length; ++i) {
           // create the node
           childNode = createElm(children[i], elm, i);
 
@@ -141,9 +146,11 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
         }
       }
 
-      // Only reset the SVG context when we're exiting SVG element
-      if (vnode.vtag === 'svg') {
-        isSvgMode = false;
+      if (Build.svg) {
+        // Only reset the SVG context when we're exiting SVG element
+        if (vnode.vtag === 'svg') {
+          isSvgMode = false;
+        }
       }
     }
 
@@ -187,7 +194,6 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
     let idxInOld: number;
     let elmToMove: VNode;
     let node: Node;
-
 
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
       if (oldStartVnode == null) {
@@ -294,8 +300,11 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
     const elm: HostElement = newVNode.elm = <any>oldVNode.elm;
     const oldChildren = oldVNode.vchildren;
     const newChildren = newVNode.vchildren;
+    let defaultSlot: Node[];
 
     if (Build.svg) {
+      // test if we're rendering an svg element, or still rendering nodes inside of one
+      // only add this to the when the compiler sees we're using an svg somewhere
       isSvgMode = newVNode.elm && newVNode.elm.parentElement != null && (newVNode.elm as SVGElement).ownerSVGElement !== undefined;
       isSvgMode = newVNode.vtag === 'svg' ? true : (newVNode.vtag === 'foreignObject' ? false : isSvgMode);
     }
@@ -328,11 +337,11 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
         removeVnodes(oldChildren, 0, oldChildren.length - 1);
       }
 
-    } else if (elm._hostContentNodes && elm._hostContentNodes.defaultSlot) {
+    } else if (defaultSlot = plt.defaultSlotsMap.get(elm)) {
       // this element has slotted content
-      const parentElement = elm._hostContentNodes.defaultSlot[0].parentElement;
+      const parentElement = defaultSlot[0].parentElement;
       domApi.$setTextContent(parentElement, newVNode.vtext);
-      elm._hostContentNodes.defaultSlot = [parentElement.childNodes[0]];
+      plt.defaultSlotsMap.set(elm, [parentElement.childNodes[0]]);
 
     } else if (oldVNode.vtext !== newVNode.vtext) {
       // update the text content for the text only vnode
@@ -340,27 +349,37 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi): RendererA
       domApi.$setTextContent(elm, newVNode.vtext);
     }
 
-    // reset svgMode when svg node is fully patched
-    if ('svg' === newVNode.vtag && isSvgMode) isSvgMode = false;
+    if (Build.svg) {
+      // reset svgMode when svg node is fully patched
+      if (isSvgMode && 'svg' === newVNode.vtag) {
+        isSvgMode = false;
+      }
+    }
   }
 
   // internal variables to be reused per patch() call
   let isUpdate: boolean,
-      hostContentNodes: HostContentNodes,
+      defaultSlot: DefaultSlot,
+      namedSlots: NamedSlots,
       useNativeShadowDom: boolean,
       ssrId: number,
       scopeId: string;
 
 
-  return function patch(oldVNode: VNode, newVNode: VNode, isUpdatePatch?: boolean, hostElementContentNodes?: HostContentNodes, encapsulation?: Encapsulation, ssrPatchId?: number) {
+  return function patch(oldVNode: VNode, newVNode: VNode, isUpdatePatch?: boolean, elmDefaultSlot?: DefaultSlot, elmNamedSlots?: NamedSlots, encapsulation?: Encapsulation, ssrPatchId?: number) {
     // patchVNode() is synchronous
     // so it is safe to set these variables and internally
     // the same patch() call will reference the same data
     isUpdate = isUpdatePatch;
-    hostContentNodes = hostElementContentNodes;
+    defaultSlot = elmDefaultSlot;
+    namedSlots = elmNamedSlots;
 
     if (Build.ssrServerSide) {
-      ssrId = ssrPatchId;
+      if (encapsulation !== 'shadow') {
+        ssrId = ssrPatchId;
+      } else {
+        ssrId = null;
+      }
     }
 
     scopeId = (encapsulation === 'scoped' || (encapsulation === 'shadow' && !domApi.$supportsShadowDom)) ? 'data-' + domApi.$tagName(oldVNode.elm) : null;

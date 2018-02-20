@@ -1,4 +1,4 @@
-import * as d from '../declarations/index';
+import * as d from './index';
 
 
 export interface RenderOptions {
@@ -23,6 +23,7 @@ export interface PrerenderConfig extends RenderOptions {
   maxConcurrent?: number;
   includePathHash?: boolean;
   includePathQuery?: boolean;
+  hydrateComponents?: boolean;
 }
 
 
@@ -89,9 +90,18 @@ export interface HydrateOptions extends RenderOptions {
   console?: {
     [level: string]: (...msgs: string[]) => void;
   };
+  hydrateComponents?: boolean;
 }
 
 
 export interface RendererApi {
-  (oldVNode: d.VNode | Element, newVNode: d.VNode, isUpdate?: boolean, hostContentNodes?: d.HostContentNodes, encapsulation?: d.Encapsulation, ssrId?: number): d.VNode;
+  (
+    oldVNode: d.VNode | Element,
+    newVNode: d.VNode,
+    isUpdate?: boolean,
+    defaultSlots?: d.DefaultSlot,
+    namedSlotsMap?: d.NamedSlots,
+    encapsulation?: d.Encapsulation,
+    ssrId?: number
+  ): d.VNode;
 }
