@@ -1,25 +1,35 @@
 import * as d from '../../declarations';
+import { appReset } from './app-update';
 import { initClientWebSocket } from './client-web-socket';
-import { initDevServerLoad } from './dev-server-load';
 
 
-export async function initClient(devServer: d.DevServerClientConfig, win: d.DevClientWindow, doc: Document) {
+export async function initClient(config: d.DevServerClientConfig, ctx: d.DevServerClientContext, win: d.DevClientWindow, doc: Document) {
   try {
-    if (!devServer) {
+    if (!config) {
       console.error(`invalid client-side dev server config`);
       return;
     }
 
-    if (devServer.hasClientInitialized) {
+    if (ctx.hasClientInitialized) {
+      // somehow we've already initialized the dev server client-side script
+      // don't bother doing it again (this shouldn't happen)
       return;
     }
-    devServer.hasClientInitialized = true;
+    ctx.hasClientInitialized = true;
 
-    if (devServer.initialDevServerLoad) {
-      initDevServerLoad(win);
+    if (ctx.isInitialDevServerLoad) {
+      // this page is the initial dev server load page
+      // we currently have an ugly url like /__dev_server_init
+      // or something, let's quickly change that using
+      // history.replaceState() and update the url to
+      // what's expected like /
+      // we're doing this so we can force the server
+      // worker to unregister, but do not fully reload the page yet
+      await appReset(win);
     }
 
-    await initClientWebSocket(devServer, win, doc);
+    // let's setup this thing
+    initClientWebSocket(ctx, win, doc);
 
   } catch (e) {
     console.error(e);

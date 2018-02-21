@@ -1,4 +1,4 @@
-import { DevServerMessage, DevServerSocket, DevServerSocketConstructor } from '../declarations';
+import { DevServerMessage, DevServerSocketConstructor } from '../declarations';
 import * as http from 'http';
 
 
@@ -10,28 +10,23 @@ export function createWebSocketServer(server: http.Server) {
       let serverWs = new WebSocket(request, socket, body, ['xmpp']);
 
       serverWs.on('message', (event) => {
-        // received a message from the browser
-        serverReceivedMessageFromBrowser(serverWs, JSON.parse(event.data));
+        // the server process has received a message from the browser
+        // pass the message received from the browser to the main cli process
+        process.send(JSON.parse(event.data));
       });
 
-      serverWs.on('close', (event: any) => {
-        console.log(`web socket close, code: ${event.code}, reason: ${event.reason}`);
+      serverWs.on('close', () => {
+        // the server web socket has closed
         serverWs = null;
       });
 
       process.on('message', (msg: DevServerMessage) => {
-        // received a message from the cli's main thread
-        // pass it onto the browser
+        // the server process has received a message from the cli's main thread
+        // pass it to the server's web socket to send to the browser
         if (serverWs) {
           serverWs.send(JSON.stringify(msg));
         }
       });
     }
   });
-}
-
-
-function serverReceivedMessageFromBrowser(_serverWs: DevServerSocket, msg: DevServerMessage) {
-  console.log('serverReceivedMessageFromBrowser', msg);
-  process.send(msg);
 }

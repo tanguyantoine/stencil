@@ -42,8 +42,8 @@ export function isStaticDevClient(req: HttpRequest) {
   return req.pathname.startsWith(DEV_SERVER_URL);
 }
 
-export function isDevServerInitialLoad(req: HttpRequest) {
-  return req.pathname === UNREGISTER_SW_URL;
+export function isInitialDevServerLoad(pathname: string) {
+  return pathname === UNREGISTER_SW_URL;
 }
 
 export const DEV_SERVER_URL = '/__dev-server';

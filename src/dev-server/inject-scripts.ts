@@ -2,9 +2,8 @@ import { DevServerConfig } from '../declarations';
 import { DEV_SERVER_URL, getClientSideConfig } from './util';
 
 
-export function injectDevServerScripts(config: DevServerConfig, initialDevServerLoad: boolean) {
+export function injectDevServerScripts(config: DevServerConfig) {
   const clientConfig = getClientSideConfig(config);
-  clientConfig.initialDevServerLoad = !!initialDevServerLoad;
 
   return '\n' + [
     `<script data-dev-server-script>`,

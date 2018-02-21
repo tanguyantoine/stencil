@@ -17,6 +17,7 @@ export function startDevServerProcess(config: Config, compilerCtx: CompilerCtx):
     // then these files are no longer relative to how they are in the src directory
     config.devServer.devServerDir = path.join(__dirname, '../dev-server');
 
+    // get the path of the dev server module
     const program = require.resolve(path.join(config.devServer.devServerDir, 'index.js'));
 
     const parameters: string[] = [];
@@ -24,30 +25,38 @@ export function startDevServerProcess(config: Config, compilerCtx: CompilerCtx):
       stdio: ['pipe', 'pipe', 'pipe', 'ipc']
     };
 
+    // start a new child process of the CLI process
+    // for the http and web socket server
     const serverProcess = fork(program, parameters, options);
 
     serverProcess.stdout.on('data', (data: any) => {
+      // the child server process has console logged data
       config.logger.debug(`dev server: ${data}`);
     });
 
     serverProcess.stderr.on('data', (data: any) => {
+      // the child server process has console logged an error
       config.logger.error(`dev server error: ${data}`);
       serverProcess.kill();
     });
 
     serverProcess.on('message', (msg: DevServerMessage) => {
+      // the CLI has received a message from the child server process
       cliReceivedMessageFromServer(config, compilerCtx, serverProcess, msg, resolve);
     });
 
-    // listen for build finish
-    compilerCtx.events.subscribe('build', async (buildResults) => {
+    compilerCtx.events.subscribe('build', (buildResults) => {
+      // a compiler build has finished
       const msg: DevServerMessage = {
-        buildResults: await generateBuildResults(config, compilerCtx, buildResults)
+        buildResults: generateBuildResults(buildResults)
       };
+
+      // send the build results to the child server process
       serverProcess.send(msg);
     });
 
-    // start the server
+    // have the CLI is send a message to the child server process
+    // to start the http and web socket server
     const msg: DevServerMessage = {
       startServerRequest: config.devServer
     };
@@ -56,9 +65,9 @@ export function startDevServerProcess(config: Config, compilerCtx: CompilerCtx):
 }
 
 
-async function cliReceivedMessageFromServer(config: Config, compilerCtx: CompilerCtx, serverProcess: any, msg: DevServerMessage, resolve: Function) {
+function cliReceivedMessageFromServer(config: Config, compilerCtx: CompilerCtx, serverProcess: any, msg: DevServerMessage, resolve: Function) {
   if (msg.startServerResponse) {
-    // the server has successfully started
+    // received a message from the child process that the server has successfully started
     config.devServer.ssl = msg.startServerResponse.ssl;
     config.devServer.address = msg.startServerResponse.address;
     config.devServer.port = msg.startServerResponse.port;
@@ -67,15 +76,18 @@ async function cliReceivedMessageFromServer(config: Config, compilerCtx: Compile
     if (config.devServer.openBrowser) {
       config.sys.open(msg.startServerResponse.openUrl);
     }
+
+    // resolve that everything is good to go
     resolve(msg.startServerResponse);
     return;
   }
 
   if (msg.requestBuildResults) {
-    // the browser wants the latest results sent
+    // we received a request to send up the latest build results
     if (compilerCtx.lastBuildResults) {
+      // we do have build results, so let's send them to the child process
       const msg: DevServerMessage = {
-        buildResults: await generateBuildResults(config, compilerCtx, compilerCtx.lastBuildResults)
+        buildResults: compilerCtx.lastBuildResults
       };
       serverProcess.send(msg);
     }

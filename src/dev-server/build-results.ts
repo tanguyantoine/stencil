@@ -1,8 +1,8 @@
-import { BuildResults, CompilerCtx, Config, DevServerBuildResults } from '../declarations';
+import * as d from '../declarations';
 
 
-export async function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildResults: BuildResults) {
-  const devServerBuild: DevServerBuildResults = {
+export function generateBuildResults(buildResults: d.BuildResults) {
+  const devServerBuild: d.DevServerBuildResults = {
     buildId: buildResults.buildId,
     diagnostics: buildResults.diagnostics,
     hasError: buildResults.hasError,
@@ -15,8 +15,6 @@ export async function generateBuildResults(config: Config, compilerCtx: Compiler
     filesChanged: buildResults.filesChanged,
     filesWritten: buildResults.filesWritten
   };
-
-  devServerBuild.indexHtml = await compilerCtx.fs.readFile(config.wwwIndexHtml);
 
   return devServerBuild;
 }

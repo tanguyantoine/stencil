@@ -22,13 +22,16 @@ export interface DevServerConfig {
 export interface DevServerClientConfig {
   browserUrl: string;
   openUrl: string;
-  hasClientInitialized?: boolean;
-  hasDocumentInitialized?: boolean;
-  initialDevServerLoad?: boolean;
   ssl: boolean;
   address: string;
   port: number;
   liveReload: boolean;
+}
+
+
+export interface DevServerClientContext {
+  hasClientInitialized?: boolean;
+  isInitialDevServerLoad?: boolean;
 }
 
 
@@ -80,8 +83,8 @@ export interface DevServerSocket {
 export interface DevServerMessage {
   startServerRequest?: DevServerConfig;
   startServerResponse?: DevServerClientConfig;
-  requestBuildResults?: boolean;
   buildResults?: DevServerBuildResults;
+  requestBuildResults?: boolean;
 }
 
 
@@ -97,5 +100,4 @@ export interface DevServerBuildResults {
   dirsDeleted: string[];
   filesChanged: string[];
   filesWritten: string[];
-  indexHtml?: string;
 }

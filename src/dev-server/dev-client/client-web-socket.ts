@@ -1,53 +1,57 @@
 import * as d from '../../declarations';
-import { updateDocument } from './update-document';
+import { appUpdate } from './app-update';
 
 
-export function initClientWebSocket(devServer: d.DevServerClientConfig, win: d.DevClientWindow, doc: Document) {
-  return new Promise((resolve, reject) => {
-    try {
-      const ClientWebSocket = win.MozWebSocket || win.WebSocket;
-      const protos = ['xmpp'];
+export function initClientWebSocket(ctx: d.DevServerClientContext, win: d.DevClientWindow, doc: Document) {
+  try {
+    const ClientWebSocket = win.MozWebSocket || win.WebSocket;
+    const protos = ['xmpp'];
 
-      const socketUrl = `${devServer.ssl ? `wss` : `ws`}://${devServer.address}:${devServer.port}/`;
-      const clientWs = new ClientWebSocket(socketUrl, protos);
+    // have the browser open a web socket with the server
+    const socketUrl = `${win.location.protocol === 'https:' ? `wss:` : `ws:`}//${win.location.hostname}:${win.location.port}/`;
+    const browserWs = new ClientWebSocket(socketUrl, protos);
 
-      clientWs.onopen = () => {
-        clientWebSocketOpened(clientWs);
-        resolve();
-      };
+    browserWs.onopen = () => {
+      // the browser has opened a web socket with the server
+      browserWebSocketOpened(browserWs);
+    };
 
-      clientWs.onerror = (event) => {
-        console.log('dev server web socket error: ' + event.message);
-        reject('dev server web socket error: ' + event.message);
-      };
+    browserWs.onmessage = (event) => {
+      // the browser's web socket received a message from the server
+      browserReceivedMessageFromServer(ctx, win, doc, JSON.parse(event.data));
+    };
 
-      clientWs.onmessage = (event) => {
-        browserReceivedMessageFromServer(devServer, doc, JSON.parse(event.data));
-      };
+    browserWs.onerror = (event) => {
+      // the browser's web socket has an error
+      console.error(`dev server web socket error: ${event.message}`);
+    };
 
-      clientWs.onclose = (event) => {
-        console.log('dev server web socket closed: ' + event.code + ', ' + event.reason);
-      };
+    browserWs.onclose = (event) => {
+      // the browser's web socket has closed
+      console.log(`dev server web socket closed: ${event.code} ${event.reason}`);
+    };
 
-    } catch (e) {
-      reject('web socket error: ' + e);
-    }
-  });
+  } catch (e) {
+    console.error('web socket error: ' + e);
+  }
 }
 
 
-function clientWebSocketOpened(clientWs: d.DevClientSocket) {
+async function browserWebSocketOpened(browserWs: d.DevClientSocket) {
+  // now that we've got a good web socket connection opened
+  // let's request the latest build results if they exist
+  // if a build is still happening that's fine
   const msg: d.DevServerMessage = {
     requestBuildResults: true
   };
-  clientWs.send(JSON.stringify(msg));
+  browserWs.send(JSON.stringify(msg));
 }
 
 
-function browserReceivedMessageFromServer(devServer: d.DevServerClientConfig, doc: Document, msg: d.DevServerMessage) {
+function browserReceivedMessageFromServer(ctx: d.DevServerClientContext, win: d.DevClientWindow, doc: Document, msg: d.DevServerMessage) {
   console.log('browserReceivedMessageFromServer', msg);
 
   if (msg.buildResults) {
-    updateDocument(devServer, doc, msg.buildResults);
+    appUpdate(ctx, win, doc, msg.buildResults);
   }
 }
