@@ -1,26 +1,27 @@
-import { DevServerConfig } from '../declarations';
+import { DevServerConfig, DevServerMessage, DevServerSocketConstructor } from '../declarations';
 import * as http from 'http';
 
 
-export function createWebSocketServer(config: DevServerConfig) {
-  const WebSocket = require('faye-websocket');
-
-  const server = http.createServer();
+export function createWebSocketServer(config: DevServerConfig, server: http.Server) {
+  const WebSocket: DevServerSocketConstructor = require('faye-websocket');
 
   server.on('upgrade', (request, socket, body) => {
     if (WebSocket.isWebSocket(request)) {
-      let ws = new WebSocket(request, socket, body);
+      let ws = new WebSocket(request, socket, body, ['xmpp']);
 
-      ws.on('message', (event: any) => {
-        ws.send(event.data);
+      ws.on('message', (event) => {
+        serverReceivedMessageFromClient(config, event.data);
       });
 
       ws.on('close', (event: any) => {
-        console.log('close', event.code, event.reason);
+        console.log('web socket close', event);
         ws = null;
       });
     }
   });
+}
 
-  server.listen(config.liveReloadPort);
+
+function serverReceivedMessageFromClient(_config: DevServerConfig, msg: DevServerMessage) {
+  console.log('serverReceivedMessageFromClient', msg);
 }

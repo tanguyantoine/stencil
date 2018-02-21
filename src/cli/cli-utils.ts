@@ -31,7 +31,7 @@ export function overrideConfigFromArgv(config: Config, argv: CliArgv) {
     config.devServer.startDevServer = true;
 
     if (argv.port) {
-      config.devServer.httpPort = argv.port;
+      config.devServer.port = argv.port;
     }
 
     if (argv.address) {

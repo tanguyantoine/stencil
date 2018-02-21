@@ -1,16 +1,4 @@
-import { DevServerConfig } from '../declarations';
 import * as net from 'net';
-
-
-export async function findOpenPorts(config: DevServerConfig) {
-  const ports = await Promise.all([
-    findClosestOpenPort(config.address, config.httpPort),
-    findClosestOpenPort(config.address, config.liveReloadPort)
-  ]);
-
-  config.httpPort = ports[0];
-  config.liveReloadPort = ports[1];
-}
 
 
 export async function findClosestOpenPort(host: string, port: number): Promise<number> {

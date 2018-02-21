@@ -7,8 +7,15 @@ import * as https from 'https';
 
 export async function createHttpServer(config: DevServerConfig, fs: FileSystem) {
   const reqHandler = createRequestHandler(config, fs);
-  const server = config.ssl ? https.createServer(await getSSL(), reqHandler).listen(config.httpPort)
-                            : http.createServer(reqHandler).listen(config.httpPort);
+
+  let server: http.Server;
+
+  if (config.ssl) {
+    server = https.createServer(await getSSL(), reqHandler) as any;
+
+  } else {
+    server = http.createServer(reqHandler);
+  }
 
   async function close() {
     await new Promise((resolve, reject) => {
@@ -26,4 +33,6 @@ export async function createHttpServer(config: DevServerConfig, fs: FileSystem) 
     await close();
     process.exit(0);
   });
+
+  return server;
 }

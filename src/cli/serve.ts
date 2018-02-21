@@ -1,4 +1,4 @@
-import { Config, DevServerInfo } from '../declarations';
+import { Config, DevServerClientConfig } from '../declarations';
 
 
 export async function startDevServer(config: Config, compiler: any) {
@@ -9,8 +9,8 @@ export async function startDevServer(config: Config, compiler: any) {
     config.devServer.openBrowser = false;
   }
 
-  const devInfo: DevServerInfo = await compiler.startDevServer();
-  config.logger.info(`dev server: ${devInfo.browserUrl}`);
+  const clientConfig: DevServerClientConfig = await compiler.startDevServer();
+  config.logger.info(`dev server: ${clientConfig.browserUrl}`);
 
   process.once('SIGINT', () => {
     process.exit(0);

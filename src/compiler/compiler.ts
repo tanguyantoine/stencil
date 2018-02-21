@@ -1,13 +1,13 @@
-import { BuildResults, CompilerCtx, CompilerEventName, Config, DevServerInfo, Diagnostic } from '../declarations';
+import { BuildResults, CompilerCtx, CompilerEventName, Config, DevServerClientConfig, Diagnostic } from '../declarations';
 import { build } from './build/build';
 import { catchError } from './util';
 import { docs } from './docs/docs';
-import { forkDevServerProcess } from '../dev-server/fork-dev-server-process';
 import { getCompilerCtx } from './build/compiler-ctx';
 import { InMemoryFileSystem } from '../util/in-memory-fs';
+import { startDevServerProcess } from '../dev-server/start-process';
 import { validateBuildConfig } from '../compiler/config/validate-config';
-import { validatePrerenderConfig } from '../compiler/config/validate-prerender-config';
 import { validateDevServer } from './config/validate-dev-server';
+import { validatePrerenderConfig } from '../compiler/config/validate-prerender-config';
 import { validateServiceWorkerConfig } from './service-worker/validate-sw-config';
 
 
@@ -35,14 +35,14 @@ export class Compiler {
     }
   }
 
-  startDevServer(): Promise<DevServerInfo> {
+  startDevServer(): Promise<DevServerClientConfig> {
     if (this.config.sys.name !== 'node') {
       throw new Error(`Dev Server only availabe in node`);
     }
 
     validateDevServer(this.config);
 
-    return forkDevServerProcess(this.config, this.ctx);
+    return startDevServerProcess(this.config, this.ctx);
   }
 
   build() {

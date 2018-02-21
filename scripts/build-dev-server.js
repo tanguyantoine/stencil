@@ -19,6 +19,7 @@ function bundleDevServer() {
   rollup.rollup({
     input: ENTRY_FILE,
     external: [
+      'buffer',
       'crypto',
       'fs',
       'http',

@@ -1,4 +1,4 @@
-import { CompilerCtx, Config, DevServerInfo, DevServerMessage } from '../declarations';
+import { CompilerCtx, Config, DevServerClientConfig, DevServerMessage } from '../declarations';
 
 /**
  * NODE ONLY!
@@ -6,7 +6,7 @@ import { CompilerCtx, Config, DevServerInfo, DevServerMessage } from '../declara
  * it is not apart of the dev-server/index.js bundle
  */
 
-export function forkDevServerProcess(config: Config, compilerCtx: CompilerCtx): Promise<DevServerInfo> {
+export function startDevServerProcess(config: Config, compilerCtx: CompilerCtx): Promise<DevServerClientConfig> {
   return new Promise(resolve => {
     const path = require('path');
     const fork = require('child_process').fork;
@@ -16,6 +16,7 @@ export function forkDevServerProcess(config: Config, compilerCtx: CompilerCtx): 
     config.devServer.devServerDir = path.join(__dirname, '../dev-server');
 
     const program = require.resolve(path.join(config.devServer.devServerDir, 'index.js'));
+
     const parameters: string[] = [];
     const options = {
       stdio: ['pipe', 'pipe', 'pipe', 'ipc']
@@ -61,9 +62,9 @@ export function forkDevServerProcess(config: Config, compilerCtx: CompilerCtx): 
 
 function receiveMsgFromChild(config: Config, msg: DevServerMessage) {
   if (msg.startServerResponse) {
-    config.devServer.protocol = msg.startServerResponse.protocol;
+    config.devServer.ssl = msg.startServerResponse.ssl;
     config.devServer.address = msg.startServerResponse.address;
-    config.devServer.httpPort = msg.startServerResponse.httpPort;
+    config.devServer.port = msg.startServerResponse.port;
     config.devServer.browserUrl = msg.startServerResponse.browserUrl;
 
     if (config.devServer.openBrowser) {

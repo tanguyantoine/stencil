@@ -1,22 +1,6 @@
-import * as d from './declarations';
-import { initDevServer } from './init-dev-server';
-import { initDocument } from './init-document';
+import * as d from '../../declarations';
+import { initClient } from './init-client';
 
+declare const window: d.DevClientWindow;
 
-function init(devServer: d.DevClient) {
-  if (devServer.hasScriptInitialized) {
-    return;
-  }
-
-  devServer.hasScriptInitialized = true;
-
-  if (devServer.initDevServer) {
-    initDevServer(document);
-  } else {
-    initDocument(document);
-  }
-}
-
-setTimeout(() => {
-  init((window as any).$devServer = (window as any).$devServer || {});
-});
+initClient(window, document, window.$devServer);

@@ -1,5 +1,6 @@
 import { DevServerConfig, FileSystem, HttpRequest } from '../declarations';
-import { isStaticDevClient, serveFile, serveStaticDevClient } from './serve-file';
+import { isStaticDevClient } from './util';
+import { serveFile, serveStaticDevClient } from './serve-file';
 import { serve404, serve500 } from './serve-error';
 import { serveDirectoryIndex } from './serve-directory-index';
 import * as http from 'http';

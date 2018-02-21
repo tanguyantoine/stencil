@@ -73,15 +73,15 @@ describe('validateDevServer', () => {
     expect(config.devServer.gzip).toBe(false);
   });
 
-  it('should default httpPort', () => {
+  it('should default port', () => {
     validateBuildConfig(config);
-    expect(config.devServer.httpPort).toBe(3333);
+    expect(config.devServer.port).toBe(3333);
   });
 
-  it('should set httpPort', () => {
-    config.devServer.httpPort = 4444;
+  it('should set port', () => {
+    config.devServer.port = 4444;
     validateBuildConfig(config);
-    expect(config.devServer.httpPort).toBe(4444);
+    expect(config.devServer.port).toBe(4444);
   });
 
   it('should default historyApiFallback', () => {
@@ -112,17 +112,6 @@ describe('validateDevServer', () => {
     config.devServer.liveReload = false;
     validateBuildConfig(config);
     expect(config.devServer.liveReload).toBe(false);
-  });
-
-  it('should default liveReloadPort', () => {
-    validateBuildConfig(config);
-    expect(config.devServer.liveReloadPort).toBe(35729);
-  });
-
-  it('should set liveReloadPort', () => {
-    config.devServer.liveReloadPort = 3210;
-    validateBuildConfig(config);
-    expect(config.devServer.liveReloadPort).toBe(3210);
   });
 
   it('should default openBrowser', () => {
