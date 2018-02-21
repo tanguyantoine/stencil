@@ -1,7 +1,8 @@
 import * as d from '../../declarations';
+import { updateDocument } from './update-document';
 
 
-export function initClientWebSocket(win: d.DevClientWindow, devServer: d.DevServerClientConfig) {
+export function initClientWebSocket(devServer: d.DevServerClientConfig, win: d.DevClientWindow, doc: Document) {
   return new Promise((resolve, reject) => {
     try {
       const ClientWebSocket = win.MozWebSocket || win.WebSocket;
@@ -11,22 +12,21 @@ export function initClientWebSocket(win: d.DevClientWindow, devServer: d.DevServ
       const clientWs = new ClientWebSocket(socketUrl, protos);
 
       clientWs.onopen = () => {
-        console.log('OPEN: ' + clientWs.protocol);
-        clientWs.send('Hello, world');
+        clientWebSocketOpened(clientWs);
         resolve();
       };
 
       clientWs.onerror = (event) => {
-        console.log('ERROR: ' + event.message);
-        reject('web socket error: ' + event.message);
+        console.log('dev server web socket error: ' + event.message);
+        reject('dev server web socket error: ' + event.message);
       };
 
       clientWs.onmessage = (event) => {
-        browserReceivedMessageFromServer(JSON.parse(event.data));
+        browserReceivedMessageFromServer(devServer, doc, JSON.parse(event.data));
       };
 
       clientWs.onclose = (event) => {
-        console.log('CLOSE: ' + event.code + ', ' + event.reason);
+        console.log('dev server web socket closed: ' + event.code + ', ' + event.reason);
       };
 
     } catch (e) {
@@ -36,6 +36,18 @@ export function initClientWebSocket(win: d.DevClientWindow, devServer: d.DevServ
 }
 
 
-function browserReceivedMessageFromServer(msg: d.DevServerMessage) {
+function clientWebSocketOpened(clientWs: d.DevClientSocket) {
+  const msg: d.DevServerMessage = {
+    requestBuildResults: true
+  };
+  clientWs.send(JSON.stringify(msg));
+}
+
+
+function browserReceivedMessageFromServer(devServer: d.DevServerClientConfig, doc: Document, msg: d.DevServerMessage) {
   console.log('browserReceivedMessageFromServer', msg);
+
+  if (msg.buildResults) {
+    updateDocument(devServer, doc, msg.buildResults);
+  }
 }

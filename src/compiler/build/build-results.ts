@@ -10,6 +10,7 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
     buildId: buildCtx.buildId,
     diagnostics: cleanDiagnostics(buildCtx.diagnostics),
     hasError: hasError(buildCtx.diagnostics),
+    hasSuccessfulBuild: compilerCtx.hasSuccessfulBuild,
     aborted: buildCtx.aborted,
     duration: Date.now() - buildCtx.startTime,
     isRebuild: compilerCtx.isRebuild,

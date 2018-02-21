@@ -11,11 +11,11 @@ export function createWebSocketServer(server: http.Server) {
 
       serverWs.on('message', (event) => {
         // received a message from the browser
-        serverReceivedMessageFromBrowser(serverWs, event.data);
+        serverReceivedMessageFromBrowser(serverWs, JSON.parse(event.data));
       });
 
       serverWs.on('close', (event: any) => {
-        console.log('web socket close', event);
+        console.log(`web socket close, code: ${event.code}, reason: ${event.reason}`);
         serverWs = null;
       });
 
@@ -33,4 +33,5 @@ export function createWebSocketServer(server: http.Server) {
 
 function serverReceivedMessageFromBrowser(_serverWs: DevServerSocket, msg: DevServerMessage) {
   console.log('serverReceivedMessageFromBrowser', msg);
+  process.send(msg);
 }

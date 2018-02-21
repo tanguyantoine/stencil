@@ -24,44 +24,41 @@ export function startDevServerProcess(config: Config, compilerCtx: CompilerCtx):
       stdio: ['pipe', 'pipe', 'pipe', 'ipc']
     };
 
-    const child = fork(program, parameters, options);
+    const serverProcess = fork(program, parameters, options);
 
-    child.stdout.on('data', (data: any) => {
+    serverProcess.stdout.on('data', (data: any) => {
       config.logger.debug(`dev server: ${data}`);
     });
 
-    child.stderr.on('data', (data: any) => {
+    serverProcess.stderr.on('data', (data: any) => {
       config.logger.error(`dev server error: ${data}`);
-      child.kill();
+      serverProcess.kill();
     });
 
-    child.on('message', (msg: DevServerMessage) => {
-      receiveMsgFromChild(config, msg);
-
-      if (msg.startServerResponse) {
-        resolve(msg.startServerResponse);
-      }
+    serverProcess.on('message', (msg: DevServerMessage) => {
+      cliReceivedMessageFromServer(config, compilerCtx, serverProcess, msg, resolve);
     });
 
     // listen for build finish
-    compilerCtx.events.subscribe('build', (buildResults) => {
+    compilerCtx.events.subscribe('build', async (buildResults) => {
       const msg: DevServerMessage = {
-        buildResults: generateBuildResults(buildResults)
+        buildResults: await generateBuildResults(config, compilerCtx, buildResults)
       };
-      child.send(msg);
+      serverProcess.send(msg);
     });
 
     // start the server
     const msg: DevServerMessage = {
       startServerRequest: config.devServer
     };
-    child.send(msg);
+    serverProcess.send(msg);
   });
 }
 
 
-function receiveMsgFromChild(config: Config, msg: DevServerMessage) {
+async function cliReceivedMessageFromServer(config: Config, compilerCtx: CompilerCtx, serverProcess: any, msg: DevServerMessage, resolve: Function) {
   if (msg.startServerResponse) {
+    // the server has successfully started
     config.devServer.ssl = msg.startServerResponse.ssl;
     config.devServer.address = msg.startServerResponse.address;
     config.devServer.port = msg.startServerResponse.port;
@@ -70,6 +67,19 @@ function receiveMsgFromChild(config: Config, msg: DevServerMessage) {
     if (config.devServer.openBrowser) {
       config.sys.open(msg.startServerResponse.openUrl);
     }
+    resolve(msg.startServerResponse);
+    return;
+  }
+
+  if (msg.requestBuildResults) {
+    // the browser wants the latest results sent
+    if (compilerCtx.lastBuildResults) {
+      const msg: DevServerMessage = {
+        buildResults: await generateBuildResults(config, compilerCtx, compilerCtx.lastBuildResults)
+      };
+      serverProcess.send(msg);
+    }
+    return;
   }
 }
 

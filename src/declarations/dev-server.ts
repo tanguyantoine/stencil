@@ -23,6 +23,7 @@ export interface DevServerClientConfig {
   browserUrl: string;
   openUrl: string;
   hasClientInitialized?: boolean;
+  hasDocumentInitialized?: boolean;
   initialDevServerLoad?: boolean;
   ssl: boolean;
   address: string;
@@ -71,7 +72,7 @@ export interface DevServerSocketConstructor {
 
 
 export interface DevServerSocket {
-  on: (type: string, cb: (event: { data: DevServerMessage; }) => void) => void;
+  on: (type: string, cb: (event: { data: string; }) => void) => void;
   send: (msg: string) => void;
 }
 
@@ -79,6 +80,7 @@ export interface DevServerSocket {
 export interface DevServerMessage {
   startServerRequest?: DevServerConfig;
   startServerResponse?: DevServerClientConfig;
+  requestBuildResults?: boolean;
   buildResults?: DevServerBuildResults;
 }
 
@@ -87,6 +89,7 @@ export interface DevServerBuildResults {
   buildId: number;
   diagnostics: d.Diagnostic[];
   hasError: boolean;
+  hasSuccessfulBuild: boolean;
   aborted?: boolean;
   duration: number;
   isRebuild: boolean;
@@ -94,4 +97,5 @@ export interface DevServerBuildResults {
   dirsDeleted: string[];
   filesChanged: string[];
   filesWritten: string[];
+  indexHtml?: string;
 }

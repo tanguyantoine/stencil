@@ -41,6 +41,7 @@ export interface BuildResults {
   buildId: number;
   diagnostics: d.Diagnostic[];
   hasError: boolean;
+  hasSuccessfulBuild: boolean;
   aborted?: boolean;
   duration: number;
   isRebuild: boolean;

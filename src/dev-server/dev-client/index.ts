@@ -3,4 +3,4 @@ import { initClient } from './init-client';
 
 declare const window: d.DevClientWindow;
 
-initClient(window, document, window.$devServer);
+initClient(window.$devServer, window, document);

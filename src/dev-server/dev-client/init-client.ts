@@ -1,10 +1,9 @@
 import * as d from '../../declarations';
 import { initClientWebSocket } from './client-web-socket';
 import { initDevServerLoad } from './dev-server-load';
-import { setupDocument } from './setup-document';
 
 
-export async function initClient(win: d.DevClientWindow, doc: Document, devServer: d.DevServerClientConfig) {
+export async function initClient(devServer: d.DevServerClientConfig, win: d.DevClientWindow, doc: Document) {
   try {
     if (!devServer) {
       console.error(`invalid client-side dev server config`);
@@ -20,9 +19,7 @@ export async function initClient(win: d.DevClientWindow, doc: Document, devServe
       initDevServerLoad(win);
     }
 
-    await initClientWebSocket(win, devServer);
-
-    setupDocument(doc);
+    await initClientWebSocket(devServer, win, doc);
 
   } catch (e) {
     console.error(e);
