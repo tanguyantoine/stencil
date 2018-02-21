@@ -57,7 +57,7 @@ export interface HttpRequest {
 export interface DevClientSocket {
   onopen: () => void;
   onerror: (event: { message: string; }) => void;
-  onmessage: (event: { data: DevServerMessage; }) => void;
+  onmessage: (event: { data: string; }) => void;
   onclose: (event: { code: number; reason: string; }) => void;
   protocol: number;
   send: (msg: string) => void;
@@ -79,7 +79,19 @@ export interface DevServerSocket {
 export interface DevServerMessage {
   startServerRequest?: DevServerConfig;
   startServerResponse?: DevServerClientConfig;
-  buildFinish?: {
-    results: d.BuildResults
-  };
+  buildResults?: DevServerBuildResults;
+}
+
+
+export interface DevServerBuildResults {
+  buildId: number;
+  diagnostics: d.Diagnostic[];
+  hasError: boolean;
+  aborted?: boolean;
+  duration: number;
+  isRebuild: boolean;
+  dirsAdded: string[];
+  dirsDeleted: string[];
+  filesChanged: string[];
+  filesWritten: string[];
 }

@@ -4,28 +4,28 @@ import * as d from '../../declarations';
 export function initClientWebSocket(win: d.DevClientWindow, devServer: d.DevServerClientConfig) {
   return new Promise((resolve, reject) => {
     try {
-      const Socket = win.MozWebSocket || win.WebSocket;
+      const ClientWebSocket = win.MozWebSocket || win.WebSocket;
       const protos = ['xmpp'];
 
       const socketUrl = `${devServer.ssl ? `wss` : `ws`}://${devServer.address}:${devServer.port}/`;
-      const socket = new Socket(socketUrl, protos);
+      const clientWs = new ClientWebSocket(socketUrl, protos);
 
-      socket.onopen = () => {
-        console.log('OPEN: ' + socket.protocol);
-        socket.send('Hello, world');
+      clientWs.onopen = () => {
+        console.log('OPEN: ' + clientWs.protocol);
+        clientWs.send('Hello, world');
         resolve();
       };
 
-      socket.onerror = (event) => {
+      clientWs.onerror = (event) => {
         console.log('ERROR: ' + event.message);
         reject('web socket error: ' + event.message);
       };
 
-      socket.onmessage = (event) => {
-        clientReceivedMessageFromServer(event.data);
+      clientWs.onmessage = (event) => {
+        browserReceivedMessageFromServer(JSON.parse(event.data));
       };
 
-      socket.onclose = (event) => {
+      clientWs.onclose = (event) => {
         console.log('CLOSE: ' + event.code + ', ' + event.reason);
       };
 
@@ -36,6 +36,6 @@ export function initClientWebSocket(win: d.DevClientWindow, devServer: d.DevServ
 }
 
 
-function clientReceivedMessageFromServer(msg: d.DevServerMessage) {
-  console.log('clientReceivedMessageFromServer', msg);
+function browserReceivedMessageFromServer(msg: d.DevServerMessage) {
+  console.log('browserReceivedMessageFromServer', msg);
 }

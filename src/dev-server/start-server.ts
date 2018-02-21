@@ -11,7 +11,7 @@ export async function startDevServer(config: DevServerConfig, fs: FileSystem) {
 
     const server = await createHttpServer(config, fs);
 
-    createWebSocketServer(config, server);
+    createWebSocketServer(server);
 
     server.listen(config.port, config.address);
 

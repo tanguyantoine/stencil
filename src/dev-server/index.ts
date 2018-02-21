@@ -7,7 +7,7 @@ import * as path from 'path';
 // fork-dev-server-process.ts file actually kicks off
 // this file from the main process
 
-process.on('message', async (msg: DevServerMessage) => {
+process.on('message', (msg: DevServerMessage) => {
   if (msg.startServerRequest) {
     startServerRequest(msg.startServerRequest);
   }

@@ -1,4 +1,6 @@
 import { CompilerCtx, Config, DevServerClientConfig, DevServerMessage } from '../declarations';
+import { generateBuildResults } from './build-results';
+
 
 /**
  * NODE ONLY!
@@ -44,9 +46,7 @@ export function startDevServerProcess(config: Config, compilerCtx: CompilerCtx):
     // listen for build finish
     compilerCtx.events.subscribe('build', (buildResults) => {
       const msg: DevServerMessage = {
-        buildFinish: {
-          results: buildResults
-        }
+        buildResults: generateBuildResults(buildResults)
       };
       child.send(msg);
     });
