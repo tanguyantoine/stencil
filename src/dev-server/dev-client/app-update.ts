@@ -1,6 +1,6 @@
 import  * as d from '../../declarations';
 import { appError, clearAppError } from './app-error';
-import { appLiveReload } from './app-live-reload';
+import { appHotReload } from './app-hot-reload';
 
 
 export async function appUpdate(ctx: d.DevServerClientContext, win: d.DevClientWindow, doc: Document, buildResults: d.DevServerBuildResults) {
@@ -26,8 +26,8 @@ export async function appUpdate(ctx: d.DevServerClientContext, win: d.DevClientW
       return;
     }
 
-    // let's live reload what we can from the build results
-    appLiveReload(win, doc, buildResults);
+    // let's hot reload what we can from the build results
+    appHotReload(win, doc, buildResults);
 
   } catch (e) {
     console.error(e);
