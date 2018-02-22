@@ -39,21 +39,25 @@ export async function serveFile(config: DevServerConfig, fs: FileSystem, req: Ht
     }
 
   } catch (e) {
-    serve404(config, fs, req, res);
+    return serve404(config, fs, req, res);
   }
 }
 
 
 export async function serveStaticDevClient(config: DevServerConfig, fs: FileSystem, req: HttpRequest, res: http.ServerResponse) {
-  if (isInitialDevServerLoad(req.pathname)) {
-    req.filePath = path.join(config.devServerDir, 'templates/initial-load.html');
+  try {
+    if (isInitialDevServerLoad(req.pathname)) {
+      req.filePath = path.join(config.devServerDir, 'templates/initial-load.html');
 
-  } else {
-    const staticFile = req.pathname.replace(DEV_SERVER_URL + '/', '');
-    req.filePath = path.join(config.devServerDir, 'static', staticFile);
+    } else {
+      const staticFile = req.pathname.replace(DEV_SERVER_URL + '/', '');
+      req.filePath = path.join(config.devServerDir, 'static', staticFile);
+    }
+
+    req.stats = await fs.stat(req.filePath);
+    return serveFile(config, fs, req, res);
+
+  } catch (e) {
+    return serve404(config, fs, req, res);
   }
-
-  req.stats = await fs.stat(req.filePath);
-
-  return serveFile(config, fs, req, res);
 }

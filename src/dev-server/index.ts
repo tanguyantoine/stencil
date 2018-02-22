@@ -7,13 +7,6 @@ import * as path from 'path';
 // fork-dev-server-process.ts file actually kicks off
 // this file from the main process
 
-process.on('message', (msg: DevServerMessage) => {
-  if (msg.startServerRequest) {
-    startServerRequest(msg.startServerRequest);
-  }
-});
-
-
 async function startServerRequest(config: DevServerConfig) {
   try {
     const fs = new NodeFs();
@@ -31,3 +24,15 @@ async function loadContentTypes(fs: NodeFs) {
   const contentTypeJson = await fs.readFile(contentTypePath);
   return JSON.parse(contentTypeJson);
 }
+
+
+process.on('message', (msg: DevServerMessage) => {
+  if (msg.startServerRequest) {
+    startServerRequest(msg.startServerRequest);
+  }
+});
+
+
+process.on('unhandledRejection', (error: Error) => {
+  console.log('dev server, unhandledRejection', error.message);
+});
