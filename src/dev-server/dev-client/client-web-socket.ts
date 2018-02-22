@@ -37,7 +37,7 @@ export function initClientWebSocket(ctx: d.DevServerClientContext, win: d.DevCli
 }
 
 
-async function browserWebSocketOpened(browserWs: d.DevClientSocket) {
+function browserWebSocketOpened(browserWs: d.DevClientSocket) {
   // now that we've got a good web socket connection opened
   // let's request the latest build results if they exist
   // if a build is still happening that's fine

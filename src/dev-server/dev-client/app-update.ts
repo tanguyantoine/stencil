@@ -1,11 +1,10 @@
 import  * as d from '../../declarations';
-import { appError } from './app-error';
+import { appError, clearAppError } from './app-error';
+import { appLiveReload } from './app-live-reload';
 
 
 export async function appUpdate(ctx: d.DevServerClientContext, win: d.DevClientWindow, doc: Document, buildResults: d.DevServerBuildResults) {
   try {
-    console.log('updateApp');
-
     if (buildResults.hasError) {
       // looks like we've got an error
       // let's show the error all pretty like
@@ -13,15 +12,22 @@ export async function appUpdate(ctx: d.DevServerClientContext, win: d.DevClientW
       return;
     }
 
+    // remove any app errors that may already be showing
+    clearAppError(doc);
+
     if (ctx.isInitialDevServerLoad) {
       // this page is the initial dev server loading page
       // and build has finished without errors
       // let's make sure the url is at the root
-      // and let's refresh the page
+      // and we're unregistered any existing service workers
+      // then let's refresh the page from the root
       await appReset(win);
       win.location.reload(true);
       return;
     }
+
+    // let's live reload what we can from the build results
+    appLiveReload(win, doc, buildResults);
 
   } catch (e) {
     console.error(e);
