@@ -1,3 +1,46 @@
+<a name="0.6.8"></a>
+## [0.6.8](https://github.com/ionic-team/stencil/compare/v0.6.7...v0.6.8) (2018-02-25)
+
+
+### Bug Fixes
+
+* **css:** use default css if sass plugin not installed ([a61dc3b](https://github.com/ionic-team/stencil/commit/a61dc3b))
+* **types:** import to missing dist/core folder after build process ([fb554c9](https://github.com/ionic-team/stencil/commit/fb554c9))
+
+
+### Component CSS and Sass Plugin Update
+
+For external collections that provide both CSS and Sass files, such as [Ionic](https://www.npmjs.com/package/@ionic/core), if the Stencil project does not have the [@stencil/sass](https://www.npmjs.com/package/@stencil/sass) plugin installed then it'll default to using the collection's CSS build. If project does have the sass plugin installed then it'll rebuild the external collection's sass files at compile time. This allows projects to override a collection's default Sass variables using the plugin's `injectGlobalPaths` option. Please see the [@stencil/sass options](https://www.npmjs.com/package/@stencil/sass) for more information.
+
+
+<a name="0.6.7"></a>
+## [0.6.7](https://github.com/ionic-team/stencil/compare/v0.6.6...v0.6.7) (2018-02-23)
+
+
+### Bug Fixes
+
+* **collection:** copy all src root level d.ts to dist/types directory for distribution ([9fcad83](https://github.com/ionic-team/stencil/commit/9fcad83))
+* **collection:** remove side effect collection imports from JS output ([64b03d0](https://github.com/ionic-team/stencil/commit/64b03d0))
+* **types:** gather collect types during ts typechecking ([03349be](https://github.com/ionic-team/stencil/commit/03349be))
+
+
+### Refactor
+
+* **collections:** use node module resolution for collection dependencies ([0dd621c](https://github.com/ionic-team/stencil/commit/0dd621c))
+
+
+<a name="0.6.6"></a>
+## [0.6.6](https://github.com/ionic-team/stencil/compare/v0.6.5...v0.6.6) (2018-02-22)
+
+
+### Bug Fixes
+
+* **ref:** execute ref on vnode items that get added during update. ([b192def](https://github.com/ionic-team/stencil/commit/b192def))
+* **ref:** move callNodeRefs check to only occur on rerender not on initial load. ([f09a5ee](https://github.com/ionic-team/stencil/commit/f09a5ee))
+* **global:** always add global script to built context ([db594bd](https://github.com/ionic-team/stencil/commit/db594bd))
+* **types:** remove deprecated collection imports ([6103fef](https://github.com/ionic-team/stencil/commit/6103fef))
+
+
 <a name="0.6.5"></a>
 ## [0.6.5](https://github.com/ionic-team/stencil/compare/v0.6.4...v0.6.5) (2018-02-20)
 

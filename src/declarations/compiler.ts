@@ -1,4 +1,4 @@
-import * as d from '../declarations';
+import * as d from './index';
 import { BuildEvents } from '../compiler/events';
 import { Cache } from '../compiler/cache';
 import { InMemoryFileSystem } from '../util/in-memory-fs';
@@ -23,7 +23,7 @@ export interface CompilerCtx {
     registryJson?: string;
   };
   appCoreWWWPath?: string;
-  resolvedModuleIds?: string[];
+  resolvedCollections?: string[];
 
   lastBuildHadError?: boolean;
   hasSuccessfulBuild?: boolean;

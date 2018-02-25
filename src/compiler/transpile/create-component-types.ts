@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentRegistry, Config, MemberMeta, MembersMeta } from '../../declarations';
+import { Collection, CompilerCtx, ComponentMeta, ComponentRegistry, Config, MemberMeta, MembersMeta, PackageJsonData } from '../../declarations';
 import { dashToPascalCase } from '../../util/helpers';
 import { MEMBER_TYPE } from '../../util/constants';
 import { normalizePath } from '../util';
@@ -21,7 +21,7 @@ export interface MemberNameData {
  * @param config the project build configuration
  * @param options compiler options from tsconfig
  */
-export function generateComponentTypesFile(config: Config, cmpList: ComponentRegistry): string {
+export async function generateComponentTypesFile(config: Config, compilerCtx: CompilerCtx, cmpList: ComponentRegistry) {
   let typeImportData: ImportData = {};
   const allTypes: { [key: string]: number } = {};
   let componentsFileContent =
@@ -31,14 +31,11 @@ export function generateComponentTypesFile(config: Config, cmpList: ComponentReg
  * and imports for stencil collections that might be configured in your stencil.config.js file
  */\n\n`;
 
- /**
-  * DEPRECATED "config.collections" since 0.6.0, 2018-02-13
-  */
-  componentsFileContent = config._deprecatedCollections.reduce((finalString, compCollection) => {
-    return finalString + `import '${compCollection.name}';\n\n`;
-  }, componentsFileContent);
-
   let addedStencilElement = false;
+
+  const collectionTypesImports = await getCollectionsTypeImports(config, compilerCtx);
+
+  componentsFileContent += collectionTypesImports;
 
   const componentFileString = Object.keys(cmpList)
     .filter(moduleFileName => cmpList[moduleFileName] != null)
@@ -267,4 +264,45 @@ function membersToInterfaceOptions(membersMeta: MembersMeta): { [key: string]: s
     }, <{ [key: string]: string }>{});
 
   return interfaceData;
+}
+
+
+async function getCollectionsTypeImports(config: Config, compilerCtx: CompilerCtx) {
+  const collections = compilerCtx.collections.map(collection => {
+    return getCollectionTypesImport(config, compilerCtx, collection);
+  });
+
+  const collectionTypes = await Promise.all(collections);
+
+  if (collectionTypes.length > 0) {
+    return `${collectionTypes.join('\n')}\n\n`;
+  }
+
+  return '';
+}
+
+
+async function getCollectionTypesImport(config: Config, compilerCtx: CompilerCtx, collection: Collection) {
+  let typeImport = '';
+
+  try {
+    const collectionDir = collection.moduleDir;
+    const collectionPkgJson = config.sys.path.join(collectionDir, 'package.json');
+
+    const pkgJsonStr = await compilerCtx.fs.readFile(collectionPkgJson);
+    const pkgData: PackageJsonData = JSON.parse(pkgJsonStr);
+
+    if (pkgData.types && pkgData.collection) {
+      typeImport = `import '${pkgData.name}';`;
+    }
+
+  } catch (e) {
+    config.logger.debug(`getCollectionTypesImport: ${e}`);
+  }
+
+  if (typeImport === '') {
+    config.logger.debug(`unabled to find "${collection.collectionName}" collection types`);
+  }
+
+  return typeImport;
 }
