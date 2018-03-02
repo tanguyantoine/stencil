@@ -1,12 +1,38 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loading...</title>
-    <link rel="shortcut icon" href="/__dev-server/favicon.ico" type="image/x-icon">
-    <link href="/__dev-server/dev-server.css" rel="stylesheet">
-  </head>
-  <body>
-  </body>
+<html dir="ltr" lang="en">
+<head>
+  <meta charset="utf-8">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(function(registration) {
+        if (registration) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="x-ua-compatible" content="IE=Edge">
+  <title>Initializing First Build...</title>
+  <link rel="shortcut icon" href="/__dev-server/favicon.ico" type="image/x-icon">
+  <link href="/__dev-server/initial-load.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="toast">
+    <div class="content">
+      <div class="message">Initializing First Build...</div>
+      <div class="spinner">
+        <svg viewBox="0 0 64 64"><circle transform="translate(32,32)" r="26"></circle></svg>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(function() {
+      document.querySelector('.toast').classList.add('active');
+    }, 100);
+  </script>
+
+</body>
 </html>

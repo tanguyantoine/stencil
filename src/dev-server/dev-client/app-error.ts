@@ -17,14 +17,14 @@ export function appError(doc: Document, buildResults: d.DevServerBuildResults) {
 
 function errorDiagnostic(doc: Document, container: HTMLElement, diagnostic: d.Diagnostic) {
   const cardOuter = doc.createElement('div');
-  cardOuter.className = 'dev-server-app-error-card';
+  cardOuter.className = 'dev-server-error-card';
 
   const cardInner = doc.createElement('div');
-  cardInner.className = 'dev-server-app-error-card-inner';
+  cardInner.className = 'dev-server-error-card-inner';
   cardOuter.appendChild(cardInner);
 
   const message = doc.createElement('div');
-  message.className = 'dev-server-app-error-card-message';
+  message.className = 'dev-server-error-card-message';
   message.textContent = diagnostic.messageText;
   cardInner.appendChild(message);
 
@@ -33,20 +33,20 @@ function errorDiagnostic(doc: Document, container: HTMLElement, diagnostic: d.Di
 
 
 function getErrorContainer(doc: Document) {
-  let outer = doc.getElementById('dev-server-app-error');
+  let outer = doc.getElementById('dev-server-error');
   if (!outer) {
     outer = doc.createElement('div');
-    outer.id = 'dev-server-app-error';
+    outer.id = 'dev-server-error';
     doc.body.appendChild(outer);
   }
 
   outer.innerHTML = `
-    <style>#dev-server-app-error { display: none; }</style>
-    <link href="/__dev-server/dev-server-app-error.css" rel="stylesheet">
+    <style>#dev-server-error { display: none; }</style>
+    <link href="/__dev-server/dev-server-error.css" rel="stylesheet">
     <div id="dev-server-error-inner"></div>
   `;
 
-  return doc.getElementById('dev-server-app-error-inner');
+  return doc.getElementById('dev-server-error-inner');
 }
 
 
@@ -68,7 +68,7 @@ function consoleLogError(diagnostic: d.Diagnostic) {
 
 
 export function clearAppError(doc: Document) {
-  const appErrorElm = doc.getElementById('dev-server-app-error');
+  const appErrorElm = doc.getElementById('dev-server-error');
   if (appErrorElm) {
     appErrorElm.parentNode.removeChild(appErrorElm);
   }
