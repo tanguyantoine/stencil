@@ -238,6 +238,10 @@ export class NodeSystem implements StencilSystem {
     return this.sysUtil.opn(p);
   }
 
+  parseArgv(args: string[], opts?: any) {
+    return this.sysUtil.minimist(args, opts);
+  }
+
   get platform() {
     return os.platform();
   }

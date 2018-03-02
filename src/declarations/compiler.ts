@@ -29,4 +29,5 @@ export interface CompilerCtx {
   hasSuccessfulBuild?: boolean;
   localPrerenderServer?: any;
   lastBuildResults?: d.BuildResults;
+  hasWatcher?: boolean;
 }

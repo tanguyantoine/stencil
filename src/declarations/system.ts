@@ -38,6 +38,7 @@ export interface StencilSystem {
   name: string;
   resolveModule?(fromDir: string, moduleId: string): string;
   open?: (p: string) => Promise<void>;
+  parseArgv?: (cmdArgs: string[], opts?: any) => any;
   path?: Path;
   platform?: string;
   rollup?: {

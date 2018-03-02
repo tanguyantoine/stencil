@@ -10,6 +10,7 @@ export * from './diagnostics';
 export * from './dom';
 export * from './entry';
 export * from './fs';
+export * from './jsx';
 export * from './logger';
 export * from './platform';
 export * from './plugin';
@@ -18,6 +19,3 @@ export * from './style';
 export * from './system';
 export * from './vdom';
 export * from './watcher';
-
-import { CssClassMap } from './jsx';
-export { CssClassMap };

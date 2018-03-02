@@ -45,6 +45,7 @@ export interface FsReadOptions {
 
 
 export interface FsReaddirOptions {
+  inMemoryOnly?: boolean;
   recursive?: boolean;
 }
 
@@ -52,7 +53,6 @@ export interface FsReaddirOptions {
 export interface FsReaddirItem {
   absPath: string;
   relPath: string;
-  itemPath: string;
   isDirectory: boolean;
   isFile: boolean;
 }
