@@ -12,7 +12,6 @@ import { generateIndexHtml } from '../html/generate-index-html';
 import { generateReadmes } from '../docs/generate-readmes';
 import { generateStyles } from '../style/style';
 import { initCollections } from '../collections/init-collections';
-import { initIndexHtml } from '../html/init-index-html';
 import { _deprecatedConfigCollections } from '../collections/_deprecated-collections';
 import { prerenderApp } from '../prerender/prerender-app';
 import { transpileAppModules } from '../transpile/transpile-app-modules';
@@ -28,11 +27,6 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
   const buildCtx = getBuildContext(config, compilerCtx, watcher);
 
   try {
-    // create an initial index.html file if one doesn't already exist
-    // this is synchronous on purpose
-    await initIndexHtml(config, compilerCtx, buildCtx);
-    if (buildCtx.shouldAbort()) return buildCtx.finish();
-
     // empty the directories on the first build
     await emptyDestDir(config, compilerCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
