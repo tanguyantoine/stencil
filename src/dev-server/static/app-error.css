@@ -1,10 +1,10 @@
-
-#dev-server-error * {
+#dev-app-error * {
   box-sizing: border-box;
 }
 
-#dev-server-error {
+#dev-app-error {
   direction: ltr;
+  display: block;
   position: absolute;
   top: 0;
   right: 0;
@@ -28,7 +28,7 @@
   user-select: auto;
 }
 
-.ion-diagnostics-content {
+#dev-app-error-inner {
   position: relative;
   padding: 0 0 30px 0;
   width: 100%;
@@ -38,33 +38,35 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.dev-server-error .ion-diagnostic {
-  margin: 20px;
+.dev-app-error-card {
+  margin: 10px;
   border: 1px solid #ddd;
   border-radius: 3px;
 }
 
-.dev-server-error .ion-diagnostic-masthead {
+.dev-app-error-card-inner {
   padding: 8px 12px 12px 12px;
 }
 
-.dev-server-error .ion-diagnostic-title {
+.dev-app-error-card-header {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   color: #222;
 }
 
-.dev-server-error .ion-diagnostic-message {
+/*
+
+.dev-app-error .ion-diagnostic-message {
   margin-top: 4px;
   color: #666;
 }
 
-.dev-server-error .ion-diagnostic-file {
+.dev-app-error .ion-diagnostic-file {
   position: relative;
   border-top: 1px solid #ddd;
 }
 
-.dev-server-error .ion-diagnostic-file-header {
+.dev-app-error .ion-diagnostic-file-header {
   padding: 5px 10px;
   border-bottom: 1px solid #ddd;
   border-top-left-radius: 2px;
@@ -72,35 +74,35 @@
   background-color: #f8f8f8;
 }
 
-.dev-server-error {
+.dev-app-error {
   -webkit-transition: opacity 150ms ease-out;
   transition: opacity 150ms ease-out;
 }
 
-.dev-server-error.ion-diagnostics-fade-out {
+.dev-app-error.ion-diagnostics-fade-out {
   opacity: 0;
 }
 
-.dev-server-error .ion-diagnostic-blob {
+.dev-app-error .ion-diagnostic-blob {
   overflow-x: auto;
   overflow-y: hidden;
   border-bottom-right-radius: 3px;
   border-bottom-left-radius: 3px;
 }
 
-.dev-server-error .ion-diagnostic-table {
+.dev-app-error .ion-diagnostic-table {
   border-spacing: 0;
   border-collapse: collapse;
   -moz-tab-size: 2;
   tab-size: 2;
 }
 
-.dev-server-error .ion-diagnostic-table td,
-.dev-server-error .ion-diagnostic-table th {
+.dev-app-error .ion-diagnostic-table td,
+.dev-app-error .ion-diagnostic-table th {
   padding: 0;
 }
 
-.dev-server-error td.ion-diagnostic-blob-num {
+.dev-app-error td.ion-diagnostic-blob-num {
   padding-right: 10px;
   padding-left: 10px;
   width: 1%;
@@ -120,25 +122,25 @@
   border-width: 0 1px 0 0;
 }
 
-.dev-server-error .ion-diagnostic-blob-num::before {
+.dev-app-error .ion-diagnostic-blob-num::before {
   content: attr(data-line-number);
 }
 
-.dev-server-error .ion-diagnostic-error-line .ion-diagnostic-blob-num {
+.dev-app-error .ion-diagnostic-error-line .ion-diagnostic-blob-num {
   background-color: #ffdddd;
   border-color: #ffc9c9;
 }
 
-.dev-server-error .ion-diagnostic-error-line .ion-diagnostic-blob-code {
+.dev-app-error .ion-diagnostic-error-line .ion-diagnostic-blob-code {
   background: rgba(255, 221, 221, 0.25);
   z-index: -1;
 }
 
-.dev-server-error .ion-diagnostics-error-chr {
+.dev-app-error .ion-diagnostics-error-chr {
   position: relative;
 }
 
-.dev-server-error .ion-diagnostics-error-chr::before {
+.dev-app-error .ion-diagnostics-error-chr::before {
   position: absolute;
   z-index: -1;
   top: -3px;
@@ -149,7 +151,7 @@
   content: "";
 }
 
-.dev-server-error td.ion-diagnostic-blob-code {
+.dev-app-error td.ion-diagnostic-blob-code {
   position: relative;
   padding-right: 10px;
   padding-left: 10px;
@@ -163,18 +165,18 @@
   white-space: pre;
 }
 
-.dev-server-error .ion-diagnostic-blob-code::before {
+.dev-app-error .ion-diagnostic-blob-code::before {
   content: "";
 }
 
-.dev-server-error .ion-diagnostic-stack-header {
+.dev-app-error .ion-diagnostic-stack-header {
   padding: 5px 10px;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
   background-color: #f8f8f8;
 }
 
-.dev-server-error .ion-diagnostic-stack {
+.dev-app-error .ion-diagnostic-stack {
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 10px;
   color: #333;
@@ -186,7 +188,7 @@
   -webkit-user-select: text;
 }
 
-.dev-server-error-toast {
+.dev-app-error-toast {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -204,12 +206,12 @@
   pointer-events: none;
 }
 
-.dev-server-error-toast.ion-diagnostics-toast-active {
+.dev-app-error-toast.ion-diagnostics-toast-active {
   -webkit-transform: translate3d(0px, 0px, 0px);
   transform: translate3d(0px, 0px, 0px);
 }
 
-.dev-server-error-toast .ion-diagnostics-toast-content {
+.dev-app-error-toast .ion-diagnostics-toast-content {
   display: flex;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -217,7 +219,7 @@
   pointer-events: auto;
 }
 
-.dev-server-error-toast .ion-diagnostics-toast-message {
+.dev-app-error-toast .ion-diagnostics-toast-message {
   -webkit-flex: 1;
   -ms-flex: 1;
   flex: 1;
@@ -227,18 +229,18 @@
   color: #fff;
 }
 
-.dev-server-error-toast .ion-diagnostics-toast-spinner {
+.dev-app-error-toast .ion-diagnostics-toast-spinner {
   position: relative;
   display: inline-block;
   width: 56px;
   height: 28px;
 }
 
-.dev-server-error-toast svg:not(:root) {
+.dev-app-error-toast svg:not(:root) {
   overflow: hidden;
 }
 
-.dev-server-error-toast svg {
+.dev-app-error-toast svg {
   position: absolute;
   top: 0;
   left: 0;
@@ -272,7 +274,7 @@
   }
 }
 
-.dev-server-error-toast svg circle {
+.dev-app-error-toast svg circle {
   fill: transparent;
   stroke: white;
   stroke-width: 4px;
@@ -338,7 +340,7 @@
   opacity: 0.7;
 }
 
-.dev-server-error-options {
+.dev-app-error-options {
   position: absolute;
   top: 0;
   left: 0;
@@ -362,7 +364,7 @@
   transform: translate3d(0, 100%, 0);
 }
 
-.dev-server-error-backdrop {
+.dev-app-error-backdrop {
   width: 100%;
   height: 100%;
   opacity: 0.01;
@@ -374,7 +376,7 @@
   transform: translate3d(0, 0, 0);
 }
 
-.ion-diagnostics-options-show .dev-server-error-backdrop {
+.ion-diagnostics-options-show .dev-app-error-backdrop {
   opacity: 0.4;
 }
 
@@ -417,7 +419,7 @@
   border-bottom: 0;
 }
 
-.dev-server-error-system-info {
+.dev-app-error-system-info {
   margin: 0 20px 20px 20px;
   padding: 0px 0 20px 0;
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
@@ -432,6 +434,7 @@
  * Author : Louis Barranqueiro - https://github.com/LouisBarranqueiro
  * https://highlightjs.org/
  */
+ /*
 .hljs-comment,
 .hljs-meta {
   color: #969896;
@@ -489,4 +492,4 @@
 
 .hljs-link {
   text-decoration: underline;
-}
+} */

@@ -17,14 +17,21 @@ export function appError(doc: Document, buildResults: d.DevServerBuildResults) {
 
 function errorDiagnostic(doc: Document, container: HTMLElement, diagnostic: d.Diagnostic) {
   const cardOuter = doc.createElement('div');
-  cardOuter.className = 'dev-server-error-card';
+  cardOuter.className = 'dev-app-error-card';
 
   const cardInner = doc.createElement('div');
-  cardInner.className = 'dev-server-error-card-inner';
+  cardInner.className = 'dev-app-error-card-inner';
   cardOuter.appendChild(cardInner);
 
+  if (diagnostic.header) {
+    const header = doc.createElement('div');
+    header.className = 'dev-app-error-card-header';
+    header.textContent = diagnostic.header;
+    cardInner.appendChild(header);
+  }
+
   const message = doc.createElement('div');
-  message.className = 'dev-server-error-card-message';
+  message.className = 'dev-app-error-card-message';
   message.textContent = diagnostic.messageText;
   cardInner.appendChild(message);
 
@@ -33,20 +40,20 @@ function errorDiagnostic(doc: Document, container: HTMLElement, diagnostic: d.Di
 
 
 function getErrorContainer(doc: Document) {
-  let outer = doc.getElementById('dev-server-error');
+  let outer = doc.getElementById('dev-app-error');
   if (!outer) {
     outer = doc.createElement('div');
-    outer.id = 'dev-server-error';
+    outer.id = 'dev-app-error';
     doc.body.appendChild(outer);
   }
 
   outer.innerHTML = `
-    <style>#dev-server-error { display: none; }</style>
-    <link href="/__dev-server/dev-server-error.css" rel="stylesheet">
-    <div id="dev-server-error-inner"></div>
+    <style>#dev-app-error { display: none; }</style>
+    <link href="/__dev-server/app-error.css" rel="stylesheet">
+    <div id="dev-app-error-inner"></div>
   `;
 
-  return doc.getElementById('dev-server-error-inner');
+  return doc.getElementById('dev-app-error-inner');
 }
 
 
@@ -68,7 +75,7 @@ function consoleLogError(diagnostic: d.Diagnostic) {
 
 
 export function clearAppError(doc: Document) {
-  const appErrorElm = doc.getElementById('dev-server-error');
+  const appErrorElm = doc.getElementById('dev-app-error');
   if (appErrorElm) {
     appErrorElm.parentNode.removeChild(appErrorElm);
   }
