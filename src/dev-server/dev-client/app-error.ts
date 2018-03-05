@@ -6,54 +6,93 @@ export function appError(doc: Document, buildResults: d.DevServerBuildResults) {
     return;
   }
 
-  const container = getErrorContainer(doc);
+  const modal = getDevServerModal(doc);
 
   buildResults.diagnostics.forEach(diagnostic => {
     consoleLogError(diagnostic);
-    errorDiagnostic(doc, container, diagnostic);
+    appendDiagnostic(doc, modal, diagnostic);
   });
 }
 
 
-function errorDiagnostic(doc: Document, container: HTMLElement, diagnostic: d.Diagnostic) {
-  const cardOuter = doc.createElement('div');
-  cardOuter.className = 'dev-app-error-card';
+function appendDiagnostic(doc: Document, modal: HTMLElement, diagnostic: d.Diagnostic) {
+  const card = doc.createElement('div');
+  card.className = 'dev-server-diagnostic';
 
-  const cardInner = doc.createElement('div');
-  cardInner.className = 'dev-app-error-card-inner';
-  cardOuter.appendChild(cardInner);
+  const masthead = doc.createElement('div');
+  masthead.className = 'dev-server-diagnostic-masthead';
+  masthead.title = `${escapeHtml(diagnostic.type)} error: ${escapeHtml(diagnostic.code)}`;
+  card.appendChild(masthead);
 
-  if (diagnostic.header) {
-    const header = doc.createElement('div');
-    header.className = 'dev-app-error-card-header';
-    header.textContent = diagnostic.header;
-    cardInner.appendChild(header);
-  }
+  const title = doc.createElement('div');
+  title.className = 'dev-server-diagnostic-title';
+  title.textContent = `${titleCase(diagnostic.type)} ${titleCase(diagnostic.level)}`;
+  masthead.appendChild(title);
 
   const message = doc.createElement('div');
-  message.className = 'dev-app-error-card-message';
+  message.className = 'dev-server-diagnostic-message';
   message.textContent = diagnostic.messageText;
-  cardInner.appendChild(message);
+  masthead.appendChild(message);
 
-  container.appendChild(cardOuter);
+  const file = doc.createElement('div');
+  file.className = 'dev-server-diagnostic-file';
+  card.appendChild(file);
+
+  if (diagnostic.absFilePath) {
+    const fileHeader = doc.createElement('div');
+    fileHeader.className = 'dev-server-diagnostic-file-header';
+    fileHeader.title = escapeHtml(diagnostic.absFilePath);
+    fileHeader.textContent = diagnostic.relFilePath;
+    file.appendChild(fileHeader);
+  }
+
+  if (diagnostic.lines && diagnostic.lines.length > 0) {
+    const blob = doc.createElement('div');
+    blob.className = 'dev-server-diagnostic-blob';
+    file.appendChild(blob);
+
+    const table = doc.createElement('table');
+    table.className = 'dev-server-diagnostic-table';
+    file.appendChild(table);
+
+    prepareLines(diagnostic.lines, 'html').forEach(l => {
+      const tr = doc.createElement('tr');
+      if (l.errorCharStart > -1) {
+        tr.className = 'dev-server-diagnostic-error-line';
+      }
+      table.appendChild(tr);
+
+      const tdNum = doc.createElement('td');
+      tdNum.className = 'dev-server-diagnostic-blob-num';
+      tdNum.setAttribute('data-line-number', l.lineNumber + '');
+      tr.appendChild(tdNum);
+
+      const tdCode = doc.createElement('td');
+      tdCode.className = 'dev-server-diagnostic-blob-code';
+      tdCode.innerHTML = highlightError(l.html, l.errorCharStart, l.errorLength);
+      tr.appendChild(tdCode);
+    });
+  }
+
+  modal.appendChild(card);
 }
 
 
-function getErrorContainer(doc: Document) {
-  let outer = doc.getElementById('dev-app-error');
+function getDevServerModal(doc: Document) {
+  let outer = doc.getElementById(DEV_SERVER_MODAL);
   if (!outer) {
     outer = doc.createElement('div');
-    outer.id = 'dev-app-error';
+    outer.id = DEV_SERVER_MODAL;
     doc.body.appendChild(outer);
   }
 
   outer.innerHTML = `
-    <style>#dev-app-error { display: none; }</style>
+    <style>#${DEV_SERVER_MODAL} { display: none; }</style>
     <link href="/__dev-server/app-error.css" rel="stylesheet">
-    <div id="dev-app-error-inner"></div>
+    <div id="${DEV_SERVER_MODAL}-inner"></div>
   `;
 
-  return doc.getElementById('dev-app-error-inner');
+  return doc.getElementById(`${DEV_SERVER_MODAL}-inner`);
 }
 
 
@@ -74,9 +113,121 @@ function consoleLogError(diagnostic: d.Diagnostic) {
 }
 
 
-export function clearAppError(doc: Document) {
-  const appErrorElm = doc.getElementById('dev-app-error');
+export function clearDevServerModal(doc: Document) {
+  const appErrorElm = doc.getElementById(DEV_SERVER_MODAL);
   if (appErrorElm) {
     appErrorElm.parentNode.removeChild(appErrorElm);
   }
 }
+
+function escapeHtml(unsafe: string) {
+  if (typeof unsafe === 'number' || typeof unsafe === 'boolean') {
+    return (unsafe as any).toString();
+  }
+  if (typeof unsafe === 'string') {
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+  return '';
+}
+
+function titleCase(str: string) {
+  return str.charAt(0).toUpperCase() + str.substr(1);
+}
+
+function highlightError(htmlInput: string, errorCharStart: number, errorLength: number) {
+  if (errorCharStart < 0 || errorLength < 1 || !htmlInput) return htmlInput;
+
+  const chars = htmlInput.split('');
+  let inTag = false;
+  let textIndex = -1;
+  for (var htmlIndex = 0; htmlIndex < chars.length; htmlIndex++) {
+    if (chars[htmlIndex] === '<') {
+      inTag = true;
+      continue;
+
+    } else if (chars[htmlIndex] === '>') {
+      inTag = false;
+      continue;
+
+    } else if (inTag) {
+      continue;
+
+    } else if (chars[htmlIndex] === '&') {
+
+      var isValidEscape = true;
+      var escapeChars = '&';
+      for (var i = htmlIndex + 1; i < chars.length; i++) {
+        if (!chars[i] || chars[i] === ' ') {
+          isValidEscape = false;
+          break;
+        } else if (chars[i] === ';') {
+          escapeChars += ';';
+          break;
+        } else {
+          escapeChars += chars[i];
+        }
+      }
+      isValidEscape = (isValidEscape && escapeChars.length > 1 && escapeChars.length < 9 && escapeChars[escapeChars.length - 1] === ';');
+
+      if (isValidEscape) {
+        chars[htmlIndex] = escapeChars;
+        for (let i = 0; i < escapeChars.length - 1; i++) {
+          chars.splice(htmlIndex + 1, 1);
+        }
+      }
+    }
+
+    textIndex++;
+
+    if (textIndex < errorCharStart || textIndex >= errorCharStart + errorLength) {
+      continue;
+    }
+
+    chars[htmlIndex] = `<span class="dev-server-diagnostic-error-chr">${chars[htmlIndex]}</span>`;
+  }
+
+  return chars.join('');
+}
+
+function prepareLines(orgLines: d.PrintLine[], code: 'text'|'html') {
+  const lines: d.PrintLine[] = JSON.parse(JSON.stringify(orgLines));
+
+  for (let i = 0; i < 100; i++) {
+    if (!eachLineHasLeadingWhitespace(lines, code)) {
+      return lines;
+    }
+    for (let i = 0; i < lines.length; i++) {
+      (<any>lines[i])[code] = (<any>lines[i])[code].substr(1);
+      lines[i].errorCharStart--;
+      if (!(<any>lines[i])[code].length) {
+        return lines;
+      }
+    }
+  }
+
+  return lines;
+}
+
+
+function eachLineHasLeadingWhitespace(lines: d.PrintLine[], code: 'text'|'html') {
+  if (!lines.length) {
+    return false;
+  }
+  for (var i = 0; i < lines.length; i++) {
+    if ( !(<any>lines[i])[code] || (<any>lines[i])[code].length < 1) {
+      return false;
+    }
+    const firstChar = (<any>lines[i])[code].charAt(0);
+    if (firstChar !== ' ' && firstChar !== '\t') {
+      return false;
+    }
+  }
+  return true;
+}
+
+const DEV_SERVER_MODAL = `dev-server-modal`;

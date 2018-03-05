@@ -1,5 +1,5 @@
 import  * as d from '../../declarations';
-import { appError, clearAppError } from './app-error';
+import { appError, clearDevServerModal } from './app-error';
 import { appHotReload } from './app-hot-reload';
 
 
@@ -13,7 +13,7 @@ export async function appUpdate(ctx: d.DevServerClientContext, win: d.DevClientW
     }
 
     // remove any app errors that may already be showing
-    clearAppError(doc);
+    clearDevServerModal(doc);
 
     if (ctx.isInitialDevServerLoad) {
       // this page is the initial dev server loading page
