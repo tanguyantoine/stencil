@@ -1,3 +1,44 @@
+<a name="0.7.0-2"></a>
+# 😄 [0.7.0-2](https://github.com/ionic-team/stencil/compare/v0.7.0-1...v0.7.0-2) (2018-03-09)
+
+
+### Bug Fixes
+
+* **service-worker:** do not build service worker in dev builds ([72e2997](https://github.com/ionic-team/stencil/commit/72e2997))
+
+
+
+<a name="0.7.0-1"></a>
+# 🍅 [0.7.0-1](https://github.com/ionic-team/stencil/compare/v0.7.0-0...v0.7.0-1) (2018-03-09)
+
+
+### Bug Fixes
+
+* **css-shim:** improve tests for requiring css shim ([4a2a480](https://github.com/ionic-team/stencil/commit/4a2a480)), closes [#603](https://github.com/ionic-team/stencil/issues/603)
+* **polyfills:** makes polyfills writable properties ([b439cad](https://github.com/ionic-team/stencil/commit/b439cad)), closes [#606](https://github.com/ionic-team/stencil/issues/606)
+* **svg:** build svg render into core w/ imports ([1b3904d](https://github.com/ionic-team/stencil/commit/1b3904d)), closes [#607](https://github.com/ionic-team/stencil/issues/607)
+* **sw:** fix service worker config validation ([cdf890e](https://github.com/ionic-team/stencil/commit/cdf890e))
+* **tag:** fix dash case conversion for tags with digits ([af12eb4](https://github.com/ionic-team/stencil/commit/af12eb4)), closes [#599](https://github.com/ionic-team/stencil/issues/599)
+* **types:** adds forceUpdate() ([3640715](https://github.com/ionic-team/stencil/commit/3640715))
+
+
+### Features
+
+* **config:** allow for multiple output target configurations ([c808dee](https://github.com/ionic-team/stencil/commit/c808dee))
+* **types:** add image decode attribute to JSX definition ([#596](https://github.com/ionic-team/stencil/issues/596)) ([fbda0c8](https://github.com/ionic-team/stencil/commit/fbda0c8))
+
+
+
+<a name="0.7.0-0"></a>
+# 🐖 [0.7.0-0](https://github.com/ionic-team/stencil/compare/v0.6.18...v0.7.0-0) (2018-03-06)
+
+
+### Features
+
+* allow for multiple build target configurations ( fixes [#582](https://github.com/ionic-team/stencil/issues/582)) ([a05dc00](https://github.com/ionic-team/stencil/commit/a05dc00))
+
+
+
 <a name="0.6.18"></a>
 ## 🗻 [0.6.18](https://github.com/ionic-team/stencil/compare/v0.6.17...v0.6.18) (2018-03-05)
 

@@ -1,12 +1,14 @@
 import { Compiler } from '../compiler/index';
+import { Config } from '../declarations';
 import { TestingConfig } from './testing-config';
-import { validateBuildConfig } from '../compiler/config/validate-config';
+import { validateConfig } from '../compiler/config/validate-config';
 
 
 export class TestingCompiler extends Compiler {
 
-  constructor() {
-    super(new TestingConfig());
+  constructor(config?: Config) {
+    config = config || new TestingConfig();
+    super(config);
   }
 
   loadConfigFile(configPath: string) {
@@ -19,7 +21,7 @@ export class TestingCompiler extends Compiler {
     Object.assign(this.config, exports.config);
 
     this.config._isValidated = false;
-    validateBuildConfig(this.config);
+    validateConfig(this.config);
   }
 
 }

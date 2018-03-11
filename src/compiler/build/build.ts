@@ -7,14 +7,14 @@ import { getBuildContext } from './build-utils';
 import { getCompilerCtx } from './compiler-ctx';
 import { generateAppFiles } from '../app/generate-app-files';
 import { generateBundles } from '../bundle/generate-bundles';
+import { generateDocs } from '../docs/docs';
 import { generateEntryModules } from '../entries/entry-modules';
-import { generateIndexHtml } from '../html/generate-index-html';
-import { generateReadmes } from '../docs/generate-readmes';
+import { generateIndexHtmls } from '../html/generate-index-html';
 import { generateStyles } from '../style/style';
 import { initCollections } from '../collections/init-collections';
-import { _deprecatedConfigCollections } from '../collections/_deprecated-collections';
-import { prerenderApp } from '../prerender/prerender-app';
+import { prerenderApps } from '../prerender/prerender-app';
 import { transpileAppModules } from '../transpile/transpile-app-modules';
+import { _deprecatedConfigCollections } from '../collections/_deprecated-collections';
 
 
 export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?: WatcherResults): Promise<BuildResults> {
@@ -77,15 +77,15 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     }
 
     // build index file and service worker
-    await generateIndexHtml(config, compilerCtx, buildCtx);
+    await generateIndexHtmls(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
-    // generate each of the readmes
-    await generateReadmes(config, compilerCtx);
+    // generate component docs
+    await generateDocs(config, compilerCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // prerender that app
-    await prerenderApp(config, compilerCtx, buildCtx, entryModules);
+    await prerenderApps(config, compilerCtx, buildCtx, entryModules);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // write all the files and copy asset files

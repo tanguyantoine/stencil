@@ -8,10 +8,6 @@ export async function copyTasks(config: Config, compilerCtx: CompilerCtx, diagno
     return;
   }
 
-  if (!config.generateWWW && !config.generateDistribution) {
-    return;
-  }
-
   const timeSpan = config.logger.createTimeSpan(`copy task started`, true);
 
   try {
@@ -60,13 +56,18 @@ export async function processCopyTasks(config: Config, compilerCtx: CompilerCtx,
     return;
   }
 
-  if (config.generateWWW) {
-    await processCopyTaskDestDir(config, compilerCtx, allCopyTasks, copyTask, config.wwwDir);
-  }
+  const outputTargets = config.outputTargets.filter(outputTarget => {
+    return outputTarget.type === 'www' || outputTarget.type === 'dist';
+  });
 
-  if (config.generateDistribution) {
-    await processCopyTaskDestDir(config, compilerCtx, allCopyTasks, copyTask, config.collectionDir);
-  }
+  return Promise.all(outputTargets.map(outputTarget => {
+    if (outputTarget.collectionDir) {
+      return processCopyTaskDestDir(config, compilerCtx, allCopyTasks, copyTask, outputTarget.collectionDir);
+
+    } else {
+      return processCopyTaskDestDir(config, compilerCtx, allCopyTasks, copyTask, outputTarget.path);
+    }
+  }));
 }
 
 
@@ -98,13 +99,16 @@ async function processGlob(config: Config, copyTask: CopyTask) {
   const files = await config.sys.glob(copyTask.src, globOpts);
 
   files.forEach(globRelPath => {
-    if (config.generateWWW) {
-      globCopyTasks.push(createGlobCopyTask(config, copyTask, config.wwwDir, globRelPath));
-    }
 
-    if (config.generateDistribution) {
-      globCopyTasks.push(createGlobCopyTask(config, copyTask, config.collectionDir, globRelPath));
-    }
+    config.outputTargets.forEach(outputTarget => {
+      if (outputTarget.collectionDir) {
+        globCopyTasks.push(createGlobCopyTask(config, copyTask, outputTarget.collectionDir, globRelPath));
+
+      } else {
+        globCopyTasks.push(createGlobCopyTask(config, copyTask, outputTarget.path, globRelPath));
+      }
+    });
+
   });
 
   return globCopyTasks;

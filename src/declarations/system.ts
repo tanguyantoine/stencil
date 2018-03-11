@@ -38,7 +38,6 @@ export interface StencilSystem {
   name: string;
   resolveModule?(fromDir: string, moduleId: string): string;
   open?: (p: string) => Promise<void>;
-  parseArgv?: (cmdArgs: string[], opts?: any) => any;
   path?: Path;
   platform?: string;
   rollup?: {
@@ -60,7 +59,7 @@ export interface StencilSystem {
     resolve(from: string, to: string): string;
   };
   vm?: {
-    createContext(ctx: d.CompilerCtx, wwwDir: string, sandbox?: any): any;
+    createContext(ctx: d.CompilerCtx, dir: string, sandbox?: any): any;
     runInContext(code: string, contextifiedSandbox: any, options?: any): any;
   };
   workbox?: Workbox;
@@ -121,8 +120,8 @@ export interface RollupPlugins {
 
 
 export interface PackageJsonData {
-  name: string;
-  version: string;
+  name?: string;
+  version?: string;
   main?: string;
   collection?: string;
   types?: string;

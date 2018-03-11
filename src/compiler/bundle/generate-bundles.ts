@@ -1,6 +1,6 @@
 import { BuildCtx, CompilerCtx, ComponentMeta, ComponentRegistry, Config, EntryBundle, EntryModule, JSModuleMap, ModuleFile, SourceTarget } from '../../declarations';
 import { DEFAULT_STYLE_MODE } from '../../util/constants';
-import { getAppDistDir, getAppWWWBuildDir, getBundleFilename } from '../app/app-file-naming';
+import { getAppBuildDir, getBundleFilename } from '../app/app-file-naming';
 import { getStyleIdPlaceholder, getStylePlaceholder, replaceBundleIdPlaceholder } from '../../util/data-serialize';
 import { hasError, minifyJs, pathJoin } from '../util';
 import { transpileToEs5 } from '../transpile/core-build';
@@ -69,21 +69,17 @@ export async function generateBundles(config: Config, compilerCtx: CompilerCtx, 
 
 async function writeBundleJSFile(config: Config, compilerCtx: CompilerCtx, fileName: string, jsText: string) {
 
-  // get the absolute path to where it'll be saved in www
-  const wwwBuildPath = pathJoin(config, getAppWWWBuildDir(config), fileName);
+  const outputTargets = config.outputTargets.filter(outputTarget => {
+    return outputTarget.type === 'www' || outputTarget.type === 'dist';
+  });
 
-  // get the absolute path to where it'll be saved in dist
-  const distPath = pathJoin(config, getAppDistDir(config), fileName);
+  return Promise.all(outputTargets.map(outputTarget => {
+    // get the absolute path to where it'll be saved in www
+    const wwwBuildPath = pathJoin(config, getAppBuildDir(config, outputTarget), fileName);
 
-  if (config.generateWWW) {
     // write to the www build
-    await compilerCtx.fs.writeFile(wwwBuildPath, jsText);
-  }
-
-  if (config.generateDistribution) {
-    // write to the dist build
-    await compilerCtx.fs.writeFile(distPath, jsText);
-  }
+    return compilerCtx.fs.writeFile(wwwBuildPath, jsText);
+  }));
 }
 
 async function generateBundleMode(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModule: EntryModule, modeName: string, jsCode: { [key: string]: string }) {
@@ -177,23 +173,18 @@ async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, ent
   entryModule.entryBundles = entryModule.entryBundles || [];
   entryModule.entryBundles.push(entryBundle);
 
-  // get the absolute path to where it'll be saved in www
-  const wwwBuildPath = pathJoin(config, getAppWWWBuildDir(config), fileName);
+  const outputTargets = config.outputTargets.filter(outputTarget => {
+    return outputTarget.type === 'www' || outputTarget.type === 'dist';
+  });
 
-  // get the absolute path to where it'll be saved in dist
-  const distPath = pathJoin(config, getAppDistDir(config), fileName);
+  return Promise.all(outputTargets.map(async outputTarget => {
+    // get the absolute path to where it'll be saved
+    const wwwBuildPath = pathJoin(config, getAppBuildDir(config, outputTarget), fileName);
 
-  if (config.generateWWW) {
-    // write to the www build
+    // write to the build
     await compilerCtx.fs.writeFile(wwwBuildPath, jsText);
     entryBundle.outputs.push(wwwBuildPath);
-  }
-
-  if (config.generateDistribution) {
-    // write to the dist build
-    await compilerCtx.fs.writeFile(distPath, jsText);
-    entryBundle.outputs.push(distPath);
-  }
+  }));
 }
 
 

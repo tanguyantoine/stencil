@@ -1,10 +1,10 @@
-import { Config, ServiceWorkerConfig } from '../../declarations';
+import { Config, OutputTarget } from '../../declarations';
 
 
-export async function injectRegisterServiceWorker(config: Config, swConfig: ServiceWorkerConfig, indexHtml: string) {
+export async function injectRegisterServiceWorker(config: Config, outputTarget: OutputTarget, indexHtml: string) {
   const match = indexHtml.match(BODY_CLOSE_REG);
 
-  let swUrl = config.sys.path.relative(config.wwwDir, swConfig.swDest);
+  let swUrl = config.sys.path.relative(outputTarget.path, outputTarget.serviceWorker.swDest);
   if (swUrl.charAt(0) !== '/') {
     swUrl = '/' + swUrl;
   }

@@ -1,12 +1,13 @@
-import { BuildConditionals } from './interfaces';
+import { BuildConditionals } from '../declarations';
 
 
 export const Build: BuildConditionals = {
-  verboseError: true,
-
   cssVarShim: true,
   shadowDom: true,
   ssrServerSide: true,
+
+  devInspector: true,
+  verboseError: true,
 
   styles: true,
 
@@ -15,6 +16,7 @@ export const Build: BuildConditionals = {
   svg: true,
   observeAttr: true,
   isDev: true,
+  isProd: false,
 
   // decorators
   element: true,

@@ -1,10 +1,12 @@
 
 export * from './build';
+export * from './build-conditionals';
 export * from './collection';
 export * from './compiler';
 export * from './component';
 export * from './config';
 export * from './decorators';
+export * from './dev-inspector';
 export * from './dev-server';
 export * from './diagnostics';
 export * from './dom';

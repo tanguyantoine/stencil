@@ -1,6 +1,6 @@
 {
   "name": "@stencil/core",
-  "version": "0.6.18",
+  "version": "0.7.0-2",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -78,7 +78,6 @@
     "magic-string": "^0.22.4",
     "mime-db": "^1.32.0",
     "minimatch": "^3.0.4",
-    "minimist": "^1.2.0",
     "node-fetch": "1.7.3",
     "opn": "^5.2.0",
     "semver": "^5.5.0",

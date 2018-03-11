@@ -30,6 +30,7 @@ export interface BuildCtx {
   filesAdded: string[];
   shouldAbort?(): boolean;
   data?: any;
+  hasSvg?: boolean;
   finish?(): Promise<BuildResults>;
 }
 
@@ -57,6 +58,7 @@ export interface BuildResults {
   filesDeleted: string[];
   components: BuildComponent[];
   entries: BuildEntry[];
+  hasSvg: boolean;
 }
 
 
@@ -73,8 +75,6 @@ export interface BuildStats {
     bundles: number;
   };
   options: {
-    generateWWW: boolean;
-    generateDistribution: boolean;
     minifyJs: boolean;
     minifyCss: boolean;
     hashFileNames: boolean;
@@ -123,55 +123,6 @@ export interface BuildComponent {
   dependencies?: string[];
 }
 
-
-export interface BuildConditionals {
-  coreId?: 'core' | 'core.pf';
-  polyfills?: boolean;
-  verboseError: boolean;
-  es5?: boolean;
-  cssVarShim?: boolean;
-  clientSide?: boolean;
-  isDev: boolean;
-
-  // ssr
-  ssrServerSide: boolean;
-
-  // encapsulation
-  styles: boolean;
-
-  // dom
-  shadowDom: boolean;
-
-  // vdom
-  hostData: boolean;
-  hostTheme: boolean;
-
-  // decorators
-  element: boolean;
-  event: boolean;
-  listener: boolean;
-  method: boolean;
-  propConnect: boolean;
-  propContext: boolean;
-  watchCallback: boolean;
-
-  // lifecycle events
-  cmpDidLoad: boolean;
-  cmpWillLoad: boolean;
-  cmpDidUpdate: boolean;
-  cmpWillUpdate: boolean;
-  cmpDidUnload: boolean;
-
-  // attr
-  observeAttr: boolean;
-
-  // svg
-  svg: boolean;
-}
-
-export interface UserBuildConditionals {
-  isDev: boolean;
-}
 
 export interface FilesMap {
   [filePath: string]: string;

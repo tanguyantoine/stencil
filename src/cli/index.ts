@@ -1,28 +1,28 @@
 import { Compiler as CompilerType } from '../compiler';
 import { Config, Logger, StencilSystem } from '../declarations';
-import { getConfigFilePath, hasError, overrideConfigFromArgv, parseArgv } from './cli-utils';
+import { getConfigFilePath, hasError } from './cli-utils';
 import { help } from './task-help';
 import { initApp } from './task-init';
+import { parseFlags } from './parse-flags';
 import { startDevServer } from './serve';
 
 
 export async function run(process: NodeJS.Process, sys: StencilSystem, logger: Logger) {
-  const task = process.argv[2];
-  const argv = parseArgv(process, sys);
-
   process.on('unhandledRejection', (r: any) => logger.error(r));
 
-  if (argv.help) {
+  const flags = parseFlags(process);
+
+  if (flags.help || flags.task === 'help') {
     help(process, logger);
     process.exit(0);
   }
 
-  if (task === 'init') {
+  if (flags.task === 'init') {
     initApp(process, sys, logger);
     process.exit(0);
   }
 
-  if (argv.version) {
+  if (flags.version) {
     console.log(sys.compiler.version);
     process.exit(0);
   }
@@ -30,7 +30,7 @@ export async function run(process: NodeJS.Process, sys: StencilSystem, logger: L
   // load the config file
   let config: Config;
   try {
-    const configPath = getConfigFilePath(process, sys, argv.config);
+    const configPath = getConfigFilePath(process, sys, flags.config);
     config = sys.loadConfigFile(configPath);
 
   } catch (e) {
@@ -39,9 +39,6 @@ export async function run(process: NodeJS.Process, sys: StencilSystem, logger: L
   }
 
   try {
-    // override the config values with any cli arguments
-    overrideConfigFromArgv(config, argv);
-
     if (!config.logger) {
       // if a logger was not provided then use the
       // default stencil command line logger
@@ -57,6 +54,8 @@ export async function run(process: NodeJS.Process, sys: StencilSystem, logger: L
       config.sys = sys;
     }
 
+    config.flags = flags;
+
     const { Compiler } = require('../compiler/index.js');
 
     const compiler: CompilerType = new Compiler(config);
@@ -66,7 +65,7 @@ export async function run(process: NodeJS.Process, sys: StencilSystem, logger: L
 
     process.title = `Stencil: ${config.namespace}`;
 
-    switch (task) {
+    switch (flags.task) {
       case 'build':
         const results = await compiler.build();
         if (!config.watch && hasError(results && results.diagnostics)) {
