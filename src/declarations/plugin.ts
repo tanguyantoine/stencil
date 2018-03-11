@@ -1,6 +1,4 @@
-import * as d from '../declarations/index';
-import { Cache } from '../compiler/cache';
-import { InMemoryFileSystem } from '../util/in-memory-fs';
+import * as d from './index';
 
 
 export interface Plugin {
@@ -20,7 +18,7 @@ export interface PluginTransformResults {
 export interface PluginCtx {
   config: d.Config;
   sys: d.StencilSystem;
-  fs: InMemoryFileSystem;
-  cache: Cache;
+  fs: d.InMemoryFileSystem;
+  cache: d.Cache;
   diagnostics: d.Diagnostic[];
 }

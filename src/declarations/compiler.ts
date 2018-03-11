@@ -1,15 +1,12 @@
 import * as d from './index';
-import { BuildEvents } from '../compiler/events';
-import { Cache } from '../compiler/cache';
-import { InMemoryFileSystem } from '../util/in-memory-fs';
 
 
 export interface CompilerCtx {
   activeBuildId?: number;
   isRebuild?: boolean;
-  fs?: InMemoryFileSystem;
-  cache?: Cache;
-  events?: BuildEvents;
+  fs?: d.InMemoryFileSystem;
+  cache?: d.Cache;
+  events?: d.BuildEvents;
   moduleFiles?: d.ModuleFiles;
   compiledModuleJsText?: d.ModuleBundles;
   compiledModuleLegacyJsText?: d.ModuleBundles;

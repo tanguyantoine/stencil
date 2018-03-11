@@ -1,6 +1,8 @@
 
 export * from './build';
 export * from './build-conditionals';
+export * from './build-events';
+export * from './cache';
 export * from './collection';
 export * from './compiler';
 export * from './component';
@@ -12,6 +14,7 @@ export * from './diagnostics';
 export * from './dom';
 export * from './entry';
 export * from './fs';
+export * from './in-memory-fs';
 export * from './jsx';
 export * from './logger';
 export * from './platform';
