@@ -1,9 +1,9 @@
-import { Config, DevServerConfig } from '../../declarations';
+import * as d from '../../declarations';
 import { pathJoin } from '../util';
 import { setBooleanConfig, setNumberConfig, setStringConfig } from './config-utils';
 
 
-export function validateDevServer(config: Config): DevServerConfig {
+export function validateDevServer(config: d.Config) {
   config.devServer = config.devServer || {};
   setBooleanConfig(config.devServer, 'startDevServer', null, false);
 
@@ -28,12 +28,12 @@ export function validateDevServer(config: Config): DevServerConfig {
   }
 
   let wwwDir: string = null;
-  const outputTarget = config.outputTargets.find(o => o.type === 'www');
+  const outputTarget: d.OutputTargetWww = config.outputTargets.find(o => o.type === 'www');
   if (!outputTarget) {
     throw new Error(`dev server missing www output target`);
   }
 
-  wwwDir = outputTarget.path;
+  wwwDir = outputTarget.dir;
 
   setStringConfig(config.devServer, 'root', wwwDir);
 
