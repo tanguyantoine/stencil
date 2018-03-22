@@ -43,6 +43,17 @@ export function validateConfig(config: Config, setEnvVariables?: boolean) {
   setBooleanConfig(config, 'writeLog', 'log', false);
   setBooleanConfig(config, 'buildAppCore', null, true);
 
+  // default devMode false
+  if (config.flags.prod) {
+    config.devMode = false;
+
+  } else if (config.flags.dev) {
+    config.devMode = true;
+
+  } else {
+    setBooleanConfig(config, 'devMode', null, DEFAULT_DEV_MODE);
+  }
+
   // get a good namespace
   validateNamespace(config);
 
@@ -52,26 +63,11 @@ export function validateConfig(config: Config, setEnvVariables?: boolean) {
   // setup the outputTargets
   validateOutputTargets(config);
 
-  /// figure out if we need to start up a dev server or not
-  config.devServer = config.devServer || {};
-  setBooleanConfig(config.devServer, 'startDevServer', null, false);
-
-  // default devMode false
-  if (config.flags.prod) {
-    config.devMode = false;
-
-  } else if (config.flags.dev) {
-    config.devMode = true;
-
-  } else {
-    config.devMode = !!config.devMode;
-  }
-
   // default devInspector to whatever devMode is
   setBooleanConfig(config, 'devInspector', null, config.devMode);
 
   // default watch false
-  setBooleanConfig(config, 'watch', null, false);
+  setBooleanConfig(config, 'watch', 'watch', false);
 
   setBooleanConfig(config, 'minifyCss', null, !config.devMode);
   setBooleanConfig(config, 'minifyJs', null, !config.devMode);
@@ -143,6 +139,7 @@ export function setProcessEnvironment(config: Config) {
 }
 
 
+const DEFAULT_DEV_MODE = false;
 const DEFAULT_HASHED_FILENAME_LENTH = 8;
 const MIN_HASHED_FILENAME_LENTH = 4;
 const MAX_HASHED_FILENAME_LENTH = 32;

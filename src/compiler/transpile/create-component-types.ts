@@ -1,5 +1,5 @@
-import { BuildCtx, Collection, CompilerCtx, ComponentMeta, ComponentRegistry, Config, MemberMeta, MembersMeta, PackageJsonData } from '../../declarations';
-import { dashToPascalCase } from '../../util/helpers';
+import * as d from '../../declarations';
+import { captializeFirstLetter, dashToPascalCase } from '../../util/helpers';
 import { gatherMetadata } from './datacollection/index';
 import { getComponentsDtsTypesFilePath } from '../collections/distribution';
 import { MEMBER_TYPE } from '../../util/constants';
@@ -7,9 +7,10 @@ import { normalizeAssetsDir } from '../component-plugins/assets-plugin';
 import { normalizePath } from '../util';
 import { normalizeStyles } from '../style/normalize-styles';
 import * as ts from 'typescript';
+import { AttributeTypeReference } from '../../declarations';
 
 
-export async function generateComponentTypes(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, tsOptions: ts.CompilerOptions, tsHost: ts.CompilerHost, tsFilePaths: string[], componentsDtsSrcFilePath: string) {
+export async function generateComponentTypes(config: d.Config, compilerCtx: d.CompilerCtx, buildCtx: d.BuildCtx, tsOptions: ts.CompilerOptions, tsHost: ts.CompilerHost, tsFilePaths: string[], componentsDtsSrcFilePath: string) {
   // get all of the ts files paths to transpile
   // ensure the components.d.ts file is always excluded from this transpile program
   const checkProgramTsFiles = tsFilePaths.filter(filePath => filePath !== componentsDtsSrcFilePath);
@@ -43,7 +44,8 @@ export async function generateComponentTypes(config: Config, compilerCtx: Compil
   // queue the components.d.ts async file write and put it into memory
   await compilerCtx.fs.writeFile(componentsDtsSrcFilePath, componentTypesFileContent);
 
-  const typesOutputTargets = config.outputTargets.filter(o => !!o.typesDir);
+  const typesOutputTargets = (config.outputTargets as d.OutputTargetDist[]).filter(o => !!o.typesDir);
+
   await Promise.all(typesOutputTargets.map(async outputTarget => {
     const typesFile = getComponentsDtsTypesFilePath(config, outputTarget);
     await compilerCtx.fs.writeFile(typesFile, componentTypesFileContent);
@@ -58,7 +60,7 @@ export async function generateComponentTypes(config: Config, compilerCtx: Compil
  * @param config the project build configuration
  * @param options compiler options from tsconfig
  */
-export async function generateComponentTypesFile(config: Config, compilerCtx: CompilerCtx, cmpList: ComponentRegistry) {
+export async function generateComponentTypesFile(config: d.Config, compilerCtx: d.CompilerCtx, cmpList: d.ComponentRegistry) {
   let typeImportData: ImportData = {};
   const allTypes: { [key: string]: number } = {};
   let componentsFileContent =
@@ -161,8 +163,37 @@ function sortImportNames(a: MemberNameData, b: MemberNameData) {
  * @param filePath the path of the component file
  * @param config general config that all of stencil uses
  */
-function updateReferenceTypeImports(config: Config, importDataObj: ImportData, allTypes: { [key: string]: number }, cmpMeta: ComponentMeta, filePath: string) {
+function updateReferenceTypeImports(config: d.Config, importDataObj: ImportData, allTypes: { [key: string]: number }, cmpMeta: d.ComponentMeta, filePath: string) {
 
+
+  const updateImportReferences = updateImportReferenceFactory(config, allTypes, filePath);
+
+  // cmpMeta.eventsMeta[0].eventType.typeReferences
+
+  importDataObj = Object.keys(cmpMeta.membersMeta)
+  .filter((memberName) => {
+    const member: d.MemberMeta = cmpMeta.membersMeta[memberName];
+
+    return [ MEMBER_TYPE.Prop, MEMBER_TYPE.PropMutable ].indexOf(member.memberType) !== -1 &&
+      member.attribType.typeReferences;
+  })
+  .reduce((obj, memberName) => {
+    const member: d.MemberMeta = cmpMeta.membersMeta[memberName];
+    return updateImportReferences(obj, member.attribType.typeReferences);
+  }, importDataObj);
+
+  cmpMeta.eventsMeta
+  .filter((meta: d.EventMeta) => {
+    return meta.eventType && meta.eventType.typeReferences;
+  })
+  .reduce((obj, meta) => {
+    return updateImportReferences(obj, meta.eventType.typeReferences);
+  }, importDataObj);
+
+  return importDataObj;
+}
+
+function updateImportReferenceFactory(config: d.Config, allTypes: { [key: string]: number }, filePath: string) {
   function getIncrememntTypeName(name: string): string {
     if (allTypes[name] == null) {
       allTypes[name] = 1;
@@ -173,17 +204,10 @@ function updateReferenceTypeImports(config: Config, importDataObj: ImportData, a
     return `${name}${allTypes[name]}`;
   }
 
-  return Object.keys(cmpMeta.membersMeta)
-  .filter((memberName) => {
-    const member: MemberMeta = cmpMeta.membersMeta[memberName];
-
-    return METADATA_MEMBERS_TYPED.indexOf(member.memberType) !== -1 &&
-      member.attribType.typeReferences;
-  })
-  .reduce((obj, memberName) => {
-    const member: MemberMeta = cmpMeta.membersMeta[memberName];
-    Object.keys(member.attribType.typeReferences).forEach(typeName => {
-      const type = member.attribType.typeReferences[typeName];
+  return (obj: ImportData, typeReferences: { [key: string]: AttributeTypeReference }) => {
+    Object.keys(typeReferences).map(typeName => {
+      return [typeName, typeReferences[typeName]] as [string, AttributeTypeReference];
+    }).forEach(([typeName, type]) => {
       let importFileLocation: string;
 
       // If global then there is no import statement needed
@@ -222,7 +246,7 @@ function updateReferenceTypeImports(config: Config, importDataObj: ImportData, a
     });
 
     return obj;
-  }, importDataObj);
+  };
 }
 
 
@@ -232,13 +256,15 @@ function updateReferenceTypeImports(config: Config, importDataObj: ImportData, a
  * @param cmpMeta the metadata for the component that a type definition string is generated for
  * @param importPath the path of the component file
  */
-export function createTypesAsString(cmpMeta: ComponentMeta, importPath: string) {
+export function createTypesAsString(cmpMeta: d.ComponentMeta, importPath: string) {
   const tagName = cmpMeta.tagNameMeta;
   const tagNameAsPascal = dashToPascalCase(cmpMeta.tagNameMeta);
   const interfaceName = `HTML${tagNameAsPascal}Element`;
   const jsxInterfaceName = `${tagNameAsPascal}Attributes`;
-  const interfaceOptions = membersToInterfaceOptions(cmpMeta.membersMeta);
-  (<MembersMeta>cmpMeta.membersMeta);
+  const propAttributes = membersToPropAttributes(cmpMeta.membersMeta);
+  const methodAttributes = membersToMethodAttributes(cmpMeta.membersMeta);
+  methodAttributes;
+  const eventAttributes = membersToEventAttributes(cmpMeta.eventsMeta);
 
   return `
 import {
@@ -253,57 +279,113 @@ declare global {
     new (): ${interfaceName};
   };
   interface HTMLElementTagNameMap {
-    "${tagName}": ${interfaceName};
+    '${tagName}': ${interfaceName};
   }
   interface ElementTagNameMap {
-    "${tagName}": ${interfaceName};
+    '${tagName}': ${interfaceName};
   }
   namespace JSX {
     interface IntrinsicElements {
-      "${tagName}": JSXElements.${jsxInterfaceName};
+      '${tagName}': JSXElements.${jsxInterfaceName};
     }
   }
   namespace JSXElements {
     export interface ${jsxInterfaceName} extends HTMLAttributes {
-      ${Object.keys(interfaceOptions)
-        .sort(sortInterfaceMembers)
-        .map((key: string) => `${key}?: ${interfaceOptions[key]};`).join('\n      ')}
+      ${attributesToMultiLineString(propAttributes)}
+      ${attributesToMultiLineString(eventAttributes)}
     }
   }
 }
 `;
 }
 
-
-function sortInterfaceMembers(a: string, b: string) {
-  const aLower = a.toLowerCase();
-  const bLower = b.toLowerCase();
-
-  if (aLower < bLower) return -1;
-  if (aLower > bLower) return 1;
-  if (a < b) return -1;
-  if (a > b) return 1;
-  return 0;
+interface TypeInfo {
+  [key: string]: {
+    type: string;
+    jsdoc?: string;
+  };
 }
 
+function attributesToMultiLineString(attributes: TypeInfo, optional = true) {
 
-function membersToInterfaceOptions(membersMeta: MembersMeta): { [key: string]: string } {
+  return Object.keys(attributes)
+    .sort()
+    .reduce((fullList, key) => {
+      if (attributes[key].jsdoc) {
+        fullList.push(`/**`);
+        fullList.push(` * ${attributes[key].jsdoc.replace(/\r?\n|\r/g, ' ')}`);
+        fullList.push(` */`);
+      }
+      fullList.push(`'${key}'${optional ? '?' : '' }: ${attributes[key].type};`);
+      return fullList;
+    }, <string[]>[])
+    .join('\n      ');
+}
+
+function membersToPropAttributes(membersMeta: d.MembersMeta): TypeInfo {
   const interfaceData = Object.keys(membersMeta)
     .filter((memberName) => {
-      return METADATA_MEMBERS_TYPED.indexOf(membersMeta[memberName].memberType) !== -1;
+      return [ MEMBER_TYPE.Prop, MEMBER_TYPE.PropMutable ].indexOf(membersMeta[memberName].memberType) !== -1;
     })
     .reduce((obj, memberName) => {
-      const member: MemberMeta = membersMeta[memberName];
-      obj[memberName] = member.attribType.text;
+      const member: d.MemberMeta = membersMeta[memberName];
+      obj[memberName] = {
+        type: member.attribType.text,
+      };
+
+      if (member.jsdoc) {
+        obj[memberName].jsdoc = member.jsdoc.documentation;
+      }
 
       return obj;
-    }, <{ [key: string]: string }>{});
+    }, <TypeInfo>{});
+
+  return interfaceData;
+}
+
+function membersToMethodAttributes(membersMeta: d.MembersMeta): TypeInfo {
+  const interfaceData = Object.keys(membersMeta)
+    .filter((memberName) => {
+      return [ MEMBER_TYPE.Method ].indexOf(membersMeta[memberName].memberType) !== -1;
+    })
+    .reduce((obj, memberName) => {
+      const member: d.MemberMeta = membersMeta[memberName];
+      obj[memberName] = {
+        type: `() => void`, // TODO this is not good enough
+      };
+
+      if (member.jsdoc) {
+        obj[memberName].jsdoc = member.jsdoc.documentation;
+      }
+
+      return obj;
+    }, <TypeInfo>{});
 
   return interfaceData;
 }
 
 
-async function getCollectionsTypeImports(config: Config, compilerCtx: CompilerCtx) {
+function membersToEventAttributes(eventMetaList: d.EventMeta[]): TypeInfo {
+  const interfaceData = eventMetaList
+    .reduce((obj, eventMetaObj) => {
+      const memberName = `on${captializeFirstLetter(eventMetaObj.eventName)}`;
+      const eventType = (eventMetaObj.eventType) ? `CustomEvent<${eventMetaObj.eventType.text}>` : `CustomEvent`;
+      obj[memberName] = {
+        type: `(event: ${eventType}) => void`, // TODO this is not good enough
+      };
+
+      if (eventMetaObj.jsdoc) {
+        obj[memberName].jsdoc = eventMetaObj.jsdoc.documentation;
+      }
+
+      return obj;
+    }, <TypeInfo>{});
+
+  return interfaceData;
+}
+
+
+async function getCollectionsTypeImports(config: d.Config, compilerCtx: d.CompilerCtx) {
   const collections = compilerCtx.collections.map(collection => {
     return getCollectionTypesImport(config, compilerCtx, collection);
   });
@@ -318,7 +400,7 @@ async function getCollectionsTypeImports(config: Config, compilerCtx: CompilerCt
 }
 
 
-async function getCollectionTypesImport(config: Config, compilerCtx: CompilerCtx, collection: Collection) {
+async function getCollectionTypesImport(config: d.Config, compilerCtx: d.CompilerCtx, collection: d.Collection) {
   let typeImport = '';
 
   try {
@@ -326,7 +408,7 @@ async function getCollectionTypesImport(config: Config, compilerCtx: CompilerCtx
     const collectionPkgJson = config.sys.path.join(collectionDir, 'package.json');
 
     const pkgJsonStr = await compilerCtx.fs.readFile(collectionPkgJson);
-    const pkgData: PackageJsonData = JSON.parse(pkgJsonStr);
+    const pkgData: d.PackageJsonData = JSON.parse(pkgJsonStr);
 
     if (pkgData.types && pkgData.collection) {
       typeImport = `import '${pkgData.name}';`;
@@ -343,9 +425,6 @@ async function getCollectionTypesImport(config: Config, compilerCtx: CompilerCtx
   return typeImport;
 }
 
-
-
-const METADATA_MEMBERS_TYPED = [ MEMBER_TYPE.Prop, MEMBER_TYPE.PropMutable ];
 
 export interface ImportData {
   [key: string]: MemberNameData[];

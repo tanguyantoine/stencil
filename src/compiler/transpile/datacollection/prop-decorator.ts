@@ -1,191 +1,120 @@
-import { AttributeTypeInfo, AttributeTypeReference, Diagnostic, MemberMeta, MembersMeta, PropOptions } from '../../../declarations';
+import * as d from '../../../declarations';
 import { catchError } from '../../util';
-import { isDecoratorNamed, serializeSymbol } from './utils';
+import { getAttributeTypeInfo, isDecoratorNamed, serializeSymbol } from './utils';
 import { toDashCase } from '../../../util/helpers';
 import { MEMBER_TYPE, PROP_TYPE } from '../../../util/constants';
 import * as ts from 'typescript';
 
 
-export function getPropDecoratorMeta(checker: ts.TypeChecker, classNode: ts.ClassDeclaration, sourceFile: ts.SourceFile, diagnostics: Diagnostic[]): MembersMeta {
+export function getPropDecoratorMeta(checker: ts.TypeChecker, classNode: ts.ClassDeclaration, sourceFile: ts.SourceFile, diagnostics: d.Diagnostic[]) {
   return classNode.members
     .filter(member => Array.isArray(member.decorators) && member.decorators.length > 0)
-    .reduce((allMembers: MembersMeta, prop: ts.PropertyDeclaration) => {
-      const memberData: MemberMeta = {};
+    .reduce((allMembers: d.MembersMeta, prop: ts.PropertyDeclaration) => {
+      const memberData: d.MemberMeta = {};
       const propDecorator = prop.decorators.find(isDecoratorNamed('Prop'));
+
       if (propDecorator == null) {
         return allMembers;
       }
 
-      const suppliedOptions = (<ts.CallExpression>propDecorator.expression).arguments
-        .map(arg => {
-          try {
-            const fnStr = `return ${arg.getText()};`;
-            return new Function(fnStr)();
-
-          } catch (e) {
-            const d = catchError(diagnostics, e);
-            d.messageText = `parse prop options: ${e}`;
-          }
-        });
-      const propOptions: PropOptions = suppliedOptions[0];
-      const memberName = (<ts.Identifier>prop.name).text;
+      const propOptions = getPropOptions(propDecorator, diagnostics);
+      const memberName = (prop.name as ts.Identifier).text;
       const symbol = checker.getSymbolAtLocation(prop.name);
 
       if (propOptions && typeof propOptions.connect === 'string') {
+        // @Prop({ connect: 'ion-alert-controller' })
         memberData.memberType = MEMBER_TYPE.PropConnect;
         memberData.ctrlId = propOptions.connect;
 
       } else if (propOptions && typeof propOptions.context === 'string') {
+        // @Prop({ context: 'config' })
         memberData.memberType = MEMBER_TYPE.PropContext;
         memberData.ctrlId = propOptions.context;
 
       } else {
-        let attribType: AttributeTypeInfo;
-
-        // If the @Prop() attribute does not have a defined type then infer it
-        if (!prop.type) {
-          let attribTypeText = inferPropType(prop.initializer);
-
-          if (!attribTypeText) {
-            attribTypeText = 'any';
-            diagnostics.push({
-              level: 'warn',
-              type: 'build',
-              header: 'Prop type provided is not supported, defaulting to any',
-              messageText: `'${prop.getFullText()}'`,
-            });
-          }
-          attribType = {
-            text: attribTypeText,
-          };
-        } else {
-          attribType = getAttributeTypeInfo(prop.type, sourceFile);
-        }
-
-        if (propOptions && typeof propOptions.state === 'boolean') {
-          diagnostics.push({
-            level: 'warn',
-            type: 'build',
-            header: '@Prop({ state: true }) option has been deprecated',
-            messageText: `"state" has been renamed to @Prop({ mutable: true })`,
-          });
-          propOptions.mutable = propOptions.state;
-        }
-
-        if (propOptions && typeof propOptions.mutable === 'boolean') {
-          memberData.memberType = MEMBER_TYPE.PropMutable;
-        } else {
-          memberData.memberType = MEMBER_TYPE.Prop;
-        }
-
-        memberData.attribName = toDashCase(memberName);
-        memberData.attribType = attribType;
-        memberData.propType = propTypeFromTSType(attribType.text);
+        // @Prop()
+        memberData.memberType = getMemberType(propOptions);
+        memberData.attribName = getAttributeName(propOptions, memberName);
+        memberData.attribType = getAttribType(sourceFile, prop, diagnostics);
+        memberData.reflectToAttr = getReflectToAttr(propOptions);
+        memberData.propType = propTypeFromTSType(memberData.attribType.text);
         memberData.jsdoc = serializeSymbol(checker, symbol);
       }
 
       allMembers[memberName] = memberData;
       return allMembers;
-    }, {} as MembersMeta);
+    }, {} as d.MembersMeta);
 }
 
 
+function getPropOptions(propDecorator: ts.Decorator, diagnostics: d.Diagnostic[]) {
+  const suppliedOptions = (propDecorator.expression as ts.CallExpression).arguments
+  .map(arg => {
+    try {
+      const fnStr = `return ${arg.getText()};`;
+      return new Function(fnStr)();
+
+    } catch (e) {
+      const d = catchError(diagnostics, e);
+      d.messageText = `parse prop options: ${e}`;
+    }
+  });
+
+  const propOptions: d.PropOptions = suppliedOptions[0];
+  return propOptions;
+}
 
 
-function getAttributeTypeInfo(type: ts.TypeNode, sourceFile: ts.SourceFile): AttributeTypeInfo {
-  const typeInfo: AttributeTypeInfo = {
-    text: type.getFullText().trim()
-  };
-  const typeReferences = getAllTypeReferences(type)
-    .reduce((allReferences, rt)  => {
-      allReferences[rt] = getTypeReferenceLocation(rt, sourceFile);
-      return allReferences;
-    }, {} as { [key: string]: AttributeTypeReference});
-
-  if (Object.keys(typeReferences).length > 0) {
-    typeInfo.typeReferences = typeReferences;
+function getMemberType(propOptions: d.PropOptions) {
+  if (propOptions && propOptions.mutable === true) {
+    return MEMBER_TYPE.PropMutable;
   }
-  return typeInfo;
+
+  return MEMBER_TYPE.Prop;
 }
 
-function getAllTypeReferences(node: ts.TypeNode): string[] {
-  const referencedTypes: string[] = [];
 
-  function visit(node: ts.Node): ts.VisitResult<ts.Node> {
-    switch (node.kind) {
-    case ts.SyntaxKind.TypeReference:
-      referencedTypes.push((<ts.TypeReferenceNode>node).typeName.getText().trim());
-      if ((<ts.TypeReferenceNode>node).typeArguments) {
-        (<ts.TypeReferenceNode>node).typeArguments
-          .filter(ta => ts.isTypeReferenceNode(ta))
-          .forEach(tr => referencedTypes.push((<ts.TypeReferenceNode>tr).typeName.getText().trim()));
-      }
-    /* tslint:disable */
-    default:
-      return ts.forEachChild(node, (node) => {
-        return visit(node);
+function getAttributeName(propOptions: d.PropOptions, memberName: string) {
+  if (propOptions && typeof propOptions.attr === 'string' && propOptions.attr.trim().length > 0) {
+    return propOptions.attr.trim();
+  }
+  return toDashCase(memberName);
+}
+
+
+function getReflectToAttr(propOptions: d.PropOptions) {
+  if (propOptions && propOptions.reflectToAttr === true) {
+    return true;
+  }
+
+  return false;
+}
+
+
+function getAttribType(sourceFile: ts.SourceFile, prop: ts.PropertyDeclaration, diagnostics: d.Diagnostic[]) {
+  let attribType: d.AttributeTypeInfo;
+
+  // If the @Prop() attribute does not have a defined type then infer it
+  if (!prop.type) {
+    let attribTypeText = inferPropType(prop.initializer);
+
+    if (!attribTypeText) {
+      attribTypeText = 'any';
+      diagnostics.push({
+        level: 'warn',
+        type: 'build',
+        header: 'Prop type provided is not supported, defaulting to any',
+        messageText: `'${prop.getFullText()}'`,
       });
     }
-    /* tslint:enable */
-  }
-
-  visit(node);
-
-  return referencedTypes;
-}
-
-function getTypeReferenceLocation(typeName: string, sourceFile: ts.SourceFile): AttributeTypeReference {
-
-  const sourceFileObj = sourceFile.getSourceFile();
-
-  // Loop through all top level imports to find any reference to the type for 'import' reference location
-  const importTypeDeclaration = sourceFileObj.statements.find(st => {
-    const statement = ts.isImportDeclaration(st) &&
-      ts.isImportClause(st.importClause) &&
-      st.importClause.namedBindings &&  ts.isNamedImports(st.importClause.namedBindings) &&
-      Array.isArray(st.importClause.namedBindings.elements) &&
-      st.importClause.namedBindings.elements.find(nbe => nbe.name.getText() === typeName);
-    if (!statement) {
-      return false;
-    }
-    return true;
-  });
-
-  if (importTypeDeclaration) {
-    const localImportPath = (<ts.StringLiteral>(<ts.ImportDeclaration>importTypeDeclaration).moduleSpecifier).text;
-    return {
-      referenceLocation: 'import',
-      importReferenceLocation: localImportPath
+    attribType = {
+      text: attribTypeText,
     };
+  } else {
+    attribType = getAttributeTypeInfo(prop.type, sourceFile);
   }
 
-  // Loop through all top level exports to find if any reference to the type for 'local' reference location
-  const isExported = sourceFileObj.statements.some(st => {
-    // Is the interface defined in the file and exported
-    const isInterfaceDeclarationExported = ((ts.isInterfaceDeclaration(st) &&
-      (<ts.Identifier>st.name).getText() === typeName) &&
-      Array.isArray(st.modifiers) &&
-      st.modifiers.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword));
-
-    // Is the interface exported through a named export
-    const isTypeInExportDeclaration = ts.isExportDeclaration(st) &&
-      ts.isNamedExports(st.exportClause) &&
-      st.exportClause.elements.some(nee => nee.name.getText() === typeName);
-
-    return isInterfaceDeclarationExported || isTypeInExportDeclaration;
-  });
-
-  if (isExported) {
-    return {
-      referenceLocation: 'local'
-    };
-  }
-
-
-  // This is most likely a global type, if it is a local that is not exported then typescript will inform the dev
-  return {
-    referenceLocation: 'global',
-  };
+  return attribType;
 }
 
 function inferPropType(expression: ts.Expression | undefined) {

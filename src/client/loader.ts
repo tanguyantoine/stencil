@@ -4,18 +4,33 @@ import { LoadComponentRegistry } from '../declarations';
 export function init(
   win: any,
   doc: HTMLDocument,
-  docScripts: HTMLScriptElement[],
-  appNamespace: string,
-  urlNamespace: string,
-  publicPath: string,
-  discoverPublicPath: boolean,
+  namespace: string,
+  fsNamespace: string,
+  resourcesUrl: string,
   appCore: string,
   appCorePolyfilled: string,
   hydratedCssClass: string,
-  components: LoadComponentRegistry[], x?: any, y?: any
+  components: LoadComponentRegistry[],
+  x?: any, y?: any, scriptElm?: HTMLScriptElement
 ) {
   // create global namespace if it doesn't already exist
-  (win[appNamespace] = win[appNamespace] || {}).components = components;
+  (win[namespace] = win[namespace] || {}).components = components;
+
+  if (!win.customElements) {
+    // temporary customElements polyfill only for "whenDefined"
+    // this is incase customElements.whenDefined('my-tag') is
+    // used before the polyfill is downloaded
+    win.$whenDefined = [];
+    win.customElements = {
+      whenDefined: function(tag: string) {
+        return {
+          then: function(cb: Function) {
+            win.$whenDefined.push([tag, cb]);
+          }
+        };
+      }
+    };
+  }
 
   y = components.filter(function(c) { return c[2]; }).map(function(c) { return c[0]; });
   if (y.length) {
@@ -27,14 +42,28 @@ export function init(
     doc.head.insertBefore(x, doc.head.firstChild);
   }
 
-  // get this current script
-  // script tag cannot use "async" attribute
-  if (discoverPublicPath) {
-    x = docScripts[docScripts.length - 1];
-    if (x && x.src) {
-      y = x.src.split('/').slice(0, -1);
-      publicPath = (y.join('/')) + (y.length ? '/' : '') + urlNamespace + '/';
+  // figure out the script element for this current script
+  y = doc.querySelectorAll('script');
+  for (x = y.length - 1; x >= 0; x--) {
+    scriptElm = y[x];
+    if (scriptElm.src || scriptElm.hasAttribute('data-resources-url')) {
+      break;
     }
+  }
+
+  // get the resource path attribute on this script element
+  y = scriptElm.getAttribute('data-resources-url');
+
+  if (y) {
+    // the script element has a data-resources-url attribute, always use that
+    resourcesUrl = y;
+  }
+
+  if (!resourcesUrl && scriptElm.src) {
+    // we don't have an exact resourcesUrl, so let's
+    // figure it out relative to this script's src and app's filesystem namespace
+    y = scriptElm.src.split('/').slice(0, -1);
+    resourcesUrl = (y.join('/')) + (y.length ? '/' : '') + fsNamespace + '/';
   }
 
   // request the core this browser needs
@@ -42,9 +71,15 @@ export function init(
   // if either of those are not supported, then use the core w/ polyfills
   // also check if the page was build with ssr or not
   x = doc.createElement('script');
-  x.src = publicPath + (usePolyfills(win as any, win.location, x, 'import("")') ? appCorePolyfilled : appCore);
-  x.setAttribute('data-path', publicPath);
-  x.setAttribute('data-namespace', urlNamespace);
+  if (usePolyfills(win, win.location, x, 'import("")')) {
+      x.src = resourcesUrl + appCorePolyfilled;
+  } else {
+      x.src = resourcesUrl + appCore;
+      x.setAttribute('type', 'module');
+      x.setAttribute('crossorigin', true);
+  }
+  x.setAttribute('data-resources-url', resourcesUrl);
+  x.setAttribute('data-namespace', fsNamespace);
   doc.head.appendChild(x);
 }
 
@@ -53,33 +88,22 @@ export function usePolyfills(win: any, location: Location, scriptElm: HTMLScript
   // fyi, dev mode has verbose if/return statements
   // but it minifies to a nice 'lil one-liner ;)
 
-  if (location.search.indexOf('core=es5') > -1) {
-    // force es5 polyfill w/ ?core=es5 querystring
-    return true;
+  if (location.search.indexOf('core=esm') > 0) {
+    // force es2015 build
+    return false;
   }
 
-  if (location.protocol === 'file:') {
-    // file protocol cannot use dynamic module imports
-    return true;
-  }
-
-  if (!win.customElements) {
-    // does not have customElement support
-    return true;
-  }
-
-  if (!win.fetch) {
-    // does not have fetch support
-    return true;
-  }
-
-  if (!(win.CSS && win.CSS.supports && win.CSS.supports('color', 'var(--c)'))) {
-    // does not have CSS variables support
-    return true;
-  }
-
-  if (!('noModule' in scriptElm)) {
-    // does not have static ES module support
+  if (
+      (location.search.indexOf('core=es5') > 0) ||
+      (location.protocol === 'file:') ||
+      // Need to look for define specifically because we polyfill customElements
+      // above to support whenDefined.
+      (!(win.customElements && win.customElements.define)) ||
+      (!win.fetch) ||
+      (!(win.CSS && win.CSS.supports && win.CSS.supports('color', 'var(--c)'))) ||
+      (!('noModule' in scriptElm))
+    ) {
+    // force es5 build w/ polyfills
     return true;
   }
 

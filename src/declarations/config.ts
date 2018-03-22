@@ -27,7 +27,7 @@ export interface Config {
   minifyCss?: boolean;
   minifyJs?: boolean;
   namespace?: string;
-  outputTargets?: OutputTarget[];
+  outputTargets?: d.OutputTarget[];
   plugins?: d.Plugin[];
   preamble?: string;
   rootDir?: string;
@@ -65,22 +65,6 @@ export interface ConfigFlags {
   stats?: boolean;
   version?: boolean;
   watch?: boolean;
-}
-
-
-export interface OutputTarget {
-  type?: 'dist' | 'docs' | 'stats' | 'www';
-  path?: string;
-  buildPath?: string;
-  empty?: boolean;
-  format?: string;
-  discoverPublicPath?: boolean;
-  publicPath?: string;
-  indexHtml?: string;
-  prerender?: d.PrerenderConfig;
-  serviceWorker?: d.ServiceWorkerConfig;
-  typesDir?: string;
-  collectionDir?: string;
 }
 
 

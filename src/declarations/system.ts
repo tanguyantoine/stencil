@@ -9,7 +9,7 @@ export interface StencilSystem {
     runtime?: string;
   };
   createDom?(): {
-    parse(hydrateOptions: d.HydrateOptions): Window;
+    parse(hydrateOptions: d.OutputTargetHydrate): Window;
     serialize(): string;
     destroy(): void;
   };
@@ -58,7 +58,7 @@ export interface StencilSystem {
     resolve(from: string, to: string): string;
   };
   vm?: {
-    createContext(ctx: d.CompilerCtx, dir: string, sandbox?: any): any;
+    createContext(ctx: d.CompilerCtx, outputTarget: d.OutputTargetWww, sandbox?: any): any;
     runInContext(code: string, contextifiedSandbox: any, options?: any): any;
   };
   workbox?: Workbox;
@@ -142,12 +142,11 @@ export interface Url {
   protocol?: string;
   auth?: string;
   hostname?: string;
-  port?: string;
   host?: string;
+  port?: string;
   pathname?: string;
+  path?: string;
   search?: string;
   query?: string | any;
-  slashes?: boolean;
   hash?: string;
-  path?: string;
 }

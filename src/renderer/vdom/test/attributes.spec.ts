@@ -1,15 +1,16 @@
+import * as d from '../../../declarations';
+import { h } from '../h';
 import { mockElement, mockRenderer } from '../../../testing/mocks';
-import { VNode, h } from '../h';
 
 
 describe('attributes', function() {
   const patch = mockRenderer();
   let elm: any;
-  let vnode0: any;
+  let vnode0: d.VNode;
 
   beforeEach(function() {
     elm = mockElement('div');
-    vnode0 = new VNode();
+    vnode0 = {};
     vnode0.elm = elm;
   });
 
@@ -68,11 +69,11 @@ describe('attributes', function() {
       const vnode1 = h('div', { required: true, readonly: 1, noresize: 'truthy' });
       elm = patch(vnode0, vnode1).elm;
       expect(elm.hasAttribute('required')).toEqual(true);
-      expect(elm.getAttribute('required')).toEqual('true');
+      expect(elm.getAttribute('required')).toEqual('');
       expect(elm.hasAttribute('readonly')).toEqual(true);
-      expect(elm.getAttribute('readonly')).toEqual('1');
+      expect(elm.getAttribute('readonly')).toEqual('');
       expect(elm.hasAttribute('noresize')).toEqual(true);
-      expect(elm.getAttribute('noresize')).toEqual('truthy');
+      expect(elm.getAttribute('noresize')).toEqual('');
     });
 
     it('is omitted if the value is falsy', function() {

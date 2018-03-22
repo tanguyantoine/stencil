@@ -11,19 +11,8 @@ export interface RenderOptions {
   ssrIds?: boolean;
   userAgent?: string;
   cookie?: string;
-  dir?: string;
-  lang?: string;
-}
-
-
-export interface PrerenderConfig extends RenderOptions {
-  crawl?: boolean;
-  include?: PrerenderLocation[];
-  prerenderDir?: string;
-  maxConcurrent?: number;
-  includePathHash?: boolean;
-  includePathQuery?: boolean;
-  hydrateComponents?: boolean;
+  direction?: string;
+  language?: string;
 }
 
 
@@ -53,7 +42,6 @@ export interface HydrateResults {
   styleUrls?: string[];
   scriptUrls?: string[];
   imgUrls?: string[];
-  opts?: HydrateOptions;
 }
 
 
@@ -65,7 +53,9 @@ export interface HydrateComponent {
 
 
 export interface HydrateAnchor {
-  [attrName: string]: string;
+  href?: string;
+  target?: string;
+  [attrName: string]: string | undefined;
 }
 
 
@@ -81,12 +71,11 @@ export interface HydrateOptions extends RenderOptions {
   referrer?: string;
   userAgent?: string;
   cookie?: string;
-  dir?: string;
-  lang?: string;
+  direction?: string;
+  language?: string;
   isPrerender?: boolean;
   serializeHtml?: boolean;
   destroyDom?: boolean;
-  collectAnchors?: boolean;
   console?: {
     [level: string]: (...msgs: string[]) => void;
   };

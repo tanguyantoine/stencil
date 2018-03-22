@@ -1,19 +1,40 @@
-import { convertOptionsToMeta, getEventDecoratorMeta } from '../event-decorator';
+import { convertOptionsToMeta, getEventDecoratorMeta, getEventName } from '../event-decorator';
 import { EventOptions } from '../../../../declarations';
 import { gatherMetadata } from './test-utils';
 import { MEMBER_TYPE } from '../../../../util/constants';
+import { mockConfig } from '../../../../testing/mocks';
 import * as path from 'path';
 import * as ts from 'typescript';
 
 
-
 describe('event decorator', () => {
+
+  const config = mockConfig();
+
+  describe('getEventName', () => {
+
+    it('should get given event name, with PascalCase', () => {
+      const ev = getEventName(config, { eventName: 'EventWithDashes' }, 'methodName');
+      expect(ev).toBe('EventWithDashes');
+    });
+
+    it('should get given event name, with-dashes', () => {
+      const ev = getEventName(config, { eventName: 'event-with-dashes' }, 'methodName');
+      expect(ev).toBe('event-with-dashes');
+    });
+
+    it('should use methodName when no given eventName', () => {
+      const ev = getEventName(config, {}, 'methodName');
+      expect(ev).toBe('methodName');
+    });
+
+  });
 
   it('simple decorator', () => {
     let response;
     const sourceFilePath = path.resolve(__dirname, './fixtures/event-simple');
     const metadata = gatherMetadata(sourceFilePath, (checker, classNode) => {
-      response = getEventDecoratorMeta(checker, classNode);
+      response = getEventDecoratorMeta(config, checker, classNode, null);
     });
 
     expect(response).toEqual([
@@ -37,7 +58,7 @@ describe('event decorator', () => {
         eventName: 'event-emitted',
         jsdoc: {
           documentation: '',
-          name: 'eventEmitted',
+          name: 'event-emitted',
           type: 'EventEmitter<any>'
         }
       }
@@ -48,7 +69,7 @@ describe('event decorator', () => {
     let response;
     const sourceFilePath = path.resolve(__dirname, './fixtures/event-example');
     const metadata = gatherMetadata(sourceFilePath, (checker, classNode) => {
-      response = getEventDecoratorMeta(checker, classNode);
+      response = getEventDecoratorMeta(config, checker, classNode, null);
     });
 
     expect(response).toEqual([
@@ -57,10 +78,10 @@ describe('event decorator', () => {
         eventCancelable: false,
         eventComposed: false,
         eventMethodName: 'ionGestureMove',
-        eventName: 'gesture',
+        eventName: 'my-event-name',
         jsdoc: {
           documentation: 'Create event for something',
-          name: 'ionGestureMove',
+          name: 'my-event-name',
           type: 'EventEmitter<any>'
         }
       }
@@ -69,11 +90,11 @@ describe('event decorator', () => {
 
   describe('convertOptionsToMeta', () => {
     it('should return null if methodName is null', () => {
-      expect(convertOptionsToMeta({}, null)).toBeNull();
+      expect(convertOptionsToMeta(config, {}, null)).toBeNull();
     });
 
     it('should return default EventMeta', () => {
-      expect(convertOptionsToMeta({}, 'myEvent')).toEqual({
+      expect(convertOptionsToMeta(config, {}, 'myEvent')).toEqual({
         eventBubbles: true,
         eventCancelable: true,
         eventComposed: true,
@@ -88,7 +109,7 @@ describe('event decorator', () => {
         cancelable: false,
         composed: false
       };
-      expect(convertOptionsToMeta(eventOptions, 'myEvent')).toEqual({
+      expect(convertOptionsToMeta(config, eventOptions, 'myEvent')).toEqual({
         eventBubbles: false,
         eventCancelable: false,
         eventComposed: false,

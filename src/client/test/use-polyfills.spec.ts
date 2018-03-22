@@ -9,7 +9,9 @@ describe('usePolyfills', () => {
 
   beforeEach(() => {
     win = {
-      customElements: {},
+      customElements: {
+        define: {}
+      },
       fetch: {},
       CSS: {
         supports: () => true
@@ -32,9 +34,19 @@ describe('usePolyfills', () => {
     expect(usePolyfills(win, win.location, scriptElm, dynamicImportTest)).toBeFalsy();
   });
 
-  it('polyfill cuz force es5', () => {
-    win.location.search = 'core=es5';
+  it('polyfill cuz no customElements.define', () => {
+    delete win.customElements.define;
     expect(usePolyfills(win, win.location, scriptElm, dynamicImportTest)).toBeTruthy();
+  });
+
+  it('polyfill cuz force es5', () => {
+    win.location.search = '?core=es5';
+    expect(usePolyfills(win, win.location, scriptElm, dynamicImportTest)).toBeTruthy();
+  });
+
+  it('polyfill cuz force es2015', () => {
+    win.location.search = '?core=esm';
+    expect(usePolyfills(win, win.location, scriptElm, dynamicImportTest)).toBeFalsy();
   });
 
   it('polyfill cuz file: protocol', () => {

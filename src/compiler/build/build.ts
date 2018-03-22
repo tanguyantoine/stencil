@@ -1,23 +1,23 @@
-import { BuildResults, CompilerCtx, Config, WatcherResults } from '../../declarations';
-import { bundle } from '../bundle/bundle';
+import * as d from '../../declarations';
+import { buildAuxiliaries } from './build-auxiliaries';
 import { catchError } from '../util';
 import { copyTasks } from '../copy/copy-tasks';
-import { emptyDestDir, writeBuildFiles } from './write-build';
+import { emptyOutputTargetDirs } from './empty-dir';
 import { getBuildContext } from './build-utils';
 import { getCompilerCtx } from './compiler-ctx';
 import { generateAppFiles } from '../app/generate-app-files';
 import { generateBundles } from '../bundle/generate-bundles';
-import { generateDocs } from '../docs/docs';
 import { generateEntryModules } from '../entries/entry-modules';
 import { generateIndexHtmls } from '../html/generate-index-html';
+import { generateModuleMap } from '../bundle/bundle';
 import { generateStyles } from '../style/style';
 import { initCollections } from '../collections/init-collections';
-import { prerenderApps } from '../prerender/prerender-app';
 import { transpileAppModules } from '../transpile/transpile-app-modules';
+import { writeBuildFiles } from './write-build';
 import { _deprecatedConfigCollections } from '../collections/_deprecated-collections';
 
 
-export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?: WatcherResults): Promise<BuildResults> {
+export async function build(config: d.Config, compilerCtx?: d.CompilerCtx, watcher?: d.WatcherResults): Promise<d.BuildResults> {
   // create the build context if it doesn't exist
   // the buid context is the same object used for all builds and rebuilds
   // ctx is where stuff is cached for fast in-memory lookups later
@@ -28,7 +28,7 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
 
   try {
     // empty the directories on the first build
-    await emptyDestDir(config, compilerCtx);
+    await emptyOutputTargetDirs(config, compilerCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // DEPRECATED config.colllections 2018-02-13
@@ -51,7 +51,7 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // bundle modules and styles into separate files phase
-    const jsModules = await bundle(config, compilerCtx, buildCtx, entryModules);
+    const jsModules = await generateModuleMap(config, compilerCtx, buildCtx, entryModules);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // create each of the components's styles
@@ -80,17 +80,11 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     await generateIndexHtmls(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
-    // generate component docs
-    await generateDocs(config, compilerCtx);
-    if (buildCtx.shouldAbort()) return buildCtx.finish();
-
-    // prerender that app
-    await prerenderApps(config, compilerCtx, buildCtx, entryModules);
-    if (buildCtx.shouldAbort()) return buildCtx.finish();
-
     // write all the files and copy asset files
     await writeBuildFiles(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
+
+    await buildAuxiliaries(config, compilerCtx, buildCtx, entryModules);
 
   } catch (e) {
     // ¯\_(ツ)_/¯

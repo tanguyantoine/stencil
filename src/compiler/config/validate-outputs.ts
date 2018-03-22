@@ -1,21 +1,34 @@
-import { Config } from '../../declarations';
-import { validateDistOutputTarget } from './validate-outputs-dist';
+import * as d from '../../declarations';
 import { validateDocs } from './validate-docs';
-import { validatePrerender } from './validate-prerender';
-import { validatePublicPath } from './validate-public-path';
+import { validateOutputTargetDist } from './validate-outputs-dist';
+import { validateOutputTargetWww } from './validate-outputs-www';
+import { validateResourcesUrl } from './validate-resources-url';
 import { validateServiceWorker } from './validate-service-worker';
 import { validateStats } from './validate-stats';
-import { validateWwwOutputTarget } from './validate-outputs-www';
 import { _deprecatedToMultipleTarget } from './_deprecated-validate-multiple-targets';
 
 
-export function validateOutputTargets(config: Config) {
+export function validateOutputTargets(config: d.Config) {
 
   // setup outputTargets from deprecated config properties
   _deprecatedToMultipleTarget(config);
 
-  validateWwwOutputTarget(config);
-  validateDistOutputTarget(config);
+  if (Array.isArray(config.outputTargets)) {
+    config.outputTargets.forEach(outputTarget => {
+      if (typeof outputTarget.type !== 'string') {
+        outputTarget.type = 'www';
+      }
+
+      outputTarget.type = outputTarget.type.trim().toLowerCase() as any;
+
+      if (!VALID_TYPES.includes(outputTarget.type)) {
+        throw new Error(`invalid outputTarget type "${outputTarget.type}". Valid target types: ${VALID_TYPES.join(', ')}`);
+      }
+    });
+  }
+
+  validateOutputTargetWww(config);
+  validateOutputTargetDist(config);
   validateDocs(config);
   validateStats(config);
 
@@ -24,8 +37,10 @@ export function validateOutputTargets(config: Config) {
   }
 
   config.outputTargets.forEach(outputTarget => {
-    validatePublicPath(config, outputTarget);
-    validatePrerender(config, outputTarget);
+    validateResourcesUrl(outputTarget);
     validateServiceWorker(config, outputTarget);
   });
 }
+
+
+const VALID_TYPES = ['dist', 'docs', 'stats', 'www'];

@@ -1,6 +1,6 @@
 {
   "name": "@stencil/core",
-  "version": "0.7.0-3",
+  "version": "0.7.5",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -42,7 +42,7 @@
   "dependencies": {
     "chokidar": "2.0.1",
     "jsdom": "11.5.1",
-    "rollup": "0.56.3",
+    "rollup": "0.56.5",
     "rollup-plugin-commonjs": "8.3.0",
     "rollup-plugin-node-builtins": "2.1.2",
     "rollup-plugin-node-globals": "1.1.0",

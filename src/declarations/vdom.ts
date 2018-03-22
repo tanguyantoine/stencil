@@ -1,4 +1,5 @@
 
+
 export interface Hyperscript {
   (sel: any): VNode;
   (sel: Node, data: VNodeData): VNode;
@@ -27,32 +28,31 @@ export interface VNode {
   vtext?: string;
   vchildren?: VNode[];
   vattrs?: any;
-  vref?: (elm: any) => void;
-  elm?: Element|Node;
+  elm?: Element | Node;
+  ishost?: boolean;
 }
+
 
 export interface VNodeData {
-  props?: any;
-  attrs?: any;
   class?: {[className: string]: boolean};
   style?: any;
-  on?: any;
-  key?: Key;
-  ns?: any; // for SVGs
+  [attrName: string]: any;
 }
 
-/**
- * used by production compiler
- */
-export interface VNodeProdData {
-  key?: Key;
-  class?: {[className: string]: boolean} | string;
-  className?: {[className: string]: boolean} | string;
-  style?: any;
-  [key: string]: any;
+
+export type PropsType = VNodeProdData | number | string | null;
+export type ChildType = VNode | number | string;
+
+
+export interface ComponentProps {
+  children?: any[];
+  key?: string | number | any;
 }
 
-export type Key = string | number;
+
+export interface FunctionalComponent<PropsType> {
+  (props?: PropsType & ComponentProps): VNode;
+}
 
 
 export type DefaultSlot = Node[];
@@ -60,4 +60,16 @@ export type DefaultSlot = Node[];
 
 export interface NamedSlots {
   [slotName: string]: Node[];
+}
+
+
+/**
+ * used by production compiler
+ */
+export interface VNodeProdData {
+  key?: string | number;
+  class?: {[className: string]: boolean} | string;
+  className?: {[className: string]: boolean} | string;
+  style?: any;
+  [key: string]: any;
 }

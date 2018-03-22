@@ -9,7 +9,7 @@ import { createVNodesFromSsr } from '../renderer/vdom/ssr';
 import { createQueueClient } from './queue-client';
 import { CustomStyle } from './css-shim/custom-style';
 import { enableEventListener } from '../core/listeners';
-import { ENCAPSULATION, PROP_TYPE, SSR_VNODE_ID } from '../util/constants';
+import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { generateDevInspector } from './dev-inspector';
 import { h } from '../renderer/vdom/h';
 import { initCssVarShim } from './css-shim/init-css-shim';
@@ -21,13 +21,13 @@ import { toDashCase } from '../util/helpers';
 import { useScopedCss, useShadowDom } from '../renderer/vdom/encapsulation';
 
 
-export function createPlatformClientLegacy(appNamespace: string, Context: CoreContext, win: Window, doc: Document, publicPath: string, hydratedCssClass: string) {
+export function createPlatformClientLegacy(namespace: string, Context: CoreContext, win: Window, doc: Document, resourcesUrl: string, hydratedCssClass: string) {
   const cmpRegistry: ComponentRegistry = { 'html': {} };
   const bundleQueue: BundleCallback[] = [];
   const loadedBundles: {[bundleId: string]: any} = {};
   const pendingBundleRequests: {[url: string]: boolean} = {};
   const controllerComponents: {[tag: string]: HostElement} = {};
-  const App: AppGlobal = (win as any)[appNamespace] = (win as any)[appNamespace] || {};
+  const App: AppGlobal = (win as any)[namespace] = (win as any)[namespace] || {};
   const domApi = createDomApi(App, win, doc);
 
   // set App Context
@@ -35,7 +35,7 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
   Context.window = win;
   Context.location = win.location;
   Context.document = doc;
-  Context.publicPath = publicPath;
+  Context.resourcesUrl = Context.publicPath = resourcesUrl;
 
   if (Build.listener) {
     Context.enableListener = (instance, eventName, enabled, attachTo, passive) => enableEventListener(plt, instance, eventName, enabled, attachTo, passive);
@@ -96,7 +96,7 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
   // this will fire when all components have finished loaded
   rootElm.$initLoad = () => {
     plt.hasLoadedMap.set(rootElm, App.loaded = plt.isAppLoaded = true);
-    domApi.$dispatchEvent(win, 'appload', { detail: { namespace: appNamespace } });
+    domApi.$dispatchEvent(win, 'appload', { detail: { namespace: namespace } });
   };
 
   // if the HTML was generated from SSR
@@ -147,13 +147,9 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
         // be observed, it does not include all props yet, so it's safe to
         // loop through all of the props (attrs) and observed them
         for (const propName in cmpMeta.membersMeta) {
-          // initialize the actual attribute name used vs. the prop name
-          // for example, "myProp" would be "my-prop" as an attribute
-          // and these can be configured to be all lower case or dash case (default)
           if (cmpMeta.membersMeta[propName].attribName) {
             observedAttributes.push(
-              // dynamically generate the attribute name from the prop name
-              // also add it to our array of attributes we need to observe
+              // add this attribute to our array of attributes we need to observe
               cmpMeta.membersMeta[propName].attribName
             );
           }
@@ -202,21 +198,6 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
           cmpMeta.componentConstructor = bundleExports[pascalCasedTagName];
 
           initStyleTemplate(domApi, cmpMeta, cmpMeta.componentConstructor);
-          cmpMeta.membersMeta = {
-            'color': {}
-          };
-
-          if (cmpMeta.componentConstructor.properties) {
-            Object.keys(cmpMeta.componentConstructor.properties).forEach(memberName => {
-              const constructorProperty = cmpMeta.componentConstructor.properties[memberName];
-
-              if (constructorProperty.type) {
-                cmpMeta.membersMeta[memberName] = {
-                  propType: PROP_TYPE.Any
-                };
-              }
-            });
-          }
         }
       });
     }
@@ -241,7 +222,7 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
 
     const missingDependents = dependentsList.filter(d => !loadedBundles[d]);
     missingDependents.forEach(d => {
-        const url = publicPath + d.replace('.js', '.es5.js');
+        const url = resourcesUrl + d.replace('.js', '.es5.js');
         requestUrl(url);
       });
     bundleQueue.push([bundleId, dependentsList, importer]);
@@ -310,7 +291,7 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
   function requestComponentBundle(cmpMeta: ComponentMeta, bundleId: string, url?: string, tmrId?: any, scriptElm?: HTMLScriptElement) {
     // create the url we'll be requesting
     // always use the es5/jsonp callback module
-    url = publicPath + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.es5.js');
+    url = resourcesUrl + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.es5.js');
 
     requestUrl(url, tmrId, scriptElm);
   }
@@ -359,7 +340,7 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
   }
 
   if (Build.devInspector) {
-    generateDevInspector(App, appNamespace, window, plt);
+    generateDevInspector(App, namespace, window, plt);
   }
 
   // register all the components now that everything's ready
@@ -382,5 +363,5 @@ export function createPlatformClientLegacy(appNamespace: string, Context: CoreCo
   // notify that the app has initialized and the core script is ready
   // but note that the components have not fully loaded yet, that's the "appload" event
   App.initialized = true;
-  domApi.$dispatchEvent(win, 'appload', { detail: { namespace: appNamespace } });
+  domApi.$dispatchEvent(win, 'appload', { detail: { namespace: namespace } });
 }

@@ -1,11 +1,11 @@
-import { Config } from '../../declarations';
+import * as d from '../../declarations';
 
 
 /**
  * DEPRECATED "config" generateWWW, wwwDir, emptyWWW, generateDistribution, distDir, emptyDist
  * since 0.7.0, 2018-03-02
  */
-export function _deprecatedToMultipleTarget(config: Config) {
+export function _deprecatedToMultipleTarget(config: d.Config) {
   const deprecatedConfigs: string[] = [];
 
   if ((config as any).generateWWW !== undefined) {
@@ -27,7 +27,7 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('emptyWWW');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'www');
+    let o: d.OutputTargetWww = config.outputTargets.find(o => o.type === 'www');
     if (!o) {
       o = { type: 'www' };
       config.outputTargets.push(o);
@@ -41,12 +41,12 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('wwwDir');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'www');
+    let o: d.OutputTargetWww = config.outputTargets.find(o => o.type === 'www');
     if (!o) {
       o = { type: 'www' };
       config.outputTargets.push(o);
     }
-    o.path = (config as any).wwwDir;
+    o.dir = (config as any).wwwDir;
 
     delete (config as any).wwwDir;
   }
@@ -55,12 +55,12 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('buildDir');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'www');
+    let o: d.OutputTargetWww = config.outputTargets.find(o => o.type === 'www');
     if (!o) {
       o = { type: 'www' };
       config.outputTargets.push(o);
     }
-    o.buildPath = (config as any).buildDir;
+    o.buildDir = (config as any).buildDir;
 
     delete (config as any).buildDir;
   }
@@ -69,7 +69,7 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('wwwIndexHtml');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'www');
+    let o: d.OutputTargetWww = config.outputTargets.find(o => o.type === 'www');
     if (!o) {
       o = { type: 'www' };
       config.outputTargets.push(o);
@@ -98,12 +98,12 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('distDir');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'dist');
+    let o: d.OutputTargetDist = config.outputTargets.find(o => o.type === 'dist');
     if (!o) {
       o = { type: 'dist' };
       config.outputTargets.push(o);
     }
-    o.path = (config as any).distDir;
+    o.dir = (config as any).distDir;
 
     delete (config as any).distDir;
   }
@@ -112,7 +112,7 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('emptyDist');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'dist');
+    let o: d.OutputTargetDist = config.outputTargets.find(o => o.type === 'dist');
     if (!o) {
       o = { type: 'dist' };
       config.outputTargets.push(o);
@@ -126,12 +126,12 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('collectionDir');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'dist');
+    let o: d.OutputTargetDist = config.outputTargets.find(o => o.type === 'dist');
     if (!o) {
       o = { type: 'dist' };
       config.outputTargets.push(o);
     }
-    o.path = (config as any).collectionDir;
+    o.dir = (config as any).collectionDir;
 
     delete (config as any).collectionDir;
   }
@@ -140,12 +140,12 @@ export function _deprecatedToMultipleTarget(config: Config) {
     deprecatedConfigs.push('typesDir');
 
     config.outputTargets = config.outputTargets || [];
-    let o = config.outputTargets.find(o => o.type === 'dist');
+    let o: d.OutputTargetDist = config.outputTargets.find(o => o.type === 'dist');
     if (!o) {
       o = { type: 'dist' };
       config.outputTargets.push(o);
     }
-    o.path = (config as any).typesDir;
+    o.dir = (config as any).typesDir;
 
     delete (config as any).typesDir;
   }
@@ -155,35 +155,12 @@ export function _deprecatedToMultipleTarget(config: Config) {
 
     config.outputTargets = config.outputTargets || [];
 
-    const www = config.outputTargets.find(o => o.type === 'www');
+    const www: d.OutputTargetWww = config.outputTargets.find(o => o.type === 'www');
     if (www) {
-      www.publicPath = (config as any).publicPath;
-    }
-
-    const dist = config.outputTargets.find(o => o.type === 'dist');
-    if (dist) {
-      dist.publicPath = (config as any).publicPath;
+      www.resourcesUrl = (config as any).publicPath;
     }
 
     delete (config as any).publicPath;
-  }
-
-  if ((config as any).discoverPublicPath !== undefined) {
-    deprecatedConfigs.push('discoverPublicPath');
-
-    config.outputTargets = config.outputTargets || [];
-
-    const www = config.outputTargets.find(o => o.type === 'www');
-    if (www) {
-      www.discoverPublicPath = (config as any).discoverPublicPath;
-    }
-
-    const dist = config.outputTargets.find(o => o.type === 'dist');
-    if (dist) {
-      dist.discoverPublicPath = (config as any).discoverPublicPath;
-    }
-
-    delete (config as any).discoverPublicPath;
   }
 
   if ((config as any).serviceWorker !== undefined) {
@@ -191,7 +168,7 @@ export function _deprecatedToMultipleTarget(config: Config) {
 
     config.outputTargets = config.outputTargets || [];
 
-    let o = config.outputTargets.find(o => o.type === 'www');
+    let o: d.OutputTargetWww = config.outputTargets.find(o => o.type === 'www');
     if (!o) {
       o = { type: 'www', serviceWorker: (config as any).serviceWorker };
       config.outputTargets.push(o);
@@ -204,17 +181,6 @@ export function _deprecatedToMultipleTarget(config: Config) {
 
   if ((config as any).prerender !== undefined) {
     deprecatedConfigs.push('prerender');
-
-    config.outputTargets = config.outputTargets || [];
-
-    let o = config.outputTargets.find(o => o.type === 'www');
-    if (!o) {
-      o = { type: 'www', prerender: (config as any).prerender };
-      config.outputTargets.push(o);
-    } else {
-      o.prerender = (config as any).prerender;
-    }
-
     delete (config as any).prerender;
   }
 
@@ -229,7 +195,7 @@ export function _deprecatedToMultipleTarget(config: Config) {
       `is an array of output targets. `,
       `Note that not having an "outputTarget" config will default `,
       `to have an { type: "www" } output target. `,
-      `More information aobut the new format can be found here: https://stenciljs.com/docs/config`
+      `More information aobut the new format can be found here: https://stenciljs.com/docs/stencil-config`
     ];
     config.logger.warn(warningMsg.join(''));
   }

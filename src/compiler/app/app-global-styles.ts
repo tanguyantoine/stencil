@@ -1,10 +1,10 @@
-import { BuildCtx, CompilerCtx, Config, OutputTarget } from '../../declarations';
-import { catchError, normalizePath, pathJoin } from '../util';
+import * as d from '../../declarations';
+import { buildError, catchError, normalizePath, pathJoin } from '../util';
 import { getGlobalStyleFilename } from './app-file-naming';
 import { runPluginTransforms } from '../plugin/plugin';
 
 
-export async function generateGlobalStyles(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, outputTarget: OutputTarget) {
+export async function generateGlobalStyles(config: d.Config, compilerCtx: d.CompilerCtx, buildCtx: d.BuildCtx, outputTarget: d.OutputTargetWww) {
   const filePaths = config.globalStyle;
   if (!filePaths || !filePaths.length) {
     config.logger.debug(`"config.globalStyle" not found`);
@@ -14,19 +14,15 @@ export async function generateGlobalStyles(config: Config, compilerCtx: Compiler
   const timeSpan = config.logger.createTimeSpan(`compile global style start`);
 
   try {
-    const styles = await Promise.all(filePaths.map(async filePath => {
-      filePath = normalizePath(filePath);
-
-      const transformResults = await runPluginTransforms(config, compilerCtx, buildCtx, filePath);
-
-      return transformResults.code;
+    const styles = await Promise.all(filePaths.map(filePath => {
+      return loadGlobalStyle(config, compilerCtx, buildCtx, filePath);
     }));
 
     const styleText = styles.join('\n').trim();
 
     const fileName = getGlobalStyleFilename(config);
 
-    const filePath = pathJoin(config, outputTarget.buildPath, fileName);
+    const filePath = pathJoin(config, outputTarget.buildDir, fileName);
     config.logger.debug(`global style: ${filePath}`);
     await compilerCtx.fs.writeFile(filePath, styleText);
 
@@ -35,4 +31,23 @@ export async function generateGlobalStyles(config: Config, compilerCtx: Compiler
   }
 
   timeSpan.finish(`compile global style finish`);
+}
+
+
+async function loadGlobalStyle(config: d.Config, compilerCtx: d.CompilerCtx, buildCtx: d.BuildCtx, filePath: string) {
+  let style = '';
+
+  try {
+    filePath = normalizePath(filePath);
+
+    const transformResults = await runPluginTransforms(config, compilerCtx, buildCtx, filePath);
+
+    style = transformResults.code;
+
+  } catch (e) {
+    const d = buildError(buildCtx.diagnostics);
+    d.messageText = `config.globalStyle ${e}`;
+  }
+
+  return style;
 }

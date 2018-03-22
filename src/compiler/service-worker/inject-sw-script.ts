@@ -1,30 +1,34 @@
-import { Config, OutputTarget } from '../../declarations';
+import * as d from '../../declarations';
+import { appendSwScript, generateServiceWorkerUrl } from './service-worker-util';
 
 
-export async function injectRegisterServiceWorker(config: Config, outputTarget: OutputTarget, indexHtml: string) {
-  const match = indexHtml.match(BODY_CLOSE_REG);
+export async function updateIndexHtmlServiceWorker(config: d.Config, outputTarget: d.OutputTargetWww, indexHtml: string) {
+  if (!outputTarget.serviceWorker && config.devMode) {
+    // if we're not generating a sw, and this is a dev build
+    // then let's inject a script that always unregisters any service workers
+    indexHtml = injectUnregisterServiceWorker(indexHtml);
 
-  let swUrl = config.sys.path.relative(outputTarget.path, outputTarget.serviceWorker.swDest);
-  if (swUrl.charAt(0) !== '/') {
-    swUrl = '/' + swUrl;
-  }
-  if (match) {
-    const serviceWorker = getRegisterSwScript(swUrl);
-    indexHtml = indexHtml.replace(match[0], `<script>${serviceWorker}</script>\n${match[0]}`);
+  } else if (outputTarget.serviceWorker) {
+    // we have a valid sw config, so we'll need to inject the register sw script
+    indexHtml = await injectRegisterServiceWorker(config, outputTarget, indexHtml);
   }
 
   return indexHtml;
 }
 
 
+export async function injectRegisterServiceWorker(config: d.Config, outputTarget: d.OutputTargetWww, indexHtml: string) {
+  const swUrl = generateServiceWorkerUrl(config, outputTarget);
+
+  const serviceWorker = getRegisterSwScript(swUrl);
+  const swHtml = `<script>${serviceWorker}</script>`;
+
+  return appendSwScript(indexHtml, swHtml);
+}
+
+
 export function injectUnregisterServiceWorker(indexHtml: string) {
-  const match = indexHtml.match(BODY_CLOSE_REG);
-
-  if (match) {
-    indexHtml = indexHtml.replace(match[0], `${UNREGSITER_SW}\n${match[0]}`);
-  }
-
-  return indexHtml;
+  return appendSwScript(indexHtml, UNREGSITER_SW);
 }
 
 
@@ -65,6 +69,3 @@ const UNREGSITER_SW = `
     }
   </script>
 `;
-
-
-const BODY_CLOSE_REG = /<\/body>/i;
