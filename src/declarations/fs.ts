@@ -61,6 +61,7 @@ export interface FsReaddirItem {
 export interface FsWriteOptions {
   inMemoryOnly?: boolean;
   clearFileCache?: boolean;
+  immediateWrite?: boolean;
 }
 
 
