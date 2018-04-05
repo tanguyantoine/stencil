@@ -1,12 +1,20 @@
+import * as d from '../declarations';
 import { Build } from '../util/build-conditionals';
 import { callNodeRefs } from '../renderer/vdom/patch';
-import { ComponentConstructor, ComponentInstance, HostElement, OnReadyCallback, PlatformApi } from '../declarations';
 import { initEventEmitters } from './init-event-emitters';
 import { RUNTIME_ERROR } from '../util/constants';
 import { proxyComponentInstance } from './proxy-component-instance';
 
 
-export function initComponentInstance(plt: PlatformApi, elm: HostElement, instance?: ComponentInstance, componentConstructor?: ComponentConstructor, queuedEvents?: any[], i?: number) {
+export function initComponentInstance(
+  plt: d.PlatformApi,
+  elm: d.HostElement,
+  hostSnapshot: d.HostSnapshot,
+  instance?: d.ComponentInstance,
+  componentConstructor?: d.ComponentConstructor,
+  queuedEvents?: any[],
+  i?: number
+) {
   try {
     // using the user's component class, let's create a new instance
     componentConstructor = plt.getComponentMeta(elm).componentConstructor;
@@ -17,7 +25,7 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement, instan
 
     // let's upgrade the data on the host element
     // and let the getters/setters do their jobs
-    proxyComponentInstance(plt, componentConstructor, elm, instance);
+    proxyComponentInstance(plt, componentConstructor, elm, instance, hostSnapshot);
 
     if (Build.event) {
       // add each of the event emitters which wire up instance methods
@@ -64,16 +72,15 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement, instan
 }
 
 
-export function initComponentLoaded(plt: PlatformApi, elm: HostElement, hydratedCssClass: string, instance?: ComponentInstance, onReadyCallbacks?: OnReadyCallback[]): any {
+export function initComponentLoaded(plt: d.PlatformApi, elm: d.HostElement, hydratedCssClass: string, instance?: d.ComponentInstance, onReadyCallbacks?: d.OnReadyCallback[]): any {
   // all is good, this component has been told it's time to finish loading
   // it's possible that we've already decided to destroy this element
   // check if this element has any actively loading child elements
-  if (!plt.hasLoadedMap.has(elm) && (instance = plt.instanceMap.get(elm)) && !plt.isDisconnectedMap.has(elm) && (!elm.$activeLoading || !elm.$activeLoading.length)) {
-
+  if (!plt.hasLoadedMap.has(elm) && (instance = plt.instanceMap.get(elm)) && !plt.isDisconnectedMap.has(elm) && (!elm['s-ld'] || !elm['s-ld'].length)) {
     // cool, so at this point this element isn't already being destroyed
     // and it does not have any child elements that are still loading
     // ensure we remove any child references cuz it doesn't matter at this point
-    delete elm.$activeLoading;
+    delete elm['s-ld'];
 
     // sweet, this particular element is good to go
     // all of this element's children have loaded (if any)
@@ -117,7 +124,7 @@ export function initComponentLoaded(plt: PlatformApi, elm: HostElement, hydrated
 }
 
 
-export function propagateComponentLoaded(plt: PlatformApi, elm: HostElement, index?: number, ancestorsActivelyLoadingChildren?: HostElement[]) {
+export function propagateComponentLoaded(plt: d.PlatformApi, elm: d.HostElement, index?: number, ancestorsActivelyLoadingChildren?: d.HostElement[]) {
   // load events fire from bottom to top
   // the deepest elements load first then bubbles up
   const ancestorHostElement = plt.ancestorHostElementMap.get(elm);
@@ -126,7 +133,7 @@ export function propagateComponentLoaded(plt: PlatformApi, elm: HostElement, ind
     // ok so this element already has a known ancestor host element
     // let's make sure we remove this element from its ancestor's
     // known list of child elements which are actively loading
-    ancestorsActivelyLoadingChildren = ancestorHostElement.$activeLoading;
+    ancestorsActivelyLoadingChildren = ancestorHostElement['s-ld'] || (ancestorHostElement as any)['$activeLoading'];
 
     if (ancestorsActivelyLoadingChildren) {
       index = ancestorsActivelyLoadingChildren.indexOf(elm);
@@ -140,7 +147,12 @@ export function propagateComponentLoaded(plt: PlatformApi, elm: HostElement, ind
       // to see if the ancestor is actually loaded or not
       // then let's call the ancestor's initLoad method if there's no length
       // (which actually ends up as this method again but for the ancestor)
-      !ancestorsActivelyLoadingChildren.length && ancestorHostElement.$initLoad();
+      if (!ancestorsActivelyLoadingChildren.length) {
+        ancestorHostElement['s-init'] && ancestorHostElement['s-init']();
+
+        // $initLoad deprecated 2018-04-02
+        (ancestorHostElement as any)['$initLoad'] && (ancestorHostElement as any)['$initLoad']();
+      }
     }
 
     plt.ancestorHostElementMap.delete(elm);

@@ -4,7 +4,6 @@ import * as d from './index';
 export interface PlatformApi {
   activeRender?: boolean;
   attachStyles?: (plt: PlatformApi, domApi: d.DomApi, cmpMeta: d.ComponentMeta, modeName: string, elm: d.HostElement, customStyle?: any) => void;
-  connectHostElement: (cmpMeta: d.ComponentMeta, elm: d.HostElement) => void;
   defineComponent: (cmpMeta: d.ComponentMeta, HostElementConstructor?: any) => void;
   domApi?: d.DomApi;
   emitEvent: (elm: Element, eventName: string, data: EventEmitterData) => void;
@@ -14,7 +13,7 @@ export interface PlatformApi {
   isDefinedComponent?: (elm: Element) => boolean;
   isPrerender?: boolean;
   isServer?: boolean;
-  loadBundle: (cmpMeta: d.ComponentMeta, modeName: string, cb: Function) => void;
+  requestBundle: (cmpMeta: d.ComponentMeta, elm: d.HostElement, hostSnapshot: d.HostSnapshot) => void;
   onAppLoad?: (rootElm: d.HostElement, styles: string[], failureDiagnostic?: d.Diagnostic) => void;
   isAppLoaded?: boolean;
   onError: (err: Error, type?: number, elm?: d.HostElement, appFailure?: boolean) => void;
@@ -22,18 +21,18 @@ export interface PlatformApi {
   queue: QueueApi;
   render?: d.RendererApi;
   tmpDisconnected?: boolean;
+  nextId?: () => string;
 
   ancestorHostElementMap?: WeakMap<d.HostElement, d.HostElement>;
   componentAppliedStyles?: WeakMap<Node, d.ComponentAppliedStyles>;
-  defaultSlotsMap?: WeakMap<d.HostElement, d.DefaultSlot>;
   hasConnectedMap?: WeakMap<d.HostElement, boolean>;
   hasListenersMap?: WeakMap<d.HostElement, boolean>;
   hasLoadedMap?: WeakMap<d.HostElement, boolean>;
+  hostSnapshotMap?: WeakMap<d.HostElement, d.HostSnapshot>;
   hostElementMap?: WeakMap<d.ComponentInstance, d.HostElement>;
   instanceMap?: WeakMap<d.HostElement, d.ComponentInstance>;
   isDisconnectedMap?: WeakMap<d.HostElement, boolean>;
   isQueuedForUpdate?: WeakMap<d.HostElement, boolean>;
-  namedSlotsMap?: WeakMap<d.HostElement, d.NamedSlots>;
   onReadyCallbacksMap?: WeakMap<d.HostElement, d.OnReadyCallback[]>;
   queuedEvents?: WeakMap<d.HostElement, any[]>;
   vnodeMap?: WeakMap<d.HostElement, d.VNode>;
@@ -85,6 +84,7 @@ export interface EventEmitterData<T = any> {
 export interface AppGlobal {
   ael?: (elm: Element|Document|Window, eventName: string, cb: EventListenerCallback, opts?: d.ListenOptions) => void;
   components?: d.LoadComponentRegistry[];
+  componentOnReady?: (elm: d.HostElement, resolve: (elm: d.HostElement) => void) => void;
   Context?: any;
   loadBundle?: (bundleId: string, dependents: string[], importFn: CjsImporterFn) => void;
   loaded?: boolean;
@@ -92,6 +92,7 @@ export interface AppGlobal {
   initialized?: boolean;
   raf?: DomControllerCallback;
   rel?: (elm: Element|Document|Window, eventName: string, cb: EventListenerCallback, opts?: d.ListenOptions) => void;
+  $r?: { 0: d.HostElement, 1: () => void }[];
 }
 
 

@@ -1,12 +1,11 @@
+import * as d from '../declarations';
 import { Build } from '../util/build-conditionals';
-import { ComponentMeta, HostElement, PlatformApi } from '../declarations';
-import { initElementListeners } from './listeners';
+import { initHostSnapshot } from './host-snapshot';
 import { PRIORITY } from '../util/constants';
-import { queueUpdate } from './update';
+import { initElementListeners } from './listeners';
 
 
-export function connectedCallback(plt: PlatformApi, cmpMeta: ComponentMeta, elm: HostElement) {
-
+export function connectedCallback(plt: d.PlatformApi, cmpMeta: d.ComponentMeta, elm: d.HostElement) {
   if (Build.listener) {
     // initialize our event listeners on the host element
     // we do this now so that we can listening to events that may
@@ -20,6 +19,8 @@ export function connectedCallback(plt: PlatformApi, cmpMeta: ComponentMeta, elm:
     }
   }
 
+  // this element just connected, which may be re-connecting
+  // ensure we remove it from our map of disconnected
   plt.isDisconnectedMap.delete(elm);
 
   if (!plt.hasConnectedMap.has(elm)) {
@@ -27,8 +28,11 @@ export function connectedCallback(plt: PlatformApi, cmpMeta: ComponentMeta, elm:
     // first time we've connected
     plt.hasConnectedMap.set(elm, true);
 
-    // if somehow this node was reused, ensure we've removed this property
-    // elm._hasDestroyed = null;
+    if (!elm['s-id']) {
+      // assign a unique id to this host element
+      // it's possible this was already given an element id
+      elm['s-id'] = plt.nextId();
+    }
 
     // register this component as an actively
     // loading child to its parent component
@@ -39,24 +43,17 @@ export function connectedCallback(plt: PlatformApi, cmpMeta: ComponentMeta, elm:
     // ensure the "mode" attribute has been added to the element
     // place in high priority since it's not much work and we need
     // to know as fast as possible, but still an async tick in between
-    plt.queue.add(() => {
-      // only collects slot references if this component even has slots
-      plt.connectHostElement(cmpMeta, elm);
-
+    plt.queue.add(() =>
       // start loading this component mode's bundle
       // if it's already loaded then the callback will be synchronous
-      plt.loadBundle(cmpMeta, elm.mode, () =>
-        // we've fully loaded the component mode data
-        // let's queue it up to be rendered next
-        queueUpdate(plt, elm)
-      );
+      plt.requestBundle(cmpMeta, elm, initHostSnapshot(plt.domApi, cmpMeta, elm))
 
-    }, PRIORITY.High);
+    , PRIORITY.High);
   }
 }
 
 
-export function registerWithParentComponent(plt: PlatformApi, elm: HostElement, ancestorHostElement?: HostElement) {
+export function registerWithParentComponent(plt: d.PlatformApi, elm: d.HostElement, ancestorHostElement?: d.HostElement) {
   // find the first ancestor host element (if there is one) and register
   // this element as one of the actively loading child elements for its ancestor
   ancestorHostElement = elm;
@@ -74,7 +71,11 @@ export function registerWithParentComponent(plt: PlatformApi, elm: HostElement, 
 
         // ensure there is an array to contain a reference to each of the child elements
         // and set this element as one of the ancestor's child elements it should wait on
-        (ancestorHostElement.$activeLoading = ancestorHostElement.$activeLoading || []).push(elm);
+        if ((ancestorHostElement as any)['$activeLoading']) {
+          // $activeLoading deprecated 2018-04-02
+          ancestorHostElement['s-ld'] = (ancestorHostElement as any)['$activeLoading'];
+        }
+        (ancestorHostElement['s-ld'] = ancestorHostElement['s-ld'] || []).push(elm);
       }
       break;
     }

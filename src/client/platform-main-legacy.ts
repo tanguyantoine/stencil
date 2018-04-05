@@ -1,6 +1,4 @@
-import { AppGlobal, BundleCallback, CjsExports, ComponentMeta, ComponentRegistry, CoreContext,
-  EventEmitterData, HostElement, PlatformApi } from '../declarations';
-import { assignHostContentSlots } from '../renderer/vdom/slot';
+import * as d from '../declarations';
 import { attachStyles } from '../core/styles';
 import { Build } from '../util/build-conditionals';
 import { createDomApi } from '../renderer/dom-api';
@@ -9,25 +7,27 @@ import { createVNodesFromSsr } from '../renderer/vdom/ssr';
 import { createQueueClient } from './queue-client';
 import { CustomStyle } from './css-shim/custom-style';
 import { enableEventListener } from '../core/listeners';
-import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { generateDevInspector } from './dev-inspector';
 import { h } from '../renderer/vdom/h';
+import { initCoreComponentOnReady } from '../core/component-on-ready';
 import { initCssVarShim } from './css-shim/init-css-shim';
 import { initHostElement } from '../core/init-host-element';
+import { initHostSnapshot } from '../core/host-snapshot';
 import { initStyleTemplate } from '../core/styles';
 import { parseComponentLoader } from '../util/data-parse';
 import { proxyController } from '../core/proxy-controller';
+import { queueUpdate } from '../core/update';
 import { toDashCase } from '../util/helpers';
-import { useScopedCss, useShadowDom } from '../renderer/vdom/encapsulation';
+import { useScopedCss } from '../renderer/vdom/encapsulation';
 
 
-export function createPlatformClientLegacy(namespace: string, Context: CoreContext, win: Window, doc: Document, resourcesUrl: string, hydratedCssClass: string) {
-  const cmpRegistry: ComponentRegistry = { 'html': {} };
-  const bundleQueue: BundleCallback[] = [];
+export function createPlatformMainLegacy(namespace: string, Context: d.CoreContext, win: Window, doc: Document, resourcesUrl: string, hydratedCssClass: string) {
+  const cmpRegistry: d.ComponentRegistry = { 'html': {} };
+  const bundleQueue: d.BundleCallback[] = [];
   const loadedBundles: {[bundleId: string]: any} = {};
   const pendingBundleRequests: {[url: string]: boolean} = {};
-  const controllerComponents: {[tag: string]: HostElement} = {};
-  const App: AppGlobal = (win as any)[namespace] = (win as any)[namespace] || {};
+  const controllerComponents: {[tag: string]: d.HostElement} = {};
+  const App: d.AppGlobal = (win as any)[namespace] = (win as any)[namespace] || {};
   const domApi = createDomApi(App, win, doc);
 
   // set App Context
@@ -42,7 +42,7 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
   }
 
   if (Build.event) {
-    Context.emit = (elm: Element, eventName: string, data: EventEmitterData) => domApi.$dispatchEvent(elm, Context.eventNameFn ? Context.eventNameFn(eventName) : eventName, data);
+    Context.emit = (elm: Element, eventName: string, data: d.EventEmitterData) => domApi.$dispatchEvent(elm, Context.eventNameFn ? Context.eventNameFn(eventName) : eventName, data);
   }
 
   // add the h() fn to the app's global namespace
@@ -52,9 +52,11 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
   // keep a global set of tags we've already defined
   const globalDefined: {[tag: string]: boolean} = (win as any).$definedCmps = (win as any).$definedCmps || {};
 
+  // internal id increment for unique ids
+  let ids = 0;
+
   // create the platform api which is used throughout common core code
-  const plt: PlatformApi = {
-    connectHostElement,
+  const plt: d.PlatformApi = {
     domApi,
     defineComponent,
     emitEvent: Context.emit,
@@ -62,22 +64,22 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
     getContextItem: contextKey => Context[contextKey],
     isClient: true,
     isDefinedComponent: (elm: Element) => !!(globalDefined[domApi.$tagName(elm)] || plt.getComponentMeta(elm)),
-    loadBundle: loadComponent,
     onError: (err, type, elm) => console.error(err, type, elm && elm.tagName),
+    nextId: () => namespace + (ids++),
     propConnect: ctrlTag => proxyController(domApi, controllerComponents, ctrlTag),
     queue: createQueueClient(App, win),
+    requestBundle: requestBundle,
 
     ancestorHostElementMap: new WeakMap(),
     componentAppliedStyles: new WeakMap(),
-    defaultSlotsMap: new WeakMap(),
     hasConnectedMap: new WeakMap(),
     hasListenersMap: new WeakMap(),
     hasLoadedMap: new WeakMap(),
     hostElementMap: new WeakMap(),
+    hostSnapshotMap: new WeakMap(),
     instanceMap: new WeakMap(),
     isDisconnectedMap: new WeakMap(),
     isQueuedForUpdate: new WeakMap(),
-    namedSlotsMap: new WeakMap(),
     onReadyCallbacksMap: new WeakMap(),
     queuedEvents: new WeakMap(),
     vnodeMap: new WeakMap(),
@@ -89,12 +91,12 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
 
   // setup the root element which is the mighty <html> tag
   // the <html> has the final say of when the app has loaded
-  const rootElm = domApi.$documentElement as HostElement;
-  rootElm.$rendered = true;
-  rootElm.$activeLoading = [];
+  const rootElm = domApi.$documentElement as d.HostElement;
+  rootElm['s-ld'] = [];
+  rootElm['s-rn'] = true;
 
   // this will fire when all components have finished loaded
-  rootElm.$initLoad = () => {
+  rootElm['s-init'] = () => {
     plt.hasLoadedMap.set(rootElm, App.loaded = plt.isAppLoaded = true);
     domApi.$dispatchEvent(win, 'appload', { detail: { namespace: namespace } });
   };
@@ -103,38 +105,12 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
   // then let's walk the tree and generate vnodes out of the data
   createVNodesFromSsr(plt, domApi, rootElm);
 
-  function connectHostElement(cmpMeta: ComponentMeta, elm: HostElement) {
-    // set the "mode" property
-    if (!elm.mode) {
-      // looks like mode wasn't set as a property directly yet
-      // first check if there's an attribute
-      // next check the app's global
-      elm.mode = domApi.$getAttribute(elm, 'mode') || Context.mode;
-    }
 
-    // host element has been connected to the DOM
-    if (!domApi.$getAttribute(elm, SSR_VNODE_ID) && !useShadowDom(domApi.$supportsShadowDom, cmpMeta)) {
-      // only required when we're NOT using native shadow dom (slot)
-      // this host element was NOT created with SSR
-      // let's pick out the inner content for slot projection
-      assignHostContentSlots(plt, domApi, elm, elm.childNodes);
-    }
+  function defineComponent(cmpMeta: d.ComponentMeta, HostElementConstructor: any) {
 
-    if (!domApi.$supportsShadowDom && cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
-      // this component should use shadow dom
-      // but this browser doesn't support it
-      // so let's polyfill a few things for the user
-      (elm as any).shadowRoot = elm;
-    }
-  }
-
-
-  function defineComponent(cmpMeta: ComponentMeta, HostElementConstructor: any) {
-    const tagName = cmpMeta.tagNameMeta;
-
-    if (!globalDefined[tagName]) {
+    if (!globalDefined[cmpMeta.tagNameMeta]) {
       // keep a map of all the defined components
-      globalDefined[tagName] = true;
+      globalDefined[cmpMeta.tagNameMeta] = true;
 
       // initialize the members on the host element prototype
       initHostElement(plt, cmpMeta, HostElementConstructor.prototype, hydratedCssClass);
@@ -161,7 +137,7 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
       }
 
       // define the custom element
-      win.customElements.define(tagName, HostElementConstructor);
+      win.customElements.define(cmpMeta.tagNameMeta, HostElementConstructor);
     }
   }
 
@@ -172,7 +148,7 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
    * @param callback
    */
   function execBundleCallback(name: string, deps: string[], callback: Function) {
-    const bundleExports: CjsExports = {};
+    const bundleExports: d.CjsExports = {};
 
     try {
       callback(bundleExports, ...deps.map(d => loadedBundles[d]));
@@ -251,19 +227,32 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
   }
 
   // This is executed by the component's connected callback.
-  function loadComponent(cmpMeta: ComponentMeta, modeName: string, cb: Function, bundleId?: string) {
-    bundleId = (typeof cmpMeta.bundleIds === 'string') ?
+  function requestBundle(cmpMeta: d.ComponentMeta, elm: d.HostElement) {
+    // set the "mode" property
+    if (!elm.mode) {
+      // looks like mode wasn't set as a property directly yet
+      // first check if there's an attribute
+      // next check the app's global
+      elm.mode = domApi.$getAttribute(elm, 'mode') || Context.mode;
+    }
+
+    // remember a "snapshot" of this host element's current attributes/child nodes/slots/etc
+    initHostSnapshot(plt.domApi, cmpMeta, elm);
+
+    const bundleId = (typeof cmpMeta.bundleIds === 'string') ?
       cmpMeta.bundleIds :
-      cmpMeta.bundleIds[modeName];
+      cmpMeta.bundleIds[elm.mode];
 
     if (loadedBundles[bundleId]) {
       // sweet, we've already loaded this bundle
-      cb();
+      queueUpdate(plt, elm);
 
     } else {
       // never seen this bundle before, let's start the request
       // and add it to the callbacks to fire when it has loaded
-      bundleQueue.push([undefined, [bundleId], cb]);
+      bundleQueue.push([undefined, [bundleId], () => {
+        queueUpdate(plt, elm);
+      }]);
 
       // when to request the bundle depends is we're using the css shim or not
       if (Build.cssVarShim && !customStyle.supportsCssVars) {
@@ -288,7 +277,7 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
   }
 
 
-  function requestComponentBundle(cmpMeta: ComponentMeta, bundleId: string, url?: string, tmrId?: any, scriptElm?: HTMLScriptElement) {
+  function requestComponentBundle(cmpMeta: d.ComponentMeta, bundleId: string, url?: string, tmrId?: any, scriptElm?: HTMLScriptElement) {
     // create the url we'll be requesting
     // always use the es5/jsonp callback module
     url = resourcesUrl + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.es5.js');
@@ -360,8 +349,10 @@ export function createPlatformClientLegacy(namespace: string, Context: CoreConte
     plt.defineComponent(cmpMeta, HostElement);
   });
 
+  // create the componentOnReady fn
+  initCoreComponentOnReady(plt, App);
+
   // notify that the app has initialized and the core script is ready
-  // but note that the components have not fully loaded yet, that's the "appload" event
+  // but note that the components have not fully loaded yet
   App.initialized = true;
-  domApi.$dispatchEvent(win, 'appload', { detail: { namespace: namespace } });
 }

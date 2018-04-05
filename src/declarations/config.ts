@@ -7,6 +7,7 @@ export interface Config {
   buildEs5?: boolean;
   buildLogFilePath?: string;
   bundles?: ConfigBundle[];
+  commonjs?: BundlingConfig;
   configPath?: string;
   copy?: CopyTasks;
   devInspector?: boolean;
@@ -49,12 +50,20 @@ export interface Config {
 }
 
 
+export interface BundlingConfig {
+  namedExports?: {
+    [key: string]: string[];
+  };
+}
+
+
 export interface ConfigFlags {
   task?: 'build' | 'docs' | 'help' | 'init' | 'serve';
   config?: string;
   debug?: boolean;
   dev?: boolean;
   docs?: boolean;
+  docsJson?: string;
   es5?: boolean;
   help?: boolean;
   log?: boolean;
@@ -113,6 +122,11 @@ export interface ConfigAssetVersioning {
    * Version assets found in HTML elements, such as CSS urls in <link> and JS urls in <script>. Defaults to true;
    */
   versionHtml?: boolean;
+
+  /**
+   * Version assets found in mainfest, such as the manifest.json file itself and all assets referenced within. Defaults to true;
+   */
+  versionManifest?: boolean;
 
   /**
    * Version assets that are found in styles and css, such as background-url and @font-face urls. Defaults to true;

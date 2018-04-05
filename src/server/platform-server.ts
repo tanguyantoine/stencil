@@ -1,14 +1,15 @@
 import * as d from '../declarations';
-import { assignHostContentSlots } from '../renderer/vdom/slot';
 import { createDomApi } from '../renderer/dom-api';
 import { createQueueServer } from './queue-server';
 import { createRendererPatch } from '../renderer/vdom/patch';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION, PROP_TYPE, RUNTIME_ERROR } from '../util/constants';
 import { getAppBuildDir } from '../compiler/app/app-file-naming';
 import { h } from '../renderer/vdom/h';
+import { initCoreComponentOnReady } from '../core/component-on-ready';
 import { noop } from '../util/helpers';
 import { patchDomApi } from './dom-api-server';
 import { proxyController } from '../core/proxy-controller';
+import { queueUpdate } from '../core/update';
 import { toDashCase } from '../util/helpers';
 
 
@@ -16,7 +17,8 @@ export function createPlatformServer(
   config: d.Config,
   outputTarget: d.OutputTargetWww,
   win: any,
-  doc: any,
+  doc: Document,
+  App: d.AppGlobal,
   cmpRegistry: d.ComponentRegistry,
   diagnostics: d.Diagnostic[],
   isPrerender: boolean,
@@ -25,9 +27,6 @@ export function createPlatformServer(
   const loadedBundles: {[bundleId: string]: any} = {};
   const styles: string[] = [];
   const controllerComponents: {[tag: string]: d.HostElement} = {};
-
-  // create the app global
-  const App: d.AppGlobal = {};
 
   const domApi = createDomApi(App, win, doc);
 
@@ -70,33 +69,35 @@ export function createPlatformServer(
   // execute the global scripts (if there are any)
   runGlobalScripts();
 
+  // internal id increment for unique ids
+  let ids = 0;
+
   // create the platform api which is used throughout common core code
   const plt: d.PlatformApi = {
     attachStyles: noop,
-    connectHostElement,
     defineComponent,
     domApi,
     emitEvent: noop,
     getComponentMeta,
     getContextItem,
     isDefinedComponent,
-    loadBundle: loadComponent,
     onError,
+    nextId: () => config.namespace + (ids++),
     propConnect,
     queue: createQueueServer(),
+    requestBundle: requestBundle,
     tmpDisconnected: false,
 
     ancestorHostElementMap: new WeakMap(),
     componentAppliedStyles: new WeakMap(),
-    defaultSlotsMap: new WeakMap(),
     hasConnectedMap: new WeakMap(),
     hasListenersMap: new WeakMap(),
     hasLoadedMap: new WeakMap(),
     hostElementMap: new WeakMap(),
+    hostSnapshotMap: new WeakMap(),
     instanceMap: new WeakMap(),
     isDisconnectedMap: new WeakMap(),
     isQueuedForUpdate: new WeakMap(),
-    namedSlotsMap: new WeakMap(),
     onReadyCallbacksMap: new WeakMap(),
     queuedEvents: new WeakMap(),
     vnodeMap: new WeakMap(),
@@ -104,17 +105,21 @@ export function createPlatformServer(
   };
 
   // patch dom api like createElement()
-  patchDomApi(plt, domApi);
+  patchDomApi(config, plt, domApi);
 
   // create the renderer which will be used to patch the vdom
   plt.render = createRendererPatch(plt, domApi);
 
+  // patch the componentOnReady fn
+  initCoreComponentOnReady(plt, App);
+
   // setup the root node of all things
   // which is the mighty <html> tag
   const rootElm = domApi.$documentElement as d.HostElement;
-  rootElm.$rendered = true;
-  rootElm.$activeLoading = [];
-  rootElm.$initLoad = function appLoadedCallback() {
+  rootElm['s-ld'] = [];
+  rootElm['s-rn'] = true;
+
+  rootElm['s-init'] = function appLoadedCallback() {
     plt.hasLoadedMap.set(rootElm, true);
     appLoaded();
   };
@@ -126,20 +131,6 @@ export function createPlatformServer(
       plt.onAppLoad && plt.onAppLoad(rootElm, styles, failureDiagnostic);
     }
   }
-
-  function connectHostElement(_cmpMeta: d.ComponentMeta, elm: d.HostElement) {
-    // set the "mode" property
-    if (!elm.mode) {
-      // looks like mode wasn't set as a property directly yet
-      // first check if there's an attribute
-      // next check the app's global
-      elm.mode = domApi.$getAttribute(elm, 'mode') || Context.mode;
-    }
-
-    // pick out all of the light dom nodes from the host element
-    assignHostContentSlots(plt, domApi, elm, elm.childNodes);
-  }
-
 
   function getComponentMeta(elm: Element) {
     // registry tags are always lower-case
@@ -234,23 +225,37 @@ export function createPlatformServer(
 
   plt.attachStyles = function attachStyles(_domApi, _cmpMeta, _modeName, _elm) {/**/};
 
+
   // This is executed by the component's connected callback.
-  function loadComponent(cmpMeta: d.ComponentMeta, modeName: string, cb: Function, bundleId?: string) {
-    bundleId = (typeof cmpMeta.bundleIds === 'string') ?
-      cmpMeta.bundleIds :
-      cmpMeta.bundleIds[modeName];
+  function requestBundle(cmpMeta: d.ComponentMeta, elm: d.HostElement, hostSnapshot: d.HostSnapshot) {
+    // remember a "snapshot" of this host element's current attributes/child nodes/slots/etc
+    plt.hostSnapshotMap.set(elm, hostSnapshot);
+
+    // set the "mode" property
+    if (!elm.mode) {
+      // looks like mode wasn't set as a property directly yet
+      // first check if there's an attribute
+      // next check the app's global
+      elm.mode = domApi.$getAttribute(elm, 'mode') || Context.mode;
+    }
 
     // It is possible the data was loaded from an outside source like tests
     if (cmpRegistry[cmpMeta.tagNameMeta].componentConstructor) {
-      cb();
-
-    } else if (loadedBundles[bundleId]) {
-      // sweet, we've already loaded this bundle
-      cb();
+      queueUpdate(plt, elm);
 
     } else {
-      const fileName = getComponentBundleFilename(cmpMeta, modeName);
-      loadFile(fileName);
+      const bundleId = (typeof cmpMeta.bundleIds === 'string') ?
+        cmpMeta.bundleIds :
+        cmpMeta.bundleIds[elm.mode];
+
+      if (loadedBundles[bundleId]) {
+        // sweet, we've already loaded this bundle
+        queueUpdate(plt, elm);
+
+      } else {
+        const fileName = getComponentBundleFilename(cmpMeta, elm.mode);
+        loadFile(fileName);
+      }
     }
   }
 

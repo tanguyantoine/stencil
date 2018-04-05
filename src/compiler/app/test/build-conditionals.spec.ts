@@ -22,48 +22,48 @@ describe('build conditionals', () => {
   });
 
 
-  describe('getLastBuildConditionals',  () => {
+  describe('getlastBuildConditionalsEsm',  () => {
 
     it('use last build cuz only a css/html file changes', () => {
       compilerCtx.isRebuild = true;
-      compilerCtx.lastBuildConditionals = {
+      compilerCtx.lastBuildConditionalsEsm = {
         svg: true
       } as any;
       buildCtx.filesChanged = ['/src/app.css', '/src/index.html'];
-      const b = getLastBuildConditionals(compilerCtx, buildCtx);
+      const b = getLastBuildConditionals(compilerCtx, 'core', buildCtx);
       expect(b).toEqual({svg: true});
     });
 
     it('no last build cuz a tsx file change', () => {
       compilerCtx.isRebuild = true;
-      compilerCtx.lastBuildConditionals = {
+      compilerCtx.lastBuildConditionalsEsm = {
         svg: true
       } as any;
       buildCtx.filesChanged = ['/src/cmp.tsx'];
-      const b = getLastBuildConditionals(compilerCtx, buildCtx);
+      const b = getLastBuildConditionals(compilerCtx, 'core', buildCtx);
       expect(b).toBe(null);
     });
 
     it('no last build cuz a ts file change', () => {
       compilerCtx.isRebuild = true;
-      compilerCtx.lastBuildConditionals = {
+      compilerCtx.lastBuildConditionalsEsm = {
         svg: true
       } as any;
       buildCtx.filesChanged = ['/src/cmp.ts', '/src/app.css', '/src/index.html'];
-      const b = getLastBuildConditionals(compilerCtx, buildCtx);
+      const b = getLastBuildConditionals(compilerCtx, 'core', buildCtx);
       expect(b).toBe(null);
     });
 
-    it('no last build cuz no compilerCtx.lastBuildConditionals', () => {
+    it('no last build cuz no compilerCtx.lastBuildConditionalsEsm', () => {
       compilerCtx.isRebuild = true;
-      compilerCtx.lastBuildConditionals = null;
-      const b = getLastBuildConditionals(compilerCtx, buildCtx);
+      compilerCtx.lastBuildConditionalsEsm = null;
+      const b = getLastBuildConditionals(compilerCtx, 'core', buildCtx);
       expect(b).toBe(null);
     });
 
     it('no last build cuz not rebuild', () => {
       compilerCtx.isRebuild = false;
-      const b = getLastBuildConditionals(compilerCtx, buildCtx);
+      const b = getLastBuildConditionals(compilerCtx, 'core', buildCtx);
       expect(b).toBe(null);
     });
 
@@ -72,30 +72,53 @@ describe('build conditionals', () => {
 
   describe('setBuildConditionals', () => {
 
-    it('set Build.svg true', async () => {
-      buildCtx.hasSvg = true;
-      const bc = await setBuildConditionals(config, {}, buildCtx, []);
-      expect(bc.svg).toBe(true);
+    it('set Build.hasSlot true', async () => {
+      buildCtx.hasSlot = true;
+      const bc = await setBuildConditionals(config, {}, 'core', buildCtx, []);
+      expect(bc.hasSlot).toBe(true);
     });
 
-    it('set Build.svg false', async () => {
+    it('set Build.hasSlot false', async () => {
+      buildCtx.hasSlot = false;
+      const bc = await setBuildConditionals(config, {}, 'core', buildCtx, []);
+      expect(bc.hasSlot).toBe(false);
+    });
+
+    it('set Build.hasSvg true', async () => {
+      buildCtx.hasSvg = true;
+      const bc = await setBuildConditionals(config, {}, 'core', buildCtx, []);
+      expect(bc.hasSvg).toBe(true);
+    });
+
+    it('set Build.hasSvg always true (for now)', async () => {
       buildCtx.hasSvg = false;
-      const bc = await setBuildConditionals(config, {}, buildCtx, []);
-      expect(bc.svg).toBe(false);
+      const bc = await setBuildConditionals(config, {}, 'core', buildCtx, []);
+      expect(bc.hasSvg).toBe(true);
     });
 
     it('set Build.isDev', async () => {
       config.devMode = true;
-      const bc = await setBuildConditionals(config, {}, buildCtx, []);
+      const bc = await setBuildConditionals(config, {}, 'core', buildCtx, []);
       expect(bc.isDev).toBe(true);
       expect(bc.isProd).toBe(false);
     });
 
     it('set Build.isProd', async () => {
       config.devMode = false;
-      const bc = await setBuildConditionals(config, {}, buildCtx, []);
+      const bc = await setBuildConditionals(config, {}, 'core', buildCtx, []);
       expect(bc.isDev).toBe(false);
       expect(bc.isProd).toBe(true);
+    });
+
+    it('set compilerCtx lastBuildConditionalsEs5', async () => {
+      const bc = await setBuildConditionals(config, compilerCtx, 'core.pf', buildCtx, []);
+      expect(compilerCtx.lastBuildConditionalsEs5).toBe(bc);
+    });
+
+    it('set compilerCtx lastBuildConditionalsEsm', async () => {
+      const compilerCtx: d.CompilerCtx = {};
+      const bc = await setBuildConditionals(config, compilerCtx, 'core', buildCtx, []);
+      expect(compilerCtx.lastBuildConditionalsEsm).toBe(bc);
     });
 
   });
@@ -148,20 +171,37 @@ describe('build conditionals', () => {
       };
       setBuildFromComponentMeta(coreBuild, cmpMeta);
       expect(coreBuild.hostTheme).toBeTruthy();
-      expect(Object.keys(coreBuild).length).toBe(1);
+      expect(Object.keys(coreBuild)).toHaveLength(2);
+      expect(coreBuild.slotPolyfill).toBeTruthy();
     });
 
     it('styles', () => {
       cmpMeta.stylesMeta = {};
       setBuildFromComponentMeta(coreBuild, cmpMeta);
       expect(coreBuild.styles).toBeTruthy();
-      expect(Object.keys(coreBuild).length).toBe(1);
+      expect(Object.keys(coreBuild)).toHaveLength(2);
+      expect(coreBuild.slotPolyfill).toBeTruthy();
     });
 
     it('shadowDom', () => {
       cmpMeta.encapsulation = ENCAPSULATION.ShadowDom;
       setBuildFromComponentMeta(coreBuild, cmpMeta);
       expect(coreBuild.shadowDom).toBeTruthy();
+      expect(coreBuild.slotPolyfill).toBeFalsy();
+    });
+
+    it('slotPolyfill cuz ScopedCss', () => {
+      cmpMeta.encapsulation = ENCAPSULATION.ScopedCss;
+      setBuildFromComponentMeta(coreBuild, cmpMeta);
+      expect(coreBuild.slotPolyfill).toBeTruthy();
+      expect(coreBuild.shadowDom).toBeFalsy();
+    });
+
+    it('slotPolyfill cuz NoEncapsulation', () => {
+      cmpMeta.encapsulation = ENCAPSULATION.NoEncapsulation;
+      setBuildFromComponentMeta(coreBuild, cmpMeta);
+      expect(coreBuild.slotPolyfill).toBeTruthy();
+      expect(coreBuild.shadowDom).toBeFalsy();
     });
 
     it('listener', () => {
@@ -250,12 +290,14 @@ describe('build conditionals', () => {
       };
       setBuildFromComponentMeta(coreBuild, cmpMeta);
       expect(coreBuild.observeAttr).toBeFalsy();
-      expect(Object.keys(coreBuild).length).toBe(0);
+      expect(Object.keys(coreBuild)).toHaveLength(1);
+      expect(coreBuild.slotPolyfill).toBeTruthy();
     });
 
     it('should do nothing with no member meta', () => {
       setBuildFromComponentMeta(coreBuild, cmpMeta);
-      expect(Object.keys(coreBuild).length).toBe(0);
+      expect(Object.keys(coreBuild)).toHaveLength(1);
+      expect(coreBuild.slotPolyfill).toBeTruthy();
     });
 
   });

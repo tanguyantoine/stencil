@@ -41,10 +41,16 @@ export interface ComponentConstructor {
   is?: string;
   properties?: ComponentConstructorProperties;
   events?: ComponentConstructorEvent[];
-  host?: any;
+  host?: ComponentConstructorHost;
   style?: string;
   styleMode?: string;
   encapsulation?: Encapsulation;
+}
+
+
+export interface ComponentConstructorHost {
+  theme?: string;
+  [attrName: string]: string | undefined;
 }
 
 
@@ -225,7 +231,7 @@ export interface ComponentInternalValues {
 
 
 export interface ComponentModule {
-  new (): ComponentInstance;
+  new(): ComponentInstance;
 }
 
 
@@ -243,14 +249,53 @@ export interface HostElement extends HTMLElement {
   host: Element;
   forceUpdate: () => void;
 
-  // public members which can be used externally and should
-  // not be property renamed (these should all be in externs)
-  // HOWEVER!!! Don't use these :) Nothing to see here
-  $activeLoading?: HostElement[];
-  $defaultHolder?: Comment;
-  $initLoad: () => void;
-  $rendered?: boolean;
-  $onRender: (() => void)[];
+  // "s-" prefixed properties should not be property renamed
+  // and should be common between all versions of stencil
+
+  /**
+   * Host Element Id:
+   * A unique id assigned to this host element.
+   */
+  ['s-id']?: string;
+
+  /**
+   * Content Reference:
+   * Reference to the HTML Comment that's placed inside of the
+   * host element's original content. This comment is used to
+   * always represent where host element's light dom is.
+   * (deprecated $defaultHolder)
+   */
+  ['s-cr']?: Comment;
+
+  /**
+   * Active Loading:
+   * Array of child host elements that are actively loading.
+   * (deprecated $activeLoading)
+   */
+  ['s-ld']?: HostElement[];
+
+  /**
+   * Rendered:
+   * Set to true if this component has rendered
+   * (deprecated $rendered)
+   */
+  ['s-rn']?: boolean;
+
+  /**
+   * On Render Callbacks:
+   * Array of callbacks to fire off after it has rendered.
+   * (deprecated $onRender)
+   */
+  ['s-rc']: (() => void)[];
+
+  /**
+   * Component Initial Load:
+   * The component has fully loaded, instance creatd,
+   * and has rendered. Method is on the host element prototype.
+   * (deprecated $initLoad)
+   */
+  ['s-init']: () => void;
+
   componentOnReady?: (cb?: (elm: HostElement) => void) => Promise<void>;
   color?: string;
   mode?: string;
@@ -261,7 +306,7 @@ export interface ComponentAppliedStyles {
 }
 
 
-export type OnReadyCallback = ((elm: HostElement) => void);
+export type OnReadyCallback = ((elm: d.HostElement) => void);
 
 
 export interface LoadComponentRegistry {
@@ -318,7 +363,7 @@ export interface ComponentMemberData {
   /**
    * is attribute name to observe
    */
-  [3]: string|number;
+  [3]: string | number;
 
   /**
    * prop type

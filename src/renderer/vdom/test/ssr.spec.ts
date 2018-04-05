@@ -1,8 +1,10 @@
 import * as d from '../../../declarations';
+import { connectElement } from '../../../server/connect-element';
 import { createRendererPatch } from '../patch';
 import { createVNodesFromSsr } from '../ssr';
 import { ENCAPSULATION, SSR_CHILD_ID, SSR_VNODE_ID } from '../../../util/constants';
 import { h } from '../h';
+import { initHostSnapshot } from '../../../core/host-snapshot';
 import { mockDomApi, mockPlatform, removeWhitespaceFromNodes } from '../../../testing/mocks';
 
 
@@ -153,19 +155,17 @@ describe('ssr', () => {
         )
       );
 
+      initHostSnapshot(domApi, {}, elm as d.HostElement);
+
       const defaultContentNode = domApi.$createElement('child-a');
       elm.appendChild(defaultContentNode);
 
-      const defaultSlot: d.DefaultSlot = [
-        defaultContentNode
-      ];
-
-      ssrVNode = patch(oldVnode, newVnode, false, defaultSlot, null, 'none', 1);
+      ssrVNode = patch(oldVnode, newVnode, false, 'none', 1);
       elm = removeWhitespaceFromNodes(ssrVNode.elm);
 
       expect(elm.getAttribute(SSR_VNODE_ID)).toBe('1');
       expect(elm.firstElementChild.getAttribute(SSR_CHILD_ID)).toBe('1.0.');
-      expect(elm.firstElementChild.innerHTML).toBe('<child-a></child-a>');
+      expect(elm.firstElementChild.innerHTML).toBe('<!----><child-a></child-a>');
     });
 
     it('should add same ssr to all elements', () => {
@@ -176,7 +176,7 @@ describe('ssr', () => {
         )
       );
 
-      ssrVNode = patch(oldVnode, newVnode, false, null, null, 'none', 1);
+      ssrVNode = patch(oldVnode, newVnode, false, 'none', 1);
       elm = <any>ssrVNode.elm;
 
       expect(elm.getAttribute(SSR_VNODE_ID)).toBe('1');

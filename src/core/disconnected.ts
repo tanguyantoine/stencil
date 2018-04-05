@@ -38,6 +38,15 @@ export function disconnectedCallback(plt: PlatformApi, elm: HostElement, instanc
         instance.componentDidUnload && instance.componentDidUnload();
       }
     }
+
+    // clear any references to other elements
+    // more than likely we've already deleted these references
+    // but let's double check there pal
+    [
+      plt.ancestorHostElementMap,
+      plt.onReadyCallbacksMap,
+      plt.hostSnapshotMap
+    ].forEach(wm => wm.delete(elm));
   }
 }
 

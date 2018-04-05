@@ -10,6 +10,7 @@ describe('proxy-component', () => {
   let elm: d.HostElement;
   let instance: d.ComponentInstance;
   let CmpConstructor: d.ComponentConstructor;
+  let hostSnapshot: d.HostSnapshot;
 
   beforeEach(() => {
     plt = mockPlatform();
@@ -18,6 +19,7 @@ describe('proxy-component', () => {
     instance = new TwinPines();
     plt.instanceMap.set(elm, instance);
     plt.hostElementMap.set(instance, elm);
+    hostSnapshot = {};
   });
 
 
@@ -27,7 +29,7 @@ describe('proxy-component', () => {
       instance.chg = 'oldValue';
       spyOn(instance, 'watchCallbackA');
       spyOn(instance, 'watchCallbackB');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.chg = 'newValue';
       expect(instance.watchCallbackA).toBeCalledWith('newValue', 'oldValue', 'chg');
       expect(instance.watchCallbackB).toBeCalledWith('newValue', 'oldValue', 'chg');
@@ -43,7 +45,7 @@ describe('proxy-component', () => {
 
       instance.chg = 'oldValueChg1';
       instance.chg2 = 'oldValueChg2';
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
 
       instance.chg = 'newValueChg1';
       instance.chg2 = 'newValueChg2';
@@ -63,25 +65,25 @@ describe('proxy-component', () => {
   describe('has changed, if it has rendered once', () => {
 
     it('instance number changed', () => {
-      elm.$rendered = true;
+      elm['s-rn'] = true;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.num = 141.622;
       expect(plt.queue.add).toHaveBeenCalled();
     });
 
     it('instance string changed', () => {
-      elm.$rendered = true;
+      elm['s-rn'] = true;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.str = 'kph';
       expect(plt.queue.add).toHaveBeenCalled();
     });
 
     it('instance boolean changed', () => {
-      elm.$rendered = true;
+      elm['s-rn'] = true;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.bool = false;
       expect(plt.queue.add).toHaveBeenCalled();
     });
@@ -91,25 +93,25 @@ describe('proxy-component', () => {
   describe('no change, if it has rendered once', () => {
 
     it('instance number unchanged', () => {
-      elm.$rendered = true;
+      elm['s-rn'] = true;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.num = 88;
       expect(plt.queue.add).not.toHaveBeenCalled();
     });
 
     it('instance string unchanged', () => {
-      elm.$rendered = true;
+      elm['s-rn'] = true;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.str = 'mph';
       expect(plt.queue.add).not.toHaveBeenCalled();
     });
 
     it('instance boolean unchanged', () => {
-      elm.$rendered = true;
+      elm['s-rn'] = true;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.bool = true;
       expect(plt.queue.add).not.toHaveBeenCalled();
     });
@@ -119,25 +121,25 @@ describe('proxy-component', () => {
   describe('does not queue another render if it hasnt rendered yet', () => {
 
     it('instance number changed', () => {
-      elm.$rendered = false;
+      elm['s-rn'] = false;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.num = 1234;
       expect(plt.queue.add).not.toHaveBeenCalled();
     });
 
     it('instance string changed', () => {
-      elm.$rendered = false;
+      elm['s-rn'] = false;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.str = 'asdfasdf';
       expect(plt.queue.add).not.toHaveBeenCalled();
     });
 
     it('instance boolean changed', () => {
-      elm.$rendered = false;
+      elm['s-rn'] = false;
       spyOn(plt.queue, 'add');
-      proxyComponentInstance(plt, CmpConstructor, elm, instance);
+      proxyComponentInstance(plt, CmpConstructor, elm, instance, hostSnapshot);
       instance.bool = false;
       expect(plt.queue.add).not.toHaveBeenCalled();
     });

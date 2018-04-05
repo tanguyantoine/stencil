@@ -26,12 +26,16 @@ export function hydrateHtml(config: d.Config, compilerCtx: d.CompilerCtx, output
     normalizeDirection(doc, hydrateTarget);
     normalizeLanguage(doc, hydrateTarget);
 
+    // create the app global
+    const App: d.AppGlobal = {};
+
     // create the platform
     const plt = createPlatformServer(
       config,
       hydrateTarget,
       win,
       doc,
+      App,
       cmpRegistry,
       hydrateResults.diagnostics,
       hydrateTarget.isPrerender,
@@ -107,7 +111,7 @@ export function hydrateHtml(config: d.Config, compilerCtx: d.CompilerCtx, output
     // and to connect any elements it may have just appened to the DOM
     let ssrIds = 0;
     const pltRender = plt.render;
-    plt.render = function render(oldVNode: d.VNode, newVNode, isUpdate, defaultSlots, namedSlotsMap, encapsulation) {
+    plt.render = function render(oldVNode: d.VNode, newVNode, isUpdate, encapsulation) {
       let ssrId: number;
       let existingSsrId: string;
 
@@ -125,9 +129,9 @@ export function hydrateHtml(config: d.Config, compilerCtx: d.CompilerCtx, output
         }
       }
 
-      newVNode = pltRender(oldVNode, newVNode, isUpdate, defaultSlots, namedSlotsMap, encapsulation, ssrId);
+      newVNode = pltRender(oldVNode, newVNode, isUpdate, encapsulation, ssrId);
 
-      connectChildElements(config, plt, hydrateResults, newVNode.elm as Element);
+      connectChildElements(config, plt, App, hydrateResults, newVNode.elm as Element);
 
       return newVNode;
     };
@@ -135,7 +139,7 @@ export function hydrateHtml(config: d.Config, compilerCtx: d.CompilerCtx, output
     // loop through each node and start connecting/hydrating
     // any elements that are host elements to components
     // this kicks off all the async hydrating
-    connectChildElements(config, plt, hydrateResults, win.document.body);
+    connectChildElements(config, plt, App, hydrateResults, win.document.body);
 
     if (hydrateResults.components.length === 0) {
       // what gives, never found ANY host elements to connect!

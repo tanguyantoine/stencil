@@ -62,7 +62,19 @@ export interface OutputTargetStats extends OutputTarget {
 }
 
 
+export interface OutputTargetAngular extends OutputTarget {
+  buildDir?: string;
+  dir?: string;
+  empty?: boolean;
+  resourcesUrl?: string;
+  typesDir?: string;
+  directivesProxyFile?: string;
+  directivesArrayFile?: string;
+  excludeComponents?: string[];
+}
+
+
 export interface OutputTarget {
-  type?: 'dist' | 'docs' | 'stats' | 'www';
+  type?: 'angular' | 'dist' | 'docs' | 'stats' | 'www';
   appBuild?: boolean;
 }
