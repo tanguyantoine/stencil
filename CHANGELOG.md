@@ -1,3 +1,165 @@
+<a name="0.7.24"></a>
+## 🍣 [0.7.24](https://github.com/ionic-team/stencil/compare/v0.7.23...v0.7.24) (2018-04-13)
+
+
+### Bug Fixes
+
+* **queue:** ensure all queued callbacks run ([e251802](https://github.com/ionic-team/stencil/commit/e251802))
+
+
+
+<a name="0.7.23"></a>
+## ☀️ [0.7.23](https://github.com/ionic-team/stencil/compare/v0.7.22...v0.7.23) (2018-04-13)
+
+
+### Bug Fixes
+
+* **css-shim:** fix relative paths ([67edcbd](https://github.com/ionic-team/stencil/commit/67edcbd))
+* allow collection packages to use package.json 'module' to export esmodules. ([8aee1f0](https://github.com/ionic-team/stencil/commit/8aee1f0))
+
+
+
+<a name="0.7.22"></a>
+## ⛷ [0.7.22](https://github.com/ionic-team/stencil/compare/v0.7.21...v0.7.22) (2018-04-12)
+
+
+### Bug Fixes
+
+* **angular:** output decorator ([494fb18](https://github.com/ionic-team/stencil/commit/494fb18))
+* **prerender:** pass property data down to child components ([35c0911](https://github.com/ionic-team/stencil/commit/35c0911))
+
+
+
+<a name="0.7.21"></a>
+## ⚾️ [0.7.21](https://github.com/ionic-team/stencil/compare/v0.7.20...v0.7.21) (2018-04-12)
+
+
+### Bug Fixes
+
+* **angular:** emit exact types ([2164ad3](https://github.com/ionic-team/stencil/commit/2164ad3))
+* **css-shim:** Fix css-shim when base64 uri value is used ([84a1348](https://github.com/ionic-team/stencil/commit/84a1348)), closes [#393](https://github.com/ionic-team/stencil/issues/393)
+* **svg:** remove svg attribute when undefined ([5a3c632](https://github.com/ionic-team/stencil/commit/5a3c632)), closes [#720](https://github.com/ionic-team/stencil/issues/720)
+* **test:** correct tsconfig for karma tests. ([568c82d](https://github.com/ionic-team/stencil/commit/568c82d))
+
+
+### Features
+
+* **queue:** organize dom read/writes within queue ([0d865b8](https://github.com/ionic-team/stencil/commit/0d865b8))
+* export component types ([41e4089](https://github.com/ionic-team/stencil/commit/41e4089))
+
+
+
+<a name="0.7.20"></a>
+## 🍭 [0.7.20](https://github.com/ionic-team/stencil/compare/v0.7.19...v0.7.20) (2018-04-10)
+
+
+### Bug Fixes
+
+* **declarations:** fix dialog type interface ([9e7da78](https://github.com/ionic-team/stencil/commit/9e7da78))
+* **test:** fix accessing TestWindow properties ([1dabe1f](https://github.com/ionic-team/stencil/commit/1dabe1f))
+* **test:** update to TestWindow ([aa41953](https://github.com/ionic-team/stencil/commit/aa41953))
+* **test:** TestWindow types subclass Window ([a7feecc](https://github.com/ionic-team/stencil/commit/a7feecc))
+
+
+### Features
+
+* **autoprefix:** built-in css autoprefixing ([e141e8a](https://github.com/ionic-team/stencil/commit/e141e8a))
+
+
+
+<a name="0.7.19"></a>
+## 💾 [0.7.19](https://github.com/ionic-team/stencil/compare/v0.7.18...v0.7.19) (2018-04-09)
+
+
+### Bug Fixes
+
+* **props:** dash-case attributes to props ([0bf1796](https://github.com/ionic-team/stencil/commit/0bf1796)), closes [#697](https://github.com/ionic-team/stencil/issues/697)
+* **props:** static type analysis for props ([b6e7863](https://github.com/ionic-team/stencil/commit/b6e7863))
+* **test:** use TestWindow for Listen testing ([3279676](https://github.com/ionic-team/stencil/commit/3279676)), closes [#572](https://github.com/ionic-team/stencil/issues/572)
+* **testing:** fix event emitter for test suite ([d388430](https://github.com/ionic-team/stencil/commit/d388430)), closes [#601](https://github.com/ionic-team/stencil/issues/601)
+* **tests:** path is not correct on windows ([#701](https://github.com/ionic-team/stencil/issues/701)) ([f7acae4](https://github.com/ionic-team/stencil/commit/f7acae4))
+
+
+### Refactor
+
+The test suite now comes with a `TestWindow` class, with the ultimate goal of better simulating a standardized browser environment built on top of `window` and `document`. Using a `TestWindow` instance allows tests to stay compartmentalized, and not require global objects which get reused (which is not ideal for testing). Instead, each test creates a new instance of `window`, and by doing so lets each test to not affect others.
+
+The test suite has been refactored to now use `TestWindow` instead of `render` and `flush`. Existing tests will continue to work, but warnings will be printed to use `TestWindow` instead. Here are [a few examples](https://github.com/ionic-team/stencil/commit/77dd1c79b4d8926995d9a48773c8516fff63e410).
+
+##### Old test:
+
+```
+import { render, flush } from '@stencil/core/testing';
+import { MyComponent } from './my-component';
+
+it('should be the old way', async () => {
+  const element = await render({
+    components: [MyComponent],
+    html: '<my-cmp first="Marty" last-name="McFly"></my-cmp>'
+  });
+  expect(element.textContent).toEqual('Hello, my name is Marty McFly');
+
+  element.first = 'George';
+  await flush(element);
+
+  expect(element.textContent).toEqual('Hello, my name is George McFly');
+});
+```
+
+##### New test:
+
+```
+import { TestWindow } from '@stencil/core/testing';
+import { MyComponent } from './my-component';
+
+it('should be the new way', async () => {
+  const window = new TestWindow();
+  const element = await window.load({
+    components: [MyComponent],
+    html: '<my-cmp first="Marty" last-name="McFly"></my-cmp>'
+  });
+  expect(element.textContent).toEqual('Hello, my name is Marty McFly');
+
+  element.first = 'George';
+  await window.flush();
+
+  expect(element.textContent).toEqual('Hello, my name is George McFly');
+});
+```
+
+
+<a name="0.7.18"></a>
+## 🍹 [0.7.18](https://github.com/ionic-team/stencil/compare/v0.7.17...v0.7.18) (2018-04-06)
+
+
+### Bug Fixes
+
+* **angular:** outputs must be proxied ([e5647ac](https://github.com/ionic-team/stencil/commit/e5647ac))
+
+
+
+<a name="0.7.17"></a>
+## 🍸 [0.7.17](https://github.com/ionic-team/stencil/compare/v0.7.16...v0.7.17) (2018-04-06)
+
+
+### Bug Fixes
+
+* **angular:** method proxy ([e06a37d](https://github.com/ionic-team/stencil/commit/e06a37d))
+* **angular:** proxy methods ([5e93ecb](https://github.com/ionic-team/stencil/commit/5e93ecb))
+* **bundle:** also resolve paths of relative source files not in memory ([9991d1e](https://github.com/ionic-team/stencil/commit/9991d1e))
+
+
+
+<a name="0.7.16"></a>
+## 🏌 [0.7.16](https://github.com/ionic-team/stencil/compare/v0.7.15...v0.7.16) (2018-04-05)
+
+
+### Bug Fixes
+
+* **tests:** fix test suite API ([dcac32f](https://github.com/ionic-team/stencil/commit/dcac32f)), closes [#697](https://github.com/ionic-team/stencil/issues/697)
+
+
+
 <a name="0.7.15"></a>
 ## 🚢 [0.7.15](https://github.com/ionic-team/stencil/compare/v0.7.14...v0.7.15) (2018-04-05)
 

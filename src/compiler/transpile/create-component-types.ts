@@ -1,6 +1,5 @@
 import * as d from '../../declarations';
 import { angularDirectiveProxyOutputs } from '../output-targets/angular';
-import { AttributeTypeReference } from '../../declarations';
 import { captializeFirstLetter, dashToPascalCase } from '../../util/helpers';
 import { gatherMetadata } from './datacollection/index';
 import { getComponentsDtsTypesFilePath } from '../collections/distribution';
@@ -22,8 +21,15 @@ export async function generateComponentTypes(config: d.Config, compilerCtx: d.Co
   // run the first program that only does the checking
   const checkProgram = ts.createProgram(checkProgramTsFiles, tsOptions, tsHost);
 
-  // Gather component metadata and type info
-  const metadata = gatherMetadata(config, compilerCtx, buildCtx, checkProgram.getTypeChecker(), checkProgram.getSourceFiles());
+  // gather component metadata and type info
+  const metadata = gatherMetadata(
+    config,
+    compilerCtx,
+    buildCtx.diagnostics,
+    buildCtx.collections,
+    checkProgram.getTypeChecker(),
+    checkProgram.getSourceFiles()
+  );
 
   // create angular directive proxy outputs
   angularDirectiveProxyOutputs(config, compilerCtx, metadata);
@@ -210,9 +216,9 @@ function updateImportReferenceFactory(config: d.Config, allTypes: { [key: string
     return `${name}${allTypes[name]}`;
   }
 
-  return (obj: ImportData, typeReferences: { [key: string]: AttributeTypeReference }) => {
+  return (obj: ImportData, typeReferences: { [key: string]: d.AttributeTypeReference }) => {
     Object.keys(typeReferences).map(typeName => {
-      return [typeName, typeReferences[typeName]] as [string, AttributeTypeReference];
+      return [typeName, typeReferences[typeName]] as [string, d.AttributeTypeReference];
     }).forEach(([typeName, type]) => {
       let importFileLocation: string;
 
@@ -273,12 +279,18 @@ export function createTypesAsString(cmpMeta: d.ComponentMeta, _importPath: strin
 
   return `
 declare global {
-  interface ${interfaceName} extends HTMLStencilElement {
+
+  namespace StencilComponents {
+    interface ${tagNameAsPascal} {
 ${attributesToMultiLineString({
   ...propAttributes,
   ...methodAttributes
-}, false, '    ')}
+}, false, '      ')}
+    }
   }
+
+  interface ${interfaceName} extends StencilComponents.${tagNameAsPascal}, HTMLStencilElement {}
+
   var ${interfaceName}: {
     prototype: ${interfaceName};
     new (): ${interfaceName};

@@ -1,6 +1,6 @@
 {
   "name": "@stencil/core",
-  "version": "0.7.15",
+  "version": "0.7.24",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,19 +35,22 @@
     "submodules.create": "node scripts/submodules.js",
     "set.version": "node scripts/set-version.js",
     "start": "npm install && npm run build",
-    "test": "jest",
+    "test": "npm run test.jest",
+    "test.dist": "node scripts/test-dist.js",
+    "test.jest": "jest",
+    "test.karma": "cd test/karma && npm run karma.prod",
     "test.watch": "jest --watch",
     "vermoji": "node scripts/vermoji.js"
   },
   "dependencies": {
-    "chokidar": "2.0.1",
+    "chokidar": "2.0.3",
     "jsdom": "11.5.1",
     "rollup": "0.56.5",
-    "rollup-plugin-commonjs": "8.3.0",
+    "rollup-plugin-commonjs": "9.1.0",
     "rollup-plugin-node-builtins": "2.1.2",
-    "rollup-plugin-node-globals": "1.1.0",
-    "rollup-plugin-node-resolve": "3.0.3",
-    "rollup-pluginutils": "^2.0.1",
+    "rollup-plugin-node-globals": "1.2.0",
+    "rollup-plugin-node-resolve": "3.3.0",
+    "rollup-pluginutils": "2.0.1",
     "typescript": "^2.8.1",
     "uglify-es": "3.3.9",
     "workbox-build": "3.0.0-alpha.6"
@@ -55,6 +58,7 @@
   "devDependencies": {
     "@ionic/discover": "^0.4.0",
     "@types/acorn": "^4.0.3",
+    "@types/autoprefixer": "^6.7.3",
     "@types/chalk": "^0.4.31",
     "@types/chokidar": "^1.7.4",
     "@types/fs-extra": "^5.0.0",
@@ -62,6 +66,7 @@
     "@types/jsdom": "^11.0.4",
     "@types/mime-types": "^2.1.0",
     "@types/node": "9.4.5",
+    "autoprefixer": "^8.2.0",
     "chalk": "^2.3.0",
     "clean-css": "^4.1.9",
     "conventional-changelog-cli": "^1.3.5",
@@ -71,7 +76,7 @@
     "glob": "^7.1.2",
     "inquirer": "^3.3.0",
     "is-glob": "^4.0.0",
-    "jest": "^22.1.1",
+    "jest": "^22.4.3",
     "jest-environment-node-debug": "^2.0.0",
     "knuth-shuffle": "1.0.1",
     "listr": "^0.13.0",
@@ -80,6 +85,7 @@
     "minimatch": "^3.0.4",
     "node-fetch": "1.7.3",
     "opn": "^5.2.0",
+    "postcss": "^6.0.21",
     "semver": "^5.5.0",
     "source-map": "^0.7.0",
     "tiny-lr": "^1.1.0",
@@ -116,6 +122,10 @@
     "transform": {
       "^.+\\.(ts|tsx)$": "<rootDir>/scripts/jest.preprocessor.js"
     },
-    "testRegex": "/src/.*\\.spec\\.(ts|tsx|js)$"
+    "testRegex": "/src/.*\\.spec\\.(ts|tsx|js)$",
+    "testPathIgnorePatterns": [
+      "/node_modules",
+      "<rootDir>/test"
+    ]
   }
 }

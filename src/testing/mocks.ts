@@ -2,6 +2,7 @@ import * as d from '../declarations';
 import { Cache } from '../compiler/cache';
 import { createDomApi } from '../renderer/dom-api';
 import { createPlatformServer } from '../server/platform-server';
+import { createQueueServer } from '../server/queue-server';
 import { createRendererPatch } from '../renderer/vdom/patch';
 import { initComponentInstance } from '../core/init-component-instance';
 import { initHostElement } from '../core/init-host-element';
@@ -9,7 +10,7 @@ import { InMemoryFileSystem } from '../util/in-memory-fs';
 import { TestingConfig } from './testing-config';
 import { TestingSystem } from './testing-sys';
 import { TestingFs } from './testing-fs';
-import { TestingLogger } from './index';
+import { TestingLogger } from './testing-logger';
 import { validateConfig } from '../compiler/config/validate-config';
 
 
@@ -45,7 +46,7 @@ export function mockPlatform(win?: any, domApi?: d.DomApi, cmpRegistry?: d.Compo
 
   const $mockedQueue = plt.queue = mockQueue();
 
-  (plt as MockedPlatform).$flushQueue = function() {
+  (plt as MockedPlatform).$flushQueue = () => {
     return new Promise(resolve => {
       $mockedQueue.flush(resolve);
     });
@@ -88,6 +89,25 @@ export function mockCompilerCtx() {
 
 export function mockStencilSystem(): d.StencilSystem {
   return new TestingSystem();
+}
+
+
+export function mockPath() {
+  const sys = mockStencilSystem();
+
+  const path: d.Path = {
+    isAbsolute: sys.path.isAbsolute,
+    resolve: sys.path.resolve,
+    dirname: sys.path.dirname,
+    basename: sys.path.basename,
+    extname: sys.path.extname,
+    join: sys.path.join,
+    parse: sys.path.parse,
+    relative: sys.path.relative,
+    sep: sys.path.sep
+  };
+
+  return path;
 }
 
 
@@ -146,30 +166,7 @@ export function mockRenderer(plt?: MockedPlatform, domApi?: d.DomApi): d.Rendere
 
 
 export function mockQueue() {
-  const callbacks: Function[] = [];
-
-  function flush(cb?: Function) {
-    setTimeout(() => {
-      while (callbacks.length > 0) {
-        callbacks.shift()();
-      }
-      cb();
-    }, Math.round(Math.random() * 20));
-  }
-
-  function add(cb: Function) {
-    callbacks.push(cb);
-  }
-
-  function clear() {
-    callbacks.length = 0;
-  }
-
-  return {
-    add: add,
-    flush: flush,
-    clear: clear
-  };
+  return createQueueServer();
 }
 
 

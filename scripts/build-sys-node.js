@@ -15,6 +15,7 @@ bundle('clean-css.js');
 bundle('dev-server.js');
 bundle('node-fetch.js');
 bundle('sys-util.js');
+bundle('auto-prefixer.js');
 
 
 function bundle(entryFileName) {
