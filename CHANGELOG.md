@@ -1,3 +1,42 @@
+<a name="0.7.26"></a>
+## 👻 [0.7.26](https://github.com/ionic-team/stencil/compare/v0.7.25...v0.7.26) (2018-04-23)
+
+
+### Bug Fixes
+
+* **angular:** methods proxy ([d014206](https://github.com/ionic-team/stencil/commit/d014206))
+* **style:** Support multiple base64 variables ([5458790](https://github.com/ionic-team/stencil/commit/5458790))
+* **styles:** prevent stackoverflow when shimming base64 css vars ([089636b](https://github.com/ionic-team/stencil/commit/089636b)), closes [#749](https://github.com/ionic-team/stencil/issues/749)
+* **windows:** use npx for build scripts ([d67dcdb](https://github.com/ionic-team/stencil/commit/d67dcdb))
+
+
+### Features
+
+* **test:** adds auxiliar test utils ([093c425](https://github.com/ionic-team/stencil/commit/093c425))
+
+
+
+<a name="0.7.25"></a>
+## 🎬 [0.7.25](https://github.com/ionic-team/stencil/compare/v0.7.24...v0.7.25) (2018-04-18)
+
+
+### Bug Fixes
+
+* **ssr:** ensure ssr includes inlined styles ([e83c6be](https://github.com/ionic-team/stencil/commit/e83c6be)), closes [#734](https://github.com/ionic-team/stencil/issues/734)
+
+
+### Features
+
+* **ssr:** add server initApp() for express middleware ([89485c8](https://github.com/ionic-team/stencil/commit/89485c8))
+* **watch:** emit error when watching to invalid prop ([18f03a0](https://github.com/ionic-team/stencil/commit/18f03a0))
+
+
+### Performance Improvements
+
+* **queue:** multi-stage scheduler queue ([#746](https://github.com/ionic-team/stencil/issues/746)) ([0c9e6ee](https://github.com/ionic-team/stencil/commit/0c9e6ee))
+
+
+
 <a name="0.7.24"></a>
 ## 🍣 [0.7.24](https://github.com/ionic-team/stencil/compare/v0.7.23...v0.7.24) (2018-04-13)
 

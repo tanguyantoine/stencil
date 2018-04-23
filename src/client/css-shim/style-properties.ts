@@ -67,6 +67,10 @@ export class StyleProperties {
     }
   }
 
+  private hasNonNestedSemicolon(property: string) {
+    return this.getParts(property).length > 2;
+  }
+
   // given a property value, returns the reified value
   // a property value may be:
   // (1) a literal value like: red or 5px;
@@ -75,9 +79,8 @@ export class StyleProperties {
   private valueForProperty(property: any, props: any) {
     // case (1) default
     if (property) {
-      if (property.indexOf(';') >= 0) {
+      if (this.hasNonNestedSemicolon(property)) {
         property = this.valueForProperties(property, props);
-
       } else {
         // case (2) variable
         let fn = (prefix: any, value: any, fallback: any, suffix: any) => {
@@ -100,10 +103,27 @@ export class StyleProperties {
     return property && property.trim() || '';
   }
 
+  private SAFE_TOKEN = '__!__';
+  private sanitizeSemicolons(property: string, startIndex: number): string {
+    const openingParen = property.indexOf('(', startIndex);
+    if (openingParen === -1) {
+      return property;
+    }
+    const closingParens = StyleUtil.findMatchingParen(property, openingParen);
+    const safeArea = property.substr(openingParen, closingParens - openingParen);
+    const sanitizedSafeArea = safeArea.replace(';', this.SAFE_TOKEN);
+    const safeProp = property.replace(safeArea, sanitizedSafeArea);
+    return this.sanitizeSemicolons(safeProp, closingParens + 2);
+  }
+
+  private getParts(property: string) {
+    const safeProp = this.sanitizeSemicolons(property, 0);
+    return safeProp.split(';').map(part => part.replace(this.SAFE_TOKEN, ';'));
+  }
+
   // note: we do not yet support mixin within mixin
   private valueForProperties(property: any, props: any) {
-    let parts = property.split(';');
-
+    let parts = this.getParts(property);
     for (let i = 0, p; i < parts.length; i++) {
       if ((p = parts[i])) {
         let colon = p.indexOf(':');
