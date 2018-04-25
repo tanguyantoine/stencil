@@ -2,7 +2,7 @@ import * as d from '../declarations';
 import { Build } from '../util/build-conditionals';
 import { callNodeRefs } from '../renderer/vdom/patch';
 import { initEventEmitters } from './init-event-emitters';
-import { RUNTIME_ERROR } from '../util/constants';
+import { RUNTIME_ERROR, NODE_TYPE } from '../util/constants';
 import { proxyComponentInstance } from './proxy-component-instance';
 
 
@@ -73,10 +73,23 @@ export function initComponentInstance(
 
 
 export function initComponentLoaded(plt: d.PlatformApi, elm: d.HostElement, hydratedCssClass: string, instance?: d.ComponentInstance, onReadyCallbacks?: d.OnReadyCallback[]): any {
+
+  if (Build.polyfills && !allChildrenHaveConnected(plt, elm)) {
+    // this check needs to be done when using the customElements polyfill
+    // since the polyfill uses MutationObserver which causes the
+    // connectedCallbacks to fire async, which isn't ideal for the code below
+    return;
+  }
+
   // all is good, this component has been told it's time to finish loading
   // it's possible that we've already decided to destroy this element
   // check if this element has any actively loading child elements
-  if (!plt.hasLoadedMap.has(elm) && (instance = plt.instanceMap.get(elm)) && !plt.isDisconnectedMap.has(elm) && (!elm['s-ld'] || !elm['s-ld'].length)) {
+  if (
+    !plt.hasLoadedMap.has(elm) &&
+    (instance = plt.instanceMap.get(elm)) &&
+    !plt.isDisconnectedMap.has(elm) &&
+    (!elm['s-ld'] || !elm['s-ld'].length)
+  ) {
     // cool, so at this point this element isn't already being destroyed
     // and it does not have any child elements that are still loading
     // ensure we remove any child references cuz it doesn't matter at this point
@@ -121,6 +134,26 @@ export function initComponentLoaded(plt: d.PlatformApi, elm: d.HostElement, hydr
     // the deepest elements load first then bubbles up
     propagateComponentLoaded(plt, elm);
   }
+}
+
+
+function allChildrenHaveConnected(plt: d.PlatformApi, elm: d.HostElement) {
+  // Note: in IE11 <svg> does not have the "children" property
+  for (let i = 0; i < elm.childNodes.length; i++) {
+    if (elm.childNodes[i].nodeType === NODE_TYPE.ElementNode) {
+      if (plt.getComponentMeta(elm.childNodes[i] as any) && !plt.hasConnectedMap.has(elm.childNodes[i] as d.HostElement)) {
+        // this is a defined componnent
+        // but it hasn't connected yet
+        return false;
+      }
+      if (!allChildrenHaveConnected(plt, elm.childNodes[i] as d.HostElement)) {
+        // one of the defined child components hasn't connected yet
+        return false;
+      }
+    }
+  }
+  // everything has connected, we're good
+  return true;
 }
 
 

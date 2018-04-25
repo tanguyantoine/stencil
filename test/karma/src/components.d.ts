@@ -233,6 +233,105 @@ declare global {
 declare global {
 
   namespace StencilComponents {
+    interface ShadowDomArrayRoot {
+
+    }
+  }
+
+  interface HTMLShadowDomArrayRootElement extends StencilComponents.ShadowDomArrayRoot, HTMLStencilElement {}
+
+  var HTMLShadowDomArrayRootElement: {
+    prototype: HTMLShadowDomArrayRootElement;
+    new (): HTMLShadowDomArrayRootElement;
+  };
+  interface HTMLElementTagNameMap {
+    'shadow-dom-array-root': HTMLShadowDomArrayRootElement;
+  }
+  interface ElementTagNameMap {
+    'shadow-dom-array-root': HTMLShadowDomArrayRootElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'shadow-dom-array-root': JSXElements.ShadowDomArrayRootAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface ShadowDomArrayRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface ShadowDomArray {
+      'values': number[];
+    }
+  }
+
+  interface HTMLShadowDomArrayElement extends StencilComponents.ShadowDomArray, HTMLStencilElement {}
+
+  var HTMLShadowDomArrayElement: {
+    prototype: HTMLShadowDomArrayElement;
+    new (): HTMLShadowDomArrayElement;
+  };
+  interface HTMLElementTagNameMap {
+    'shadow-dom-array': HTMLShadowDomArrayElement;
+  }
+  interface ElementTagNameMap {
+    'shadow-dom-array': HTMLShadowDomArrayElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'shadow-dom-array': JSXElements.ShadowDomArrayAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface ShadowDomArrayAttributes extends HTMLAttributes {
+      'values'?: number[];
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotArray {
+
+    }
+  }
+
+  interface HTMLSlotArrayElement extends StencilComponents.SlotArray, HTMLStencilElement {}
+
+  var HTMLSlotArrayElement: {
+    prototype: HTMLSlotArrayElement;
+    new (): HTMLSlotArrayElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-array': HTMLSlotArrayElement;
+  }
+  interface ElementTagNameMap {
+    'slot-array': HTMLSlotArrayElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-array': JSXElements.SlotArrayAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotArrayAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
     interface SlotBasicRoot {
 
     }
@@ -530,6 +629,72 @@ declare global {
 declare global {
 
   namespace StencilComponents {
+    interface SlotReorderRoot {
+
+    }
+  }
+
+  interface HTMLSlotReorderRootElement extends StencilComponents.SlotReorderRoot, HTMLStencilElement {}
+
+  var HTMLSlotReorderRootElement: {
+    prototype: HTMLSlotReorderRootElement;
+    new (): HTMLSlotReorderRootElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-reorder-root': HTMLSlotReorderRootElement;
+  }
+  interface ElementTagNameMap {
+    'slot-reorder-root': HTMLSlotReorderRootElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-reorder-root': JSXElements.SlotReorderRootAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotReorderRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotReorder {
+      'reordered': boolean;
+    }
+  }
+
+  interface HTMLSlotReorderElement extends StencilComponents.SlotReorder, HTMLStencilElement {}
+
+  var HTMLSlotReorderElement: {
+    prototype: HTMLSlotReorderElement;
+    new (): HTMLSlotReorderElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-reorder': HTMLSlotReorderElement;
+  }
+  interface ElementTagNameMap {
+    'slot-reorder': HTMLSlotReorderElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-reorder': JSXElements.SlotReorderAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotReorderAttributes extends HTMLAttributes {
+      'reordered'?: boolean;
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
     interface SvgAttr {
 
     }
@@ -587,6 +752,72 @@ declare global {
   }
   namespace JSXElements {
     export interface SvgClassAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface Tag3dComponent {
+
+    }
+  }
+
+  interface HTMLTag3dComponentElement extends StencilComponents.Tag3dComponent, HTMLStencilElement {}
+
+  var HTMLTag3dComponentElement: {
+    prototype: HTMLTag3dComponentElement;
+    new (): HTMLTag3dComponentElement;
+  };
+  interface HTMLElementTagNameMap {
+    'tag-3d-component': HTMLTag3dComponentElement;
+  }
+  interface ElementTagNameMap {
+    'tag-3d-component': HTMLTag3dComponentElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'tag-3d-component': JSXElements.Tag3dComponentAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface Tag3dComponentAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface Tag88 {
+
+    }
+  }
+
+  interface HTMLTag88Element extends StencilComponents.Tag88, HTMLStencilElement {}
+
+  var HTMLTag88Element: {
+    prototype: HTMLTag88Element;
+    new (): HTMLTag88Element;
+  };
+  interface HTMLElementTagNameMap {
+    'tag-88': HTMLTag88Element;
+  }
+  interface ElementTagNameMap {
+    'tag-88': HTMLTag88Element;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'tag-88': JSXElements.Tag88Attributes;
+    }
+  }
+  namespace JSXElements {
+    export interface Tag88Attributes extends HTMLAttributes {
 
     }
   }

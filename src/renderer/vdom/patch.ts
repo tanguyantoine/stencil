@@ -129,40 +129,47 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
         newVNode.elm['s-cr'] = contentRef;
 
         // remember the slot name, or empty string for default slot
-        newVNode.elm['s-sn'] = (newVNode.vattrs && newVNode.vattrs.name) || '';
+        newVNode.elm['s-sn'] = newVNode.vname || '';
 
         // check if we've got an old vnode for this slot
         oldVNode = oldParentVNode && oldParentVNode.vchildren && oldParentVNode.vchildren[childIndex];
         if (oldVNode && oldVNode.vtag === newVNode.vtag && oldParentVNode.elm) {
           // we've got an old slot vnode and the wrapper is being replaced
           // so let's move the old slot content back to it's original location
-          plt.tmpDisconnected = true;
-
-          const oldSlotChildNodes = domApi.$childNodes(oldParentVNode.elm);
-          for (i = oldSlotChildNodes.length - 1; i >= 0; i--) {
-            childNode = oldSlotChildNodes[i] as any;
-            if (childNode['s-hn'] !== hostTagName && childNode['s-ol']) {
-              // this child node in the old element is from another component
-              // remove this node from the old slot's parent
-              domApi.$remove(childNode);
-
-              // and relocate it back to it's original location
-              domApi.$insertBefore(parentReferenceNode(childNode), childNode, referenceNode(childNode));
-
-              // remove the old original location comment entirely
-              // later on the patch function will know what to do
-              // and move this to the correct spot in need be
-              domApi.$remove(childNode['s-ol']);
-              childNode['s-ol'] = null;
-            }
-          }
-
-          plt.tmpDisconnected = false;
+          putBackInOriginalLocation(oldParentVNode.elm);
         }
       }
     }
 
     return newVNode.elm;
+  }
+
+  function putBackInOriginalLocation(parentElm: Node, i?: number, childNode?: d.RenderNode) {
+    plt.tmpDisconnected = true;
+
+    const oldSlotChildNodes = domApi.$childNodes(parentElm);
+    for (i = oldSlotChildNodes.length - 1; i >= 0; i--) {
+      childNode = oldSlotChildNodes[i] as any;
+      if (childNode['s-hn'] !== hostTagName && childNode['s-ol']) {
+
+        // this child node in the old element is from another component
+        // remove this node from the old slot's parent
+        domApi.$remove(childNode);
+
+        // and relocate it back to it's original location
+        domApi.$insertBefore(parentReferenceNode(childNode), childNode, referenceNode(childNode));
+
+        // remove the old original location comment entirely
+        // later on the patch function will know what to do
+        // and move this to the correct spot in need be
+        domApi.$remove(childNode['s-ol']);
+        childNode['s-ol'] = null;
+
+        checkSlotRelocate = true;
+      }
+    }
+
+    plt.tmpDisconnected = false;
   }
 
   function addVnodes(
@@ -178,6 +185,9 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
     // $defaultHolder deprecated 2018-04-02
     const contentRef = parentElm['s-cr'] || (parentElm as any)['$defaultHolder'];
     containerElm = (contentRef && domApi.$parentNode(contentRef)) || parentElm;
+    if ((containerElm as any).shadowRoot) {
+      containerElm = (containerElm as any).shadowRoot;
+    }
 
     for (; startIdx <= endIdx; ++startIdx) {
       if (vnodes[startIdx]) {
@@ -216,7 +226,7 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
     }
   }
 
-  function updateChildren(parentElm: d.RenderNode, oldCh: d.VNode[], newVNode: d.VNode, newCh: d.VNode[], oldKeyToIdx?: any, idxInOld?: number, i?: number, node?: Node, elmToMove?: d.VNode) {
+  function updateChildren(parentElm: d.RenderNode, oldCh: d.VNode[], newVNode: d.VNode, newCh: d.VNode[], idxInOld?: number, i?: number, node?: Node, elmToMove?: d.VNode) {
     let oldStartIdx = 0, newStartIdx = 0;
     let oldEndIdx = oldCh.length - 1;
     let oldStartVnode = oldCh[0];
@@ -251,37 +261,35 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
 
       } else if (isSameVnode(oldStartVnode, newEndVnode)) {
         // Vnode moved right
+        if (oldStartVnode.vtag === 'slot' || newEndVnode.vtag === 'slot') {
+          putBackInOriginalLocation(domApi.$parentNode(oldStartVnode.elm));
+        }
         patchVNode(oldStartVnode, newEndVnode);
-        domApi.$insertBefore(parentElm, oldStartVnode.elm, referenceNode(domApi.$nextSibling(oldEndVnode.elm) as any));
+        domApi.$insertBefore(parentElm, oldStartVnode.elm, domApi.$nextSibling(oldEndVnode.elm) as any);
         oldStartVnode = oldCh[++oldStartIdx];
         newEndVnode = newCh[--newEndIdx];
 
       } else if (isSameVnode(oldEndVnode, newStartVnode)) {
         // Vnode moved left
+        if (oldStartVnode.vtag === 'slot' || newEndVnode.vtag === 'slot') {
+          putBackInOriginalLocation(domApi.$parentNode(oldEndVnode.elm));
+        }
         patchVNode(oldEndVnode, newStartVnode);
-        domApi.$insertBefore(parentElm, oldEndVnode.elm, referenceNode(oldStartVnode.elm));
+        domApi.$insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm);
         oldEndVnode = oldCh[--oldEndIdx];
         newStartVnode = newCh[++newStartIdx];
 
       } else {
-        if (!isDef(oldKeyToIdx)) {
-          // createKeyToOldIdx
-          oldKeyToIdx = {};
-          for (i = oldStartIdx; i <= oldEndIdx; ++i) {
-            if (isDef(oldCh[i]) && isDef(oldCh[i].vkey)) {
-              oldKeyToIdx[oldCh[i].vkey] = i;
-            }
+        // createKeyToOldIdx
+        idxInOld = null;
+        for (i = oldStartIdx; i <= oldEndIdx; ++i) {
+          if (oldCh[i] && isDef(oldCh[i].vkey) && oldCh[i].vkey === newStartVnode.vkey) {
+            idxInOld = i;
+            break;
           }
         }
 
-        idxInOld = oldKeyToIdx[newStartVnode.vkey];
-
-        if (!isDef(idxInOld)) {
-          // new element
-          node = createElm(oldCh && oldCh[newStartIdx], newVNode, newStartIdx, parentElm);
-          newStartVnode = newCh[++newStartIdx];
-
-        } else {
+        if (isDef(idxInOld)) {
           elmToMove = oldCh[idxInOld];
 
           if (elmToMove.vtag !== newStartVnode.vtag) {
@@ -293,6 +301,11 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
             node = elmToMove.elm;
           }
 
+          newStartVnode = newCh[++newStartIdx];
+
+        } else {
+          // new element
+          node = createElm(oldCh && oldCh[newStartIdx], newVNode, newStartIdx, parentElm);
           newStartVnode = newCh[++newStartIdx];
         }
 
@@ -319,7 +332,15 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
   function isSameVnode(vnode1: d.VNode, vnode2: d.VNode) {
     // compare if two vnode to see if they're "technically" the same
     // need to have the same element tag, and same key to be the same
-    return vnode1.vtag === vnode2.vtag && vnode1.vkey === vnode2.vkey;
+    if (vnode1.vtag === vnode2.vtag && vnode1.vkey === vnode2.vkey) {
+      if (Build.slotPolyfill) {
+        if (vnode1.vtag === 'slot') {
+          return vnode1.vname === vnode2.vname;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   function referenceNode(node: d.RenderNode) {
@@ -529,7 +550,7 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
       contentRef: d.RenderNode;
 
 
-  return function patch(oldVNode: d.VNode, newVNode: d.VNode, isUpdatePatch?: boolean, encapsulation?: d.Encapsulation, ssrPatchId?: number, i?: number, relocateNode?: RelocateNode, slotParentNode?: d.RenderNode, nodeToRelocateParent?: d.RenderNode) {
+  return function patch(oldVNode: d.VNode, newVNode: d.VNode, isUpdatePatch?: boolean, encapsulation?: d.Encapsulation, ssrPatchId?: number, i?: number, relocateNode?: RelocateNode) {
     // patchVNode() is synchronous
     // so it is safe to set these variables and internally
     // the same patch() call will reference the same data
@@ -589,17 +610,14 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
 
         for (i = 0; i < relocateNodes.length; i++) {
           relocateNode = relocateNodes[i];
-          nodeToRelocateParent = domApi.$parentNode(relocateNode.nodeToRelocate) as any;
 
-          if (nodeToRelocateParent !== domApi.$parentNode(relocateNode.slotRefNode)) {
-            // add a reference node marking this node's original location
-            // keep a reference to this node for later lookups
-            domApi.$insertBefore(
-              nodeToRelocateParent,
-              (relocateNode.nodeToRelocate['s-ol'] = domApi.$createTextNode('') as any),
-              relocateNode.nodeToRelocate
-            );
-          }
+          // add a reference node marking this node's original location
+          // keep a reference to this node for later lookups
+          domApi.$insertBefore(
+            domApi.$parentNode(relocateNode.nodeToRelocate),
+            (relocateNode.nodeToRelocate['s-ol'] = domApi.$createTextNode('') as any),
+            relocateNode.nodeToRelocate
+          );
         }
 
         // while we're moving nodes around existing nodes, temporarily disable
@@ -608,21 +626,17 @@ export function createRendererPatch(plt: d.PlatformApi, domApi: d.DomApi): d.Ren
 
         for (i = 0; i < relocateNodes.length; i++) {
           relocateNode = relocateNodes[i];
-          slotParentNode = domApi.$parentNode(relocateNode.slotRefNode) as any;
-          nodeToRelocateParent = domApi.$parentNode(relocateNode.nodeToRelocate) as any;
 
-          if (nodeToRelocateParent !== slotParentNode) {
-            // remove the node from the dom
-            domApi.$remove(relocateNode.nodeToRelocate);
+          // remove the node from the dom
+          domApi.$remove(relocateNode.nodeToRelocate);
 
-            // now let's add it back to the dom, but
-            // put it right below the slot comment reference
-            domApi.$insertBefore(
-              slotParentNode,
-              relocateNode.nodeToRelocate,
-              domApi.$nextSibling(relocateNode.slotRefNode)
-            );
-          }
+          // now let's add it back to the dom, but
+          // put it right below the slot comment reference
+          domApi.$insertBefore(
+            domApi.$parentNode(relocateNode.slotRefNode),
+            relocateNode.nodeToRelocate,
+            domApi.$nextSibling(relocateNode.slotRefNode)
+          );
         }
 
         // done moving nodes around

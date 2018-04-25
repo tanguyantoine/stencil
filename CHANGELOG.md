@@ -1,3 +1,37 @@
+<a name="0.7.27-2"></a>
+## 🏖 [0.7.27-2](https://github.com/ionic-team/stencil/compare/v0.7.27-1...v0.7.27-2) (2018-04-24)
+
+
+### Bug Fixes
+
+* **global:** bundle global script goes first ([0b9fdd4](https://github.com/ionic-team/stencil/commit/0b9fdd4))
+* **shadowDom:** fix render() returning array to update shadowRoot ([af87219](https://github.com/ionic-team/stencil/commit/af87219)), closes [#727](https://github.com/ionic-team/stencil/issues/727)
+* **slot:** fix slot reordering ([7af3c6c](https://github.com/ionic-team/stencil/commit/7af3c6c))
+
+
+
+<a name="0.7.27-1"></a>
+## ⛺️ [0.7.27-1](https://github.com/ionic-team/stencil/compare/v0.7.27-0...v0.7.27-1) (2018-04-24)
+
+
+### Bug Fixes
+
+* **lifecycle:** ensure child components have connected before lifecycle checks ([5a1377f](https://github.com/ionic-team/stencil/commit/5a1377f)), closes [#747](https://github.com/ionic-team/stencil/issues/747)
+* **slot:** fix conditional slot reordering ([6489f8e](https://github.com/ionic-team/stencil/commit/6489f8e))
+* **tag:** fix legacy module lookups when using tags with numbers ([e918f48](https://github.com/ionic-team/stencil/commit/e918f48)), closes [#753](https://github.com/ionic-team/stencil/issues/753)
+
+
+
+<a name="0.7.27-0"></a>
+## 🚣 [0.7.27-0](https://github.com/ionic-team/stencil/compare/v0.7.26...v0.7.27-0) (2018-04-23)
+
+
+### Bug Fixes
+
+* **slot:** conditionally render slot and fallback slot content ([294c559](https://github.com/ionic-team/stencil/commit/294c559)), closes [#721](https://github.com/ionic-team/stencil/issues/721)
+
+
+
 <a name="0.7.26"></a>
 ## 👻 [0.7.26](https://github.com/ionic-team/stencil/compare/v0.7.25...v0.7.26) (2018-04-23)
 

@@ -1,5 +1,5 @@
 var path = require('path');
-const browserStack = false;
+const browserStack = !!process.env.CI;
 process.env.CHROME_BIN = require('puppeteer').executablePath()
 
 var browserStackLaunchers = {
@@ -32,13 +32,15 @@ var browserStackLaunchers = {
     browser: 'safari',
     os: 'OS X',
     os_version: 'High Sierra'
-  },
+  }
+  /*,
   bs_iphone8: {
     base: 'BrowserStack',
     device: 'iPhone 8',
     os: 'ios',
     os_version: '11.0'
   }
+  */
 };
 
 const localLaunchers = {
@@ -61,7 +63,8 @@ module.exports = function(config) {
       'karma-chrome-launcher',
       'karma-browserstack-launcher',
       'karma-jasmine',
-      'karma-typescript'
+      'karma-typescript',
+      'karma-polyfill'
     ],
     browsers: browserStack
       ? Object.keys(browserStackLaunchers)
@@ -69,8 +72,15 @@ module.exports = function(config) {
 
     singleRun: true, // set this to false to leave the browser open
 
-    frameworks: ['jasmine', 'karma-typescript'],
+    frameworks: [
+      'jasmine',
+      'karma-typescript',
+      'polyfill'
+    ],
 
+    polyfill: [
+      'Promise'
+    ],
 
     browserStack: {
       project: 'stencil_core'
