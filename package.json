@@ -1,6 +1,6 @@
 {
   "name": "@stencil/core",
-  "version": "0.7.27-2",
+  "version": "0.7.27-4",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -48,7 +48,7 @@
     "rollup-plugin-node-globals": "1.2.0",
     "rollup-plugin-node-resolve": "3.3.0",
     "rollup-pluginutils": "2.0.1",
-    "typescript": "^2.8.1",
+    "typescript": "^2.8.3",
     "uglify-es": "3.3.9",
     "workbox-build": "^3.1.0"
   },

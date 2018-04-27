@@ -130,6 +130,72 @@ declare global {
 declare global {
 
   namespace StencilComponents {
+    interface ConditionalRerenderRoot {
+
+    }
+  }
+
+  interface HTMLConditionalRerenderRootElement extends StencilComponents.ConditionalRerenderRoot, HTMLStencilElement {}
+
+  var HTMLConditionalRerenderRootElement: {
+    prototype: HTMLConditionalRerenderRootElement;
+    new (): HTMLConditionalRerenderRootElement;
+  };
+  interface HTMLElementTagNameMap {
+    'conditional-rerender-root': HTMLConditionalRerenderRootElement;
+  }
+  interface ElementTagNameMap {
+    'conditional-rerender-root': HTMLConditionalRerenderRootElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'conditional-rerender-root': JSXElements.ConditionalRerenderRootAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface ConditionalRerenderRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface ConditionalRerender {
+
+    }
+  }
+
+  interface HTMLConditionalRerenderElement extends StencilComponents.ConditionalRerender, HTMLStencilElement {}
+
+  var HTMLConditionalRerenderElement: {
+    prototype: HTMLConditionalRerenderElement;
+    new (): HTMLConditionalRerenderElement;
+  };
+  interface HTMLElementTagNameMap {
+    'conditional-rerender': HTMLConditionalRerenderElement;
+  }
+  interface ElementTagNameMap {
+    'conditional-rerender': HTMLConditionalRerenderElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'conditional-rerender': JSXElements.ConditionalRerenderAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface ConditionalRerenderAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
     interface LifecycleBasicA {
 
     }
@@ -233,6 +299,105 @@ declare global {
 declare global {
 
   namespace StencilComponents {
+    interface LifecycleUnloadA {
+
+    }
+  }
+
+  interface HTMLLifecycleUnloadAElement extends StencilComponents.LifecycleUnloadA, HTMLStencilElement {}
+
+  var HTMLLifecycleUnloadAElement: {
+    prototype: HTMLLifecycleUnloadAElement;
+    new (): HTMLLifecycleUnloadAElement;
+  };
+  interface HTMLElementTagNameMap {
+    'lifecycle-unload-a': HTMLLifecycleUnloadAElement;
+  }
+  interface ElementTagNameMap {
+    'lifecycle-unload-a': HTMLLifecycleUnloadAElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'lifecycle-unload-a': JSXElements.LifecycleUnloadAAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface LifecycleUnloadAAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface LifecycleUnloadB {
+
+    }
+  }
+
+  interface HTMLLifecycleUnloadBElement extends StencilComponents.LifecycleUnloadB, HTMLStencilElement {}
+
+  var HTMLLifecycleUnloadBElement: {
+    prototype: HTMLLifecycleUnloadBElement;
+    new (): HTMLLifecycleUnloadBElement;
+  };
+  interface HTMLElementTagNameMap {
+    'lifecycle-unload-b': HTMLLifecycleUnloadBElement;
+  }
+  interface ElementTagNameMap {
+    'lifecycle-unload-b': HTMLLifecycleUnloadBElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'lifecycle-unload-b': JSXElements.LifecycleUnloadBAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface LifecycleUnloadBAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface LifecycleUnloadRoot {
+
+    }
+  }
+
+  interface HTMLLifecycleUnloadRootElement extends StencilComponents.LifecycleUnloadRoot, HTMLStencilElement {}
+
+  var HTMLLifecycleUnloadRootElement: {
+    prototype: HTMLLifecycleUnloadRootElement;
+    new (): HTMLLifecycleUnloadRootElement;
+  };
+  interface HTMLElementTagNameMap {
+    'lifecycle-unload-root': HTMLLifecycleUnloadRootElement;
+  }
+  interface ElementTagNameMap {
+    'lifecycle-unload-root': HTMLLifecycleUnloadRootElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'lifecycle-unload-root': JSXElements.LifecycleUnloadRootAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface LifecycleUnloadRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
     interface ShadowDomArrayRoot {
 
     }
@@ -299,30 +464,96 @@ declare global {
 declare global {
 
   namespace StencilComponents {
-    interface SlotArray {
+    interface SlotArrayComplexRoot {
 
     }
   }
 
-  interface HTMLSlotArrayElement extends StencilComponents.SlotArray, HTMLStencilElement {}
+  interface HTMLSlotArrayComplexRootElement extends StencilComponents.SlotArrayComplexRoot, HTMLStencilElement {}
 
-  var HTMLSlotArrayElement: {
-    prototype: HTMLSlotArrayElement;
-    new (): HTMLSlotArrayElement;
+  var HTMLSlotArrayComplexRootElement: {
+    prototype: HTMLSlotArrayComplexRootElement;
+    new (): HTMLSlotArrayComplexRootElement;
   };
   interface HTMLElementTagNameMap {
-    'slot-array': HTMLSlotArrayElement;
+    'slot-array-complex-root': HTMLSlotArrayComplexRootElement;
   }
   interface ElementTagNameMap {
-    'slot-array': HTMLSlotArrayElement;
+    'slot-array-complex-root': HTMLSlotArrayComplexRootElement;
   }
   namespace JSX {
     interface IntrinsicElements {
-      'slot-array': JSXElements.SlotArrayAttributes;
+      'slot-array-complex-root': JSXElements.SlotArrayComplexRootAttributes;
     }
   }
   namespace JSXElements {
-    export interface SlotArrayAttributes extends HTMLAttributes {
+    export interface SlotArrayComplexRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotArrayComplex {
+
+    }
+  }
+
+  interface HTMLSlotArrayComplexElement extends StencilComponents.SlotArrayComplex, HTMLStencilElement {}
+
+  var HTMLSlotArrayComplexElement: {
+    prototype: HTMLSlotArrayComplexElement;
+    new (): HTMLSlotArrayComplexElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-array-complex': HTMLSlotArrayComplexElement;
+  }
+  interface ElementTagNameMap {
+    'slot-array-complex': HTMLSlotArrayComplexElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-array-complex': JSXElements.SlotArrayComplexAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotArrayComplexAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotArrayTop {
+
+    }
+  }
+
+  interface HTMLSlotArrayTopElement extends StencilComponents.SlotArrayTop, HTMLStencilElement {}
+
+  var HTMLSlotArrayTopElement: {
+    prototype: HTMLSlotArrayTopElement;
+    new (): HTMLSlotArrayTopElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-array-top': HTMLSlotArrayTopElement;
+  }
+  interface ElementTagNameMap {
+    'slot-array-top': HTMLSlotArrayTopElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-array-top': JSXElements.SlotArrayTopAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotArrayTopAttributes extends HTMLAttributes {
 
     }
   }
@@ -687,6 +918,72 @@ declare global {
   namespace JSXElements {
     export interface SlotReorderAttributes extends HTMLAttributes {
       'reordered'?: boolean;
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotReplaceWrapperRoot {
+
+    }
+  }
+
+  interface HTMLSlotReplaceWrapperRootElement extends StencilComponents.SlotReplaceWrapperRoot, HTMLStencilElement {}
+
+  var HTMLSlotReplaceWrapperRootElement: {
+    prototype: HTMLSlotReplaceWrapperRootElement;
+    new (): HTMLSlotReplaceWrapperRootElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-replace-wrapper-root': HTMLSlotReplaceWrapperRootElement;
+  }
+  interface ElementTagNameMap {
+    'slot-replace-wrapper-root': HTMLSlotReplaceWrapperRootElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-replace-wrapper-root': JSXElements.SlotReplaceWrapperRootAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotReplaceWrapperRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotReplaceWrapper {
+      'href': string;
+    }
+  }
+
+  interface HTMLSlotReplaceWrapperElement extends StencilComponents.SlotReplaceWrapper, HTMLStencilElement {}
+
+  var HTMLSlotReplaceWrapperElement: {
+    prototype: HTMLSlotReplaceWrapperElement;
+    new (): HTMLSlotReplaceWrapperElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-replace-wrapper': HTMLSlotReplaceWrapperElement;
+  }
+  interface ElementTagNameMap {
+    'slot-replace-wrapper': HTMLSlotReplaceWrapperElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-replace-wrapper': JSXElements.SlotReplaceWrapperAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotReplaceWrapperAttributes extends HTMLAttributes {
+      'href'?: string;
     }
   }
 }

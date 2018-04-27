@@ -2,15 +2,16 @@ import { setupDomTests } from '../util';
 
 
 describe('slot-html', () => {
-  const { app, setupDom, tearDownDom, renderTest } = setupDomTests(document);
+  const { setupDom, tearDownDom } = setupDomTests(document);
+  let app: HTMLElement;
 
-  beforeEach(setupDom);
+  beforeEach(async () => {
+    app = await setupDom('/slot-html/index.html');
+  });
   afterEach(tearDownDom);
 
 
   it('renders', async () => {
-    await renderTest('/slot-html/index.html');
-
     let result: HTMLElement;
     let results: NodeListOf<HTMLElement>;
 
@@ -78,6 +79,15 @@ describe('slot-html', () => {
     expect(result.childNodes[4].textContent.trim()).toBe('default slot 1');
     expect(result.childNodes[9].textContent.trim()).toBe('default slot 2');
     expect(result.childNodes[11].textContent.trim()).toBe('default slot text node');
+    expect(result.childNodes[12].childNodes[1].textContent.trim()).toBe('end slot 1');
+    expect(result.childNodes[12].childNodes[2].textContent.trim()).toBe('end slot 2');
+
+    result = app.querySelector('.results12 div');
+    expect(result.childNodes[1].childNodes[0].childNodes[1].textContent.trim()).toBe('start slot 1');
+    expect(result.childNodes[1].childNodes[0].childNodes[2].textContent.trim()).toBe('start slot 2');
+    expect(result.childNodes[3].textContent.trim()).toBe('default slot text node');
+    expect(result.childNodes[7].textContent.trim()).toBe('default slot 1');
+    expect(result.childNodes[9].textContent.trim()).toBe('default slot 2');
     expect(result.childNodes[12].childNodes[1].textContent.trim()).toBe('end slot 1');
     expect(result.childNodes[12].childNodes[2].textContent.trim()).toBe('end slot 2');
   });
