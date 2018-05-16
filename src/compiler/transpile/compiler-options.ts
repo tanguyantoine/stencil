@@ -110,11 +110,11 @@ export const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
   // must always allow decorators
   experimentalDecorators: true,
 
-  // transpile down to es2015
-  target: ts.ScriptTarget.ES2015,
+  // transpile down to es2017
+  target: ts.ScriptTarget.ES2017,
 
   // create es2015 modules
-  module: ts.ModuleKind.ES2015,
+  module: ts.ModuleKind.ESNext,
 
   // resolve using NodeJs style
   moduleResolution: ts.ModuleResolutionKind.NodeJs,

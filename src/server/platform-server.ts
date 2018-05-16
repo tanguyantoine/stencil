@@ -4,7 +4,7 @@ import { createQueueServer } from './queue-server';
 import { createRendererPatch } from '../renderer/vdom/patch';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION, RUNTIME_ERROR } from '../util/constants';
 import { enableEventListener } from '../core/listeners';
-import { fillCmpMetaFromConstructor } from './cmp-meta';
+import { fillCmpMetaFromConstructor } from '../util/cmp-meta';
 import { getAppBuildDir } from '../compiler/app/app-file-naming';
 import { h } from '../renderer/vdom/h';
 import { initCoreComponentOnReady } from '../core/component-on-ready';
@@ -198,6 +198,10 @@ export function createPlatformServer(
 
               if (!cmpMeta.componentConstructor) {
                 fillCmpMetaFromConstructor(componentConstructor, cmpMeta);
+
+                if (!cmpMeta.componentConstructor) {
+                  cmpMeta.componentConstructor = componentConstructor;
+                }
               }
 
               if (componentConstructor.style) {
@@ -257,7 +261,7 @@ export function createPlatformServer(
     } else {
       const bundleId = (typeof cmpMeta.bundleIds === 'string') ?
         cmpMeta.bundleIds :
-        cmpMeta.bundleIds[elm.mode];
+        (cmpMeta.bundleIds as d.BundleIds)[elm.mode];
 
       if (getLoadedBundle(bundleId)) {
         // sweet, we've already loaded this bundle
@@ -351,7 +355,7 @@ export function createPlatformServer(
 export function getComponentBundleFilename(cmpMeta: d.ComponentMeta, modeName: string) {
   let bundleId: string = (typeof cmpMeta.bundleIds === 'string') ?
     cmpMeta.bundleIds :
-    (cmpMeta.bundleIds[modeName] || cmpMeta.bundleIds[DEFAULT_STYLE_MODE]);
+    ((cmpMeta.bundleIds as d.BundleIds)[modeName] || (cmpMeta.bundleIds as d.BundleIds)[DEFAULT_STYLE_MODE]);
 
   if (cmpMeta.encapsulation === ENCAPSULATION.ScopedCss || cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
     bundleId += '.sc';

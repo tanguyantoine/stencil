@@ -3,7 +3,7 @@ import addComponentMetadata from './transformers/add-component-metadata';
 import { buildConditionalsTransform } from './transformers/build-conditionals';
 import { componentDependencies } from './transformers/component-dependencies';
 import { generateComponentTypes } from './create-component-types';
-import { getComponentsDtsSrcFilePath } from '../collections/distribution';
+import { getComponentsDtsSrcFilePath } from '../distribution/distribution';
 import { getTsHost } from './compiler-host';
 import { getUserTsConfig } from './compiler-options';
 import { hasError } from '../util';
@@ -91,7 +91,6 @@ function transpileProgram(program: ts.Program, tsHost: ts.CompilerHost, config: 
       moduleGraph(config, buildCtx),
       componentDependencies(compilerCtx, buildCtx)
     ]
-
   });
 
   if (!config.suppressTypeScriptErrors) {

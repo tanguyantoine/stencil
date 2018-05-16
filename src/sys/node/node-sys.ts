@@ -26,11 +26,11 @@ export class NodeSystem implements d.StencilSystem {
     this.fs = fs || new NodeFs();
     this.path = path;
 
-    const rootDir = path.join(__dirname, '../../..');
+    const rootDir = path.join(__dirname, '..', '..', '..');
     this.distDir = path.join(rootDir, 'dist');
 
-    this.sysUtil = require(path.join(this.distDir, 'sys/node/sys-util.js'));
-    this.runtime = path.join(this.distDir, 'compiler/index.js');
+    this.sysUtil = require(path.join(this.distDir, 'sys', 'node', 'sys-util.js'));
+    this.runtime = path.join(this.distDir, 'compiler', 'index.js');
 
     try {
       this.packageJsonData = require(path.join(rootDir, 'package.json'));
@@ -104,7 +104,7 @@ export class NodeSystem implements d.StencilSystem {
   }
 
   getClientCoreFile(opts: any) {
-    const filePath = path.join(this.distDir, 'client', opts.staticName);
+    const filePath = normalizePath(path.join(this.distDir, 'client', opts.staticName));
     return this.fs.readFile(filePath);
   }
 
@@ -182,7 +182,7 @@ export class NodeSystem implements d.StencilSystem {
   }
 
   async autoprefixCss(input: string, opts: any): Promise<string> {
-    const modulePath = path.join(this.distDir, 'sys/node/auto-prefixer.js');
+    const modulePath = path.join(this.distDir, 'sys', 'node', 'auto-prefixer.js');
     const module = require(modulePath);
 
     const postcss = module.postcss;
@@ -209,7 +209,7 @@ export class NodeSystem implements d.StencilSystem {
   }
 
   minifyCss(input: string) {
-    const cleanCssModule = path.join(this.distDir, 'sys/node/clean-css.js');
+    const cleanCssModule = path.join(this.distDir, 'sys', 'node', 'clean-css.js');
     const CleanCSS = require(cleanCssModule).cleanCss;
     const result = new CleanCSS().minify(input);
     const diagnostics: d.Diagnostic[] = [];

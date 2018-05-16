@@ -146,13 +146,23 @@ function inferPropType(expression: ts.Expression | undefined) {
 }
 
 function propTypeFromTSType(type: ts.Type, text: string) {
-  if (checkType(type, isString)) {
+  const isStr = checkType(type, isString);
+  const isNu = checkType(type, isNumber);
+  const isBool = checkType(type, isBoolean);
+
+  // if type is more than a primitive type at the same time, we mark it as any
+  if (Number(isStr) + Number(isNu) + Number(isBool) > 1) {
+    return PROP_TYPE.Any;
+  }
+
+  // at this point we know the prop's type is NOT the mix of primitive types
+  if (isStr) {
     return PROP_TYPE.String;
   }
-  if (checkType(type, isNumber)) {
+  if (isNu) {
     return PROP_TYPE.Number;
   }
-  if (checkType(type, isBoolean)) {
+  if (isBool) {
     return PROP_TYPE.Boolean;
   }
   if (text === 'any') {
@@ -164,7 +174,9 @@ function propTypeFromTSType(type: ts.Type, text: string) {
 function checkType(type: ts.Type, check: (type: ts.Type) => boolean ): boolean {
   if (type.flags & ts.TypeFlags.Union) {
     const union = type as ts.UnionType;
-    return union.types.some(type => checkType(type, check));
+    if (union.types.some(type => checkType(type, check))) {
+      return true;
+    }
   }
   return check(type);
 }

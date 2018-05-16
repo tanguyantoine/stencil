@@ -97,6 +97,52 @@ declare global {
 declare global {
 
   namespace StencilComponents {
+    interface AttributeComplex {
+      'bool0': boolean;
+      'bool1': boolean;
+      'bool2': boolean;
+      'getInstance': () => this;
+      'nu0': number;
+      'nu1': number;
+      'str0': string;
+      'str1': string;
+    }
+  }
+
+  interface HTMLAttributeComplexElement extends StencilComponents.AttributeComplex, HTMLStencilElement {}
+
+  var HTMLAttributeComplexElement: {
+    prototype: HTMLAttributeComplexElement;
+    new (): HTMLAttributeComplexElement;
+  };
+  interface HTMLElementTagNameMap {
+    'attribute-complex': HTMLAttributeComplexElement;
+  }
+  interface ElementTagNameMap {
+    'attribute-complex': HTMLAttributeComplexElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'attribute-complex': JSXElements.AttributeComplexAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface AttributeComplexAttributes extends HTMLAttributes {
+      'bool0'?: boolean;
+      'bool1'?: boolean;
+      'bool2'?: boolean;
+      'nu0'?: number;
+      'nu1'?: number;
+      'str0'?: string;
+      'str1'?: string;
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
     interface ConditionalBasic {
 
     }
@@ -188,6 +234,74 @@ declare global {
   namespace JSXElements {
     export interface ConditionalRerenderAttributes extends HTMLAttributes {
 
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface DynamicImport {
+      'update': () => Promise<void>;
+    }
+  }
+
+  interface HTMLDynamicImportElement extends StencilComponents.DynamicImport, HTMLStencilElement {}
+
+  var HTMLDynamicImportElement: {
+    prototype: HTMLDynamicImportElement;
+    new (): HTMLDynamicImportElement;
+  };
+  interface HTMLElementTagNameMap {
+    'dynamic-import': HTMLDynamicImportElement;
+  }
+  interface ElementTagNameMap {
+    'dynamic-import': HTMLDynamicImportElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'dynamic-import': JSXElements.DynamicImportAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface DynamicImportAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface EsmImport {
+      'propVal': number;
+      'someMethod': () => void;
+    }
+  }
+
+  interface HTMLEsmImportElement extends StencilComponents.EsmImport, HTMLStencilElement {}
+
+  var HTMLEsmImportElement: {
+    prototype: HTMLEsmImportElement;
+    new (): HTMLEsmImportElement;
+  };
+  interface HTMLElementTagNameMap {
+    'esm-import': HTMLEsmImportElement;
+  }
+  interface ElementTagNameMap {
+    'esm-import': HTMLEsmImportElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'esm-import': JSXElements.EsmImportAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface EsmImportAttributes extends HTMLAttributes {
+      'onSomeEvent'?: (event: CustomEvent) => void;
+      'propVal'?: number;
     }
   }
 }
@@ -1121,3 +1235,5 @@ declare global {
 }
 
 declare global { namespace JSX { interface StencilJSX {} } }
+
+export declare function defineCustomElements(window: any): void;

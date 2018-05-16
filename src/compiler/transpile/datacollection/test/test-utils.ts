@@ -6,6 +6,8 @@ import * as ts from 'typescript';
 
 const compilerOptions: ts.CompilerOptions = {
   'allowJs': true,
+  'string': true,
+  'strictPropertyInitialization': false,
   'allowSyntheticDefaultImports': true,
   'allowUnreachableCode': false,
   'alwaysStrict': true,
@@ -15,9 +17,9 @@ const compilerOptions: ts.CompilerOptions = {
   'jsxFactory': 'h',
   'lib': [
     'dom',
-    'es2015'
+    'es2017'
   ],
-  'module': ts.ModuleKind.ES2015,
+  'module': ts.ModuleKind.ESNext,
   'moduleResolution': ts.ModuleResolutionKind.NodeJs,
   'noImplicitAny': true,
   'noImplicitReturns': true,
@@ -26,7 +28,7 @@ const compilerOptions: ts.CompilerOptions = {
   'outDir': '.tmp',
   'pretty': true,
   'removeComments': false,
-  'target': ts.ScriptTarget.ES2015
+  'target': ts.ScriptTarget.ES2017
 };
 
 export type GatherMetadataCallback = (

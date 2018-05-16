@@ -6,9 +6,9 @@ const glob = require('glob');
 const transpile = require('./transpile');
 
 
-const TRANSPILED_DIR = path.join(__dirname, '../dist/transpiled-sys-node');
-const ENTRY_FILE = path.join(TRANSPILED_DIR, 'sys/node/index.js');
-const DEST_DIR = path.join(__dirname, '../dist/sys/node');
+const TRANSPILED_DIR = path.join(__dirname, '..', 'dist', 'transpiled-sys-node');
+const ENTRY_FILE = path.join(TRANSPILED_DIR, 'sys', 'node', 'index.js');
+const DEST_DIR = path.join(__dirname, '..', 'dist', 'sys', 'node');
 const DEST_FILE = path.join(DEST_DIR, 'index.js');
 
 

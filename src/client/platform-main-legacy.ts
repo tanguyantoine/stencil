@@ -5,12 +5,11 @@ import { createDomApi } from '../renderer/dom-api';
 import { createRendererPatch } from '../renderer/vdom/patch';
 import { createVNodesFromSsr } from '../renderer/vdom/ssr';
 import { createQueueClient } from './queue-client';
-import { CustomStyle } from './css-shim/custom-style';
+import { CustomStyle } from './polyfills/css-shim/custom-style';
 import { enableEventListener } from '../core/listeners';
 import { generateDevInspector } from './dev-inspector';
 import { h } from '../renderer/vdom/h';
 import { initCoreComponentOnReady } from '../core/component-on-ready';
-import { initCssVarShim } from './css-shim/init-css-shim';
 import { initHostElement } from '../core/init-host-element';
 import { initHostSnapshot } from '../core/host-snapshot';
 import { initStyleTemplate } from '../core/styles';
@@ -20,11 +19,11 @@ import { queueUpdate } from '../core/update';
 import { useScopedCss } from '../renderer/vdom/encapsulation';
 
 
-export function createPlatformMainLegacy(namespace: string, Context: d.CoreContext, win: Window, doc: Document, resourcesUrl: string, hydratedCssClass: string) {
+export function createPlatformMainLegacy(namespace: string, Context: d.CoreContext, win: Window, doc: Document, resourcesUrl: string, hydratedCssClass: string, customStyle: CustomStyle) {
   const cmpRegistry: d.ComponentRegistry = { 'html': {} };
   const bundleQueue: d.BundleCallback[] = [];
-  const loadedBundles: {[bundleId: string]: d.CjsExports} = {};
-  const pendingBundleRequests: {[url: string]: boolean} = {};
+  const loadedBundles = new Map<string, d.CjsExports>();
+  const pendingBundleRequests = new Set<string>();
   const controllerComponents: {[tag: string]: d.HostElement} = {};
   const App: d.AppGlobal = (win as any)[namespace] = (win as any)[namespace] || {};
   const domApi = createDomApi(App, win, doc);
@@ -112,7 +111,12 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
       globalDefined[cmpMeta.tagNameMeta] = true;
 
       // initialize the members on the host element prototype
-      initHostElement(plt, cmpMeta, HostElementConstructor.prototype, hydratedCssClass);
+      // keep a ref to the metadata with the tag as the key
+      initHostElement(plt,
+        (cmpRegistry[cmpMeta.tagNameMeta] = cmpMeta),
+        HostElementConstructor.prototype,
+        hydratedCssClass
+      );
 
       if (Build.observeAttr) {
         // add which attributes should be observed
@@ -141,14 +145,21 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
   }
 
   function setLoadedBundle(bundleId: string, value: d.CjsExports) {
-    loadedBundles[bundleId] = value;
+    loadedBundles.set(bundleId, value);
   }
 
   function getLoadedBundle(bundleId: string) {
     if (bundleId == null) {
       return null;
     }
-    return loadedBundles[bundleId.replace(/^\.\//, '')];
+    return loadedBundles.get(bundleId.replace(/^\.\//, ''));
+  }
+
+  function isLoadedBundle(id: string) {
+    if (id === 'exports' || id === 'require') {
+      return true;
+    }
+    return !!getLoadedBundle(id);
   }
 
   /**
@@ -161,7 +172,11 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
     const bundleExports: d.CjsExports = {};
 
     try {
-      callback(bundleExports, ...deps.map(d => getLoadedBundle(d)));
+      callback.apply(null, deps.map(d => {
+        if (d === 'exports') return bundleExports;
+        if (d === 'require') return userRequire;
+        return getLoadedBundle(d);
+      }));
     } catch (e) {
       console.error(e);
     }
@@ -176,7 +191,7 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
     // If name contains chunk then this callback was associated with a dependent bundle loading
     // let's add a reference to the constructors on each components metadata
     // each key in moduleImports is a PascalCased tag name
-    if (!name.startsWith('chunk')) {
+    if (name && !name.endsWith('.js')) {
       Object.keys(bundleExports).forEach(pascalCasedTagName => {
         const normalizedTagName = pascalCasedTagName.replace(/-/g, '').toLowerCase();
 
@@ -199,14 +214,18 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
     }
   }
 
+  function userRequire(ids: string[], resolve: Function) {
+    loadBundle(undefined, ids, resolve);
+  }
 
   /**
    * Check to see if any items in the bundle queue can be executed
    */
   function checkQueue() {
-    for (let i = bundleQueue.length - 1; i > -1; i--) {
+    for (let i = bundleQueue.length - 1; i >= 0; i--) {
       const [bundleId, dependentsList, importer] = bundleQueue[i];
-      if (dependentsList.every(dep => !!getLoadedBundle(dep)) && !getLoadedBundle(bundleId)) {
+      if (dependentsList.every(isLoadedBundle) && !isLoadedBundle(bundleId)) {
+        bundleQueue.splice(i, 1);
         execBundleCallback(bundleId, dependentsList, importer);
       }
     }
@@ -215,28 +234,24 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
   /**
    * This function is called anytime a JS file is loaded
    */
-  App.loadBundle = function loadBundle(bundleId: string, [, ...dependentsList]: string[], importer: Function) {
-
-    const missingDependents = dependentsList.filter(d => !getLoadedBundle(d));
+  function loadBundle(bundleId: string | undefined, dependentsList: string[], importer: Function) {
+    const missingDependents = dependentsList.filter(d => !isLoadedBundle(d));
     missingDependents.forEach(d => {
-        const url = resourcesUrl + d.replace('.js', '.es5.js');
-        requestUrl(url);
-      });
+      requestUrl(resourcesUrl + d.replace('.js', '.es5.js'));
+    });
     bundleQueue.push([bundleId, dependentsList, importer]);
 
     // If any dependents are not yet met then queue the bundle execution
     if (missingDependents.length === 0) {
       checkQueue();
     }
-  };
+  }
+  App.loadBundle = loadBundle;
 
 
-  let customStyle: CustomStyle;
   let requestBundleQueue: Function[] = [];
-  if (Build.cssVarShim) {
-    customStyle = new CustomStyle(win, doc);
-
-    initCssVarShim(win, doc, customStyle, () => {
+  if (Build.cssVarShim && customStyle) {
+    customStyle.init(() => {
       // loaded all the css, let's run all the request bundle callbacks
       while (requestBundleQueue.length) {
         requestBundleQueue.shift()();
@@ -262,7 +277,7 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
 
     const bundleId = (typeof cmpMeta.bundleIds === 'string') ?
       cmpMeta.bundleIds :
-      cmpMeta.bundleIds[elm.mode];
+      (cmpMeta.bundleIds as d.BundleIds)[elm.mode];
 
     if (getLoadedBundle(bundleId)) {
       // sweet, we've already loaded this bundle
@@ -276,13 +291,11 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
       }]);
 
       // when to request the bundle depends is we're using the css shim or not
-      if (Build.cssVarShim && !customStyle.supportsCssVars) {
+      if (Build.cssVarShim && customStyle && !customStyle.supportsCssVars) {
         // using css shim, so we've gotta wait until it's ready
         if (requestBundleQueue) {
           // add this to the loadBundleQueue to run when css is ready
-          requestBundleQueue.push(() => {
-            requestComponentBundle(cmpMeta, bundleId);
-          });
+          requestBundleQueue.push(() => requestComponentBundle(cmpMeta, bundleId));
 
         } else {
           // css already all loaded
@@ -298,32 +311,32 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
   }
 
 
-  function requestComponentBundle(cmpMeta: d.ComponentMeta, bundleId: string, url?: string, tmrId?: any, scriptElm?: HTMLScriptElement) {
+  function requestComponentBundle(cmpMeta: d.ComponentMeta, bundleId: string) {
     // create the url we'll be requesting
     // always use the es5/jsonp callback module
-    url = resourcesUrl + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.es5.js');
-
-    requestUrl(url, tmrId, scriptElm);
+    requestUrl(resourcesUrl + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.es5.js'));
   }
 
 
   // Use JSONP to load in bundles
-  function requestUrl(url?: string, tmrId?: any, scriptElm?: HTMLScriptElement) {
+  function requestUrl(url: string) {
 
+    let tmrId: any;
+    let scriptElm: HTMLScriptElement;
     function onScriptComplete() {
       clearTimeout(tmrId);
       scriptElm.onerror = scriptElm.onload = null;
       domApi.$remove(scriptElm);
 
       // remove from our list of active requests
-      pendingBundleRequests[url] = false;
+      pendingBundleRequests.delete(url);
     }
 
-    if (!pendingBundleRequests[url]) {
+    if (!pendingBundleRequests.has(url)) {
       // we're not already actively requesting this url
       // let's kick off the bundle request and
       // remember that we're now actively requesting this url
-      pendingBundleRequests[url] = true;
+      pendingBundleRequests.add(url);
 
       // create a sript element to add to the document.head
       scriptElm = domApi.$createElement('script');
@@ -350,12 +363,12 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
   }
 
   if (Build.devInspector) {
-    generateDevInspector(App, namespace, window, plt);
+    generateDevInspector(App, namespace, win, plt);
   }
 
   // register all the components now that everything's ready
   (App.components || [])
-    .map(data => parseComponentLoader(data, cmpRegistry))
+    .map(data => parseComponentLoader(data))
     .forEach(cmpMeta => {
     // es5 way of extending HTMLElement
     function HostElement(self: any) {
@@ -367,7 +380,7 @@ export function createPlatformMainLegacy(namespace: string, Context: d.CoreConte
       { constructor: { value: HostElement, configurable: true } }
     );
 
-    plt.defineComponent(cmpMeta, HostElement);
+    defineComponent(cmpMeta, HostElement);
   });
 
   // create the componentOnReady fn

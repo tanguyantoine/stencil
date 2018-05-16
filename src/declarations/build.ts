@@ -147,7 +147,8 @@ export interface JSModuleList {
 export interface JSModuleMap {
   esm?: JSModuleList;
   es5?: JSModuleList;
+  esmEs5?: JSModuleList;
 }
 
 
-export type SourceTarget = 'es5' | 'es2015';
+export type SourceTarget = 'es5' | 'es2017';
