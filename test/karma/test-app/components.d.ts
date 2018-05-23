@@ -512,6 +512,53 @@ declare global {
 declare global {
 
   namespace StencilComponents {
+    interface ReflectToAttr {
+      'bool': boolean;
+      'dynamicNu': number;
+      'dynamicStr': string;
+      'nu': number;
+      'null': string;
+      'otherBool': boolean;
+      'str': string;
+      'undef': string;
+    }
+  }
+
+  interface HTMLReflectToAttrElement extends StencilComponents.ReflectToAttr, HTMLStencilElement {}
+
+  var HTMLReflectToAttrElement: {
+    prototype: HTMLReflectToAttrElement;
+    new (): HTMLReflectToAttrElement;
+  };
+  interface HTMLElementTagNameMap {
+    'reflect-to-attr': HTMLReflectToAttrElement;
+  }
+  interface ElementTagNameMap {
+    'reflect-to-attr': HTMLReflectToAttrElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'reflect-to-attr': JSXElements.ReflectToAttrAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface ReflectToAttrAttributes extends HTMLAttributes {
+      'bool'?: boolean;
+      'dynamicNu'?: number;
+      'dynamicStr'?: string;
+      'nu'?: number;
+      'null'?: string;
+      'otherBool'?: boolean;
+      'str'?: string;
+      'undef'?: string;
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
     interface ShadowDomArrayRoot {
 
     }
@@ -570,6 +617,39 @@ declare global {
   namespace JSXElements {
     export interface ShadowDomArrayAttributes extends HTMLAttributes {
       'values'?: number[];
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotArrayBasic {
+
+    }
+  }
+
+  interface HTMLSlotArrayBasicElement extends StencilComponents.SlotArrayBasic, HTMLStencilElement {}
+
+  var HTMLSlotArrayBasicElement: {
+    prototype: HTMLSlotArrayBasicElement;
+    new (): HTMLSlotArrayBasicElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-array-basic': HTMLSlotArrayBasicElement;
+  }
+  interface ElementTagNameMap {
+    'slot-array-basic': HTMLSlotArrayBasicElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-array-basic': JSXElements.SlotArrayBasicAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotArrayBasicAttributes extends HTMLAttributes {
+
     }
   }
 }
@@ -668,6 +748,72 @@ declare global {
   }
   namespace JSXElements {
     export interface SlotArrayTopAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotBasicOrderRoot {
+
+    }
+  }
+
+  interface HTMLSlotBasicOrderRootElement extends StencilComponents.SlotBasicOrderRoot, HTMLStencilElement {}
+
+  var HTMLSlotBasicOrderRootElement: {
+    prototype: HTMLSlotBasicOrderRootElement;
+    new (): HTMLSlotBasicOrderRootElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-basic-order-root': HTMLSlotBasicOrderRootElement;
+  }
+  interface ElementTagNameMap {
+    'slot-basic-order-root': HTMLSlotBasicOrderRootElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-basic-order-root': JSXElements.SlotBasicOrderRootAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotBasicOrderRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotBasicOrder {
+
+    }
+  }
+
+  interface HTMLSlotBasicOrderElement extends StencilComponents.SlotBasicOrder, HTMLStencilElement {}
+
+  var HTMLSlotBasicOrderElement: {
+    prototype: HTMLSlotBasicOrderElement;
+    new (): HTMLSlotBasicOrderElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-basic-order': HTMLSlotBasicOrderElement;
+  }
+  interface ElementTagNameMap {
+    'slot-basic-order': HTMLSlotBasicOrderElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-basic-order': JSXElements.SlotBasicOrderAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotBasicOrderAttributes extends HTMLAttributes {
 
     }
   }
@@ -965,6 +1111,72 @@ declare global {
   }
   namespace JSXElements {
     export interface SlotLightDomContentAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotMapOrderRoot {
+
+    }
+  }
+
+  interface HTMLSlotMapOrderRootElement extends StencilComponents.SlotMapOrderRoot, HTMLStencilElement {}
+
+  var HTMLSlotMapOrderRootElement: {
+    prototype: HTMLSlotMapOrderRootElement;
+    new (): HTMLSlotMapOrderRootElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-map-order-root': HTMLSlotMapOrderRootElement;
+  }
+  interface ElementTagNameMap {
+    'slot-map-order-root': HTMLSlotMapOrderRootElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-map-order-root': JSXElements.SlotMapOrderRootAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotMapOrderRootAttributes extends HTMLAttributes {
+
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
+    interface SlotMapOrder {
+
+    }
+  }
+
+  interface HTMLSlotMapOrderElement extends StencilComponents.SlotMapOrder, HTMLStencilElement {}
+
+  var HTMLSlotMapOrderElement: {
+    prototype: HTMLSlotMapOrderElement;
+    new (): HTMLSlotMapOrderElement;
+  };
+  interface HTMLElementTagNameMap {
+    'slot-map-order': HTMLSlotMapOrderElement;
+  }
+  interface ElementTagNameMap {
+    'slot-map-order': HTMLSlotMapOrderElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'slot-map-order': JSXElements.SlotMapOrderAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface SlotMapOrderAttributes extends HTMLAttributes {
 
     }
   }

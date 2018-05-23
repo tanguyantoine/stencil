@@ -97,7 +97,7 @@ export interface MemberMeta {
   propType?: number;
   attribName?: string;
   attribType?: AttributeTypeInfo;
-  reflectToAttr?: boolean;
+  reflectToAttrib?: boolean;
   ctrlId?: string;
   jsdoc?: JSDoc;
   watchCallbacks?: string[];
@@ -315,7 +315,7 @@ export interface HostElement extends HTMLElement {
    */
   ['s-init']?: () => void;
 
-  componentOnReady?: (cb?: (elm: HostElement) => void) => Promise<void>;
+  componentOnReady?: () => Promise<d.HostElement>;
   color?: string;
   mode?: string;
 }

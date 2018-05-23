@@ -30,8 +30,6 @@ export const RESERVED_PROPERTIES: string[] = [
   'resourcesUrl',
   'tick',
   'write',
-  '$definedCmps',
-  '$r',
 
 
   /**
@@ -69,6 +67,7 @@ export const RESERVED_PROPERTIES: string[] = [
   'mutable',
   'passive',
   'properties',
+  'reflectToAttr',
   'scoped',
   'state',
   'style',
